@@ -1,0 +1,28 @@
+{
+  "version": "0.2",
+  "language": "es",
+  "words": [
+    "AVGCONNECTS",
+    "AVGCONNECTSDB",
+    "IAPI",
+    "MongoClient",
+    "connectToDB",
+    "productos",
+    "Productos",
+    "categorías",
+    "Categorías",
+    "banners",
+    "desconocido",
+    "desde",
+    "datos",
+    "traer",
+    "Cargando",
+    "conectado"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".next",
+    "out",
+    "dist"
+  ]
+}

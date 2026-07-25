@@ -1,0 +1,167 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "brand": "iphone",
+      "model": "iPhone 17 Pro Max",
+      "slug": "iphone-17-pro-max",
+      "price": "1999",
+      "image": "/img/iphone.png"
+    },
+    {
+      "id": "2",
+      "brand": "iphone",
+      "model": "iPhone 17 Pro",
+      "slug": "iphone-17-pro",
+      "price": "1799",
+      "image": "/img/iphone.png"
+    },
+    {
+      "id": "3",
+      "brand": "iphone",
+      "model": "iPhone 17",
+      "slug": "iphone-17",
+      "price": "1499",
+      "image": "/img/iphone.png"
+    },
+    {
+      "id": "4",
+      "brand": "iphone",
+      "model": "iPhone 16 Pro Max",
+      "slug": "iphone-16-pro-max",
+      "price": "1599",
+      "image": "/img/iphone.png"
+    },
+
+   
+    {
+      "id": "5",
+      "brand": "samsung",
+      "model": "Samsung Galaxy S25 Ultra",
+      "slug": "samsung-galaxy-s25-ultra",
+      "price": "1899",
+      "image": "/img/samsung.png"
+    },
+    {
+      "id": "6",
+      "brand": "samsung",
+      "model": "Samsung Galaxy S25",
+      "slug": "s25",
+      "price": "1399",
+      "image": "/img/samsung.png"
+    },
+    {
+      "id": "7",
+      "brand": "samsung",
+      "model": "Samsung Galaxy Z Fold 6",
+      "slug": "z-fold-6",
+      "price": "2199",
+      "image": "/img/samsung.png"
+    },
+    {
+      "id": "8",
+      "brand": "samsung",
+      "model": "Samsung Galaxy Z Flip 6",
+      "slug": "z-flip-6",
+      "price": "1299",
+      "image": "/img/samsung.png"
+    },
+
+   
+    {
+      "id": "9",
+      "brand": "motorola",
+      "model": "Motorola Edge 50 Ultra",
+      "slug": "edge-50-ultra",
+      "price": "999",
+      "image": "/img/motorola.png"
+    },
+    {
+      "id": "10",
+      "brand": "motorola",
+      "model": "Motorola Edge 50 Pro",
+      "slug": "edge-50-pro",
+      "price": "799",
+      "image": "/img/motorola.png"
+    },
+    {
+      "id": "11",
+      "brand": "motorola",
+      "model": "Moto G Power 2025",
+      "slug": "g-power-2025",
+      "price": "399",
+      "image": "/img/motorola.png"
+    },
+
+
+    {
+      "id": "12",
+      "brand": "xiaomi",
+      "model": "Xiaomi 15 Ultra",
+      "slug": "xiaomi-15-ultra",
+      "price": "1299",
+      "image": "/img/xiaomi.png"
+    },
+    {
+      "id": "13",
+      "brand": "xiaomi",
+      "model": "Xiaomi 15",
+      "slug": "xiaomi-15",
+      "price": "899",
+      "image": "/img/xiaomi.png"
+    },
+
+
+    {
+      "id": "14",
+      "brand": "redmi",
+      "model": "Redmi Note 14 Pro",
+      "slug": "redmi-note-14-pro",
+      "price": "499",
+      "image": "/img/redmi.png"
+    },
+    {
+      "id": "15",
+      "brand": "redmi",
+      "model": "Redmi K80",
+      "slug": "redmi-k80",
+      "price": "699",
+      "image": "/img/redmi.png"
+    },
+
+    {
+      "id": "16",
+      "brand": "huawei",
+      "model": "Huawei P70 Pro",
+      "slug": "huawei-p70-pro",
+      "price": "1299",
+      "image": "/img/huawei.png"
+    },
+    {
+      "id": "17",
+      "brand": "huawei",
+      "model": "Huawei Mate 60 Pro",
+      "slug": "huawei-mate-60-pro",
+      "price": "1399",
+      "image": "/img/huawei.png"
+    },
+
+  
+    {
+      "id": "18",
+      "brand": "tcl",
+      "model": "TCL 50 Pro",
+      "slug": "tcl-50-pro",
+      "price": "399",
+      "image": "/img/tcl.png"
+    },
+    {
+      "id": "19",
+      "brand": "tcl",
+      "model": "TCL 50",
+      "slug": "tcl-50",
+      "price": "299",
+      "image": "/img/tcl.png"
+    }
+  ]
+}

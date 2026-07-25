@@ -1,0 +1,43 @@
+[
+  {
+    "name": "iPhone",
+    "slug": "iphone",
+    "children": [
+      { "name": "iPhone 15", "slug": "iphone-15" },
+      { "name": "iPhone 14", "slug": "iphone-14" },
+      { "name": "Accesorios iPhone", "slug": "accesorios-iphone" }
+    ]
+  },
+  {
+    "name": "Samsung",
+    "slug": "samsung",
+    "children": [
+      { "name": "Galaxy S24", "slug": "galaxy-s24" },
+      { "name": "Galaxy S23", "slug": "galaxy-s23" },
+      { "name": "Accesorios Samsung", "slug": "accesorios-samsung" }
+    ]
+  },
+  {
+    "name": "Motorola",
+    "slug": "motorola",
+    "children": [
+      { "name": "Edge 40", "slug": "edge-40" },
+      { "name": "Edge 30", "slug": "edge-30" },
+      { "name": "Accesorios Motorola", "slug": "accesorios-motorola" }
+    ]
+  },
+  {
+    "name": "Xiaomi",
+    "slug": "xiaomi",
+    "children": [
+      { "name": "Xiaomi 14", "slug": "xiaomi-14" },
+      { "name": "Xiaomi 13", "slug": "xiaomi-13" },
+      { "name": "Accesorios Xiaomi", "slug": "accesorios-xiaomi" }
+    ]
+  },
+  {
+    "name": "Ofertas",
+    "slug": "ofertas",
+    "children": []
+  }
+]

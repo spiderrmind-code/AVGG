@@ -1,0 +1,6 @@
+{
+  "featured": [
+    { "id": "1", "title": "Smartphone X Pro", "href": "/p/x", "image": "/products/placeholder-smartphone.jpg", "price": "$799" },
+    { "id": "2", "title": "Auriculares Pro", "href": "/p/ah", "image": "/products/placeholder-headphones.jpg", "price": "$129" }
+  ]
+}

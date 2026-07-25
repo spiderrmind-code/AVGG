@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1",
+    "image": "/images/banner1.png",
+    "title": "¡Tecnología al mejor precio!",
+    "subtitle": "Envío gratis y cuotas sin interés",
+    "link": "/categoria/celulares"
+  },
+  {
+    "id": "2",
+    "image": "/images/banner2.png",
+    "title": "Nuevos lanzamientos",
+    "subtitle": "Últimos productos disponibles, conocelos ahora",
+    "link": "/categoria/computadoras"
+  }
+]

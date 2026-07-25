@@ -1,0 +1,39 @@
+{
+  "categories": [
+    {
+      "name": "iPhone",
+      "slug": "iphone",
+      "children": []
+    },
+    {
+      "name": "Samsung",
+      "slug": "samsung",
+      "children": []
+    },
+    {
+      "name": "Motorola",
+      "slug": "motorola",
+      "children": []
+    },
+    {
+      "name": "Redmi",
+      "slug": "redmi",
+      "children": []
+    },
+    {
+      "name": "Xiaomi",
+      "slug": "xiaomi",
+      "children": []
+    },
+    {
+      "name": "Huawei",
+      "slug": "huawei",
+      "children": []
+    },
+    {
+      "name": "TCL",
+      "slug": "tcl",
+      "children": []
+    }
+  ]
+}
