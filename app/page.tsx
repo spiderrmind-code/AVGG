@@ -1,66 +1,43 @@
-import type { Metadata } from "next";
 import ProductGrid from "./components/ProductGrid";
+import BenefitsSection from "./components/BenefitsSection";
+import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "AVG CONNECTS | Tecnología premium",
-  description:
-    "Descubrí productos de tecnología premium seleccionados para vos.",
-};
-
-type Product = {
-  _id: string;
-  title: string;
-  price: number;
-  image: string;
-};
-
-async function getProducts(): Promise<Product[]> {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000"}/api/products`,
-      {
-        cache: "no-store",
-      }
-    );
-
-    if (!res.ok) return [];
-
-    const data = await res.json();
-
-    // La API devuelve { success: true, products: [...] }
-    // pero se contempla también el caso de que devuelva el array directo
-    const products = Array.isArray(data) ? data : data.products;
-
-    if (!Array.isArray(products)) return [];
-
-    return products.map((p: any) => ({
-      _id: String(p._id),
-      title: p.title ?? p.name ?? "Producto",
-      price: Number(p.price ?? 0),
-      image: p.image ?? p.images?.[0] ?? "/placeholder-product.png",
-    }));
-  } catch (error) {
-    console.error("Error cargando productos:", error);
-    return [];
-  }
+async function getProducts() {
+  const res = await fetch("http://localhost:3000/api/products", { cache: "no-store" });
+  const data = await res.json();
+  return data.products || [];
 }
 
-export default async function Page() {
+export default async function HomePage() {
   const products = await getProducts();
 
   return (
-    <main className="min-h-screen bg-white">
-      <section className="max-w-7xl mx-auto px-6 pt-32 pb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-          Bienvenido a AVG CONNECTS
-        </h1>
-
-        <p className="mt-4 text-gray-500 text-lg">
-          Tecnología premium al mejor precio.
-        </p>
+    <main className="min-h-screen bg-neutral-50">
+      <section className="px-4 py-20 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-neutral-200 bg-white px-6 py-16 shadow-sm sm:px-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-neutral-500">AVG Connects</p>
+          <h1 className="mt-4 text-4xl font-semibold sm:text-5xl">Tecnología, estilo y utilidad para comprar con confianza.</h1>
+          <p className="mx-auto mt-5 max-w-3xl text-lg text-neutral-600">
+            Descubrí productos seleccionados para la vida diaria, con una experiencia de compra más clara, rápida y preparada para convertir visitas en ventas reales.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <a href="#productos" className="rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white">Ver catálogo</a>
+            <Link href="/nosotros" className="rounded-xl border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900">Conocé AVG Connects</Link>
+          </div>
+        </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 pb-20">
+      <BenefitsSection />
+
+      <section id="productos" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">Catálogo</p>
+            <h2 className="mt-2 text-2xl font-semibold">Productos pensados para vender y para comprar.</h2>
+            <p className="mt-2 max-w-2xl text-sm text-neutral-600">Cada ficha está preparada para mostrar beneficios claros, precio competitivo y una propuesta de compra más sólida.</p>
+          </div>
+          <Link href="/search" className="text-sm font-semibold text-black">Explorar todo</Link>
+        </div>
         <ProductGrid products={products} />
       </section>
     </main>

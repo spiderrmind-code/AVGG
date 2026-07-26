@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, useSession, signOut } from 'next-auth/react';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/app/context/CartContext';
 
 const MotionDiv = motion.div as React.ComponentType<any>;
 const MotionUL = motion.ul as React.ComponentType<any>;
@@ -253,6 +253,8 @@ export default function Header() {
 
               <nav className="hidden lg:flex items-center gap-6" aria-label="Navegación principal">
                 <Link href="/" className={`text-sm text-neutral-800 hover:text-neutral-900 transition`}>Inicio</Link>
+                <Link href="/search?q=tecnologia" className={`text-sm text-neutral-800 hover:text-neutral-900 transition`}>Ofertas</Link>
+                <Link href="/search?q=novedades" className={`text-sm text-neutral-800 hover:text-neutral-900 transition`}>Novedades</Link>
 
                 <div className="relative">
                   <button
@@ -381,7 +383,7 @@ export default function Header() {
                           )}
                         </div>
                         <div className="mt-4 flex items-center justify-between">
-                          <Link href="/carrito" className={`w-1/2 text-center px-3 py-2 border rounded-md text-sm text-neutral-800 border-[#ff007f]/12 hover:bg-[#ff007f]/10`}>Ver carrito</Link>
+                          <Link href="/cart" className={`w-1/2 text-center px-3 py-2 border rounded-md text-sm text-neutral-800 border-[#ff007f]/12 hover:bg-[#ff007f]/10`}>Ver carrito</Link>
                           <Link href="/checkout" className={`w-1/2 ml-3 text-center px-3 py-2 rounded-md text-sm bg-[#ff007f] text-black hover:bg-[#ff007f]/90`}>Checkout</Link>
                         </div>
                       </div>
@@ -452,13 +454,13 @@ export default function Header() {
                     {categories.length === 0 ? (
                       <span className="text-sm text-neutral-400 py-2">Sin categorías disponibles.</span>
                     ) : (
-                      categories.map(cat => <Link key={cat.slug} href={`/categoria/${cat.slug}`} className={`py-2 text-neutral-900`}>{cat.name}</Link>)
+                      categories.map(cat => <Link key={cat.slug} href={`/category/${cat.slug}`} className={`py-2 text-neutral-900`}>{cat.name}</Link>)
                     )}
                   </div>
                 </details>
 
                 <Link href="/mi-cuenta" className={`py-3 text-neutral-900`}>Mi cuenta</Link>
-                <Link href="/carrito" className={`py-3 text-neutral-900`}>Carrito ({cartCount})</Link>
+                <Link href="/cart" className={`py-3 text-neutral-900`}>Carrito ({cartCount})</Link>
               </nav>
 
               <div className={`pt-6 mt-6 border-t border-[#ff007f]/12`}>

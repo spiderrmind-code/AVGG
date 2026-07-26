@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
-  reactStrictMode: true,
-  // experimental: {
-  //   turbo: true, // ← eliminado porque ya no se acepta booleano
-  // },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

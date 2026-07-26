@@ -5,7 +5,7 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode,
+  type ReactNode,
 } from "react";
 
 export type CartItem = {
@@ -25,19 +25,20 @@ type CartContextType = {
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
-
 const STORAGE_KEY = "avgconnects_cart";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // Cargar carrito guardado al montar (solo en cliente)
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setCart(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setCart(parsed);
+        }
       }
     } catch (error) {
       console.error("Error leyendo carrito guardado:", error);
@@ -46,7 +47,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Guardar en localStorage cada vez que cambia el carrito
   useEffect(() => {
     if (!hydrated) return;
 
@@ -63,9 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (existing) {
         return prev.map((p) =>
-          p._id === item._id
-            ? { ...p, quantity: p.quantity + quantity }
-            : p
+          p._id === item._id ? { ...p, quantity: p.quantity + quantity } : p
         );
       }
 
@@ -83,9 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setCart((prev) =>
-      prev.map((p) => (p._id === id ? { ...p, quantity } : p))
-    );
+    setCart((prev) => prev.map((p) => (p._id === id ? { ...p, quantity } : p)));
   }
 
   function clearCart() {
@@ -93,9 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
-    >
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );

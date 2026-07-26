@@ -22,11 +22,12 @@ export default function Footer() {
           Gracias por ser parte de nuestra comunidad. Explora, aprende y conecta con lo mejor de la tecnología.
         </p>
 
-        {/* Links pequeños, solo si se quiere */}
-        <div className="flex gap-4 text-sm text-[#ff007f]/70 opacity-80 hover:opacity-100 transition">
-          <Link href="/terminos" className="hover:underline">Términos</Link>
-          <Link href="/privacidad" className="hover:underline">Privacidad</Link>
-          <Link href="/soporte" className="hover:underline">Soporte</Link>
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-[#ff007f]/70 opacity-80 hover:opacity-100 transition">
+          <Link href="/nosotros" className="hover:underline">Nosotros</Link>
+          <Link href="/envios" className="hover:underline">Envíos</Link>
+          <Link href="/cambios" className="hover:underline">Cambios</Link>
+          <Link href="/contacto" className="hover:underline">Contacto</Link>
+          <Link href="/faq" className="hover:underline">FAQ</Link>
         </div>
       </div>
 

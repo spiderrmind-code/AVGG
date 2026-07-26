@@ -1,26 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { useCart } from "@/context/CartContext";
+import Link from "next/link";
+import { useCart } from "@/app/context/CartContext";
 
 export interface Product {
   _id: string;
-
   title?: string;
   name?: string;
-
   description?: string;
-
   price: number;
   comparePrice?: number;
-
   image?: string;
   images?: string[];
-
   category?: string;
-
   shippingDays?: string;
-
   stock?: boolean;
 }
 
@@ -29,6 +23,7 @@ interface Props {
 }
 
 export default function ProductCard({ product }: Props) {
+
   const { addToCart } = useCart();
 
   const image =
@@ -41,17 +36,6 @@ export default function ProductCard({ product }: Props) {
     product.name ??
     "Producto";
 
-  const formattedPrice = new Intl.NumberFormat("es-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(product.price);
-
-  const formattedComparePrice = product.comparePrice
-    ? new Intl.NumberFormat("es-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(product.comparePrice)
-    : null;
 
   function handleAddCart() {
     addToCart({
@@ -59,64 +43,39 @@ export default function ProductCard({ product }: Props) {
       name: title,
       price: product.price,
       image,
-      quantity: 1,
     });
   }
 
+
   return (
-    <article className="group rounded-xl bg-white shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-neutral-100">
+    <article className="group rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+      <Link href={`/product/${product._id}`}>
+        <div className="relative h-56 w-full overflow-hidden rounded-xl bg-neutral-100">
+          <Image src={image} alt={title} fill className="object-cover transition duration-300 group-hover:scale-105" />
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-600">
+            {product.category ?? "Producto"}
+          </span>
+          {product.comparePrice && product.comparePrice > product.price ? (
+            <span className="text-xs font-semibold text-rose-600">-{Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}%</span>
+          ) : null}
+        </div>
+        <h3 className="mt-3 text-lg font-semibold text-neutral-900">{title}</h3>
+        <p className="mt-2 text-sm leading-6 text-neutral-600">{product.description ?? "Producto seleccionado para aportar valor real al cliente."}</p>
+      </Link>
 
-      <div className="relative w-full h-56 overflow-hidden rounded-lg bg-neutral-100">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          sizes="(max-width: 768px) 100vw, 300px"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+      <div className="mt-4 flex items-end justify-between gap-3">
+        <div>
+          {product.comparePrice && product.comparePrice > product.price ? (
+            <p className="text-sm text-neutral-400 line-through">${product.comparePrice}</p>
+          ) : null}
+          <p className="text-xl font-bold text-black">${product.price}</p>
+        </div>
+        <button onClick={handleAddCart} className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800">
+          Comprar
+        </button>
       </div>
-
-      <h3 className="mt-4 font-semibold text-lg text-neutral-900">
-        {title}
-      </h3>
-
-      {formattedComparePrice && (
-        <p className="mt-2 text-sm text-gray-400 line-through">
-          {formattedComparePrice}
-        </p>
-      )}
-
-      <p className="text-pink-600 font-bold text-xl">
-        {formattedPrice}
-      </p>
-
-      {product.shippingDays && (
-        <p className="mt-2 text-sm text-gray-500">
-          🚚 Envío estimado: {product.shippingDays}
-        </p>
-      )}
-
-      <button
-        type="button"
-        onClick={handleAddCart}
-        disabled={product.stock === false}
-        className="
-          mt-4
-          w-full
-          rounded-lg
-          bg-black
-          text-white
-          py-3
-          hover:bg-neutral-800
-          transition
-          disabled:bg-gray-400
-        "
-      >
-        {product.stock === false
-          ? "Sin stock"
-          : "Agregar al carrito"}
-      </button>
-
     </article>
   );
 }

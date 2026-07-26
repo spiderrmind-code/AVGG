@@ -36,9 +36,15 @@ export const authOptions: AuthOptions = {
           throw new Error("Contraseña incorrecta");
         }
 
+        await db.collection("users").updateOne(
+          { _id: user._id },
+          { $set: { lastLoginAt: new Date(), updatedAt: new Date() } }
+        );
+
         return {
           id: user._id.toString(),
           email: user.email,
+          name: user.name ?? "",
           role: user.role as UserRole,
         };
       },
