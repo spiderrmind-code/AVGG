@@ -1,37 +1,114 @@
-import ProductDetails from "@/app/components/ProductDetails";
+import Image from "next/image";
+import Link from "next/link";
+
+interface Product {
+  _id: string;
+  name: string;
+  description?: string;
+  price: number;
+  comparePrice?: number;
+  image: string;
+  category?: string;
+  shippingDays?: string;
+}
 
 async function getProduct(id: string) {
-  const res = await fetch(`http://localhost:3000/api/products/${id}`, { cache: "no-store" });
-  const data = await res.json();
+  const res = await fetch(
+    `/api/products/${id}`,
+    {
+      cache: "no-store",
+    }
+  );
 
-  if (!res.ok || !data?.success) {
+  if (!res.ok) {
     return null;
   }
 
-  return data.product ?? null;
-}
-
-async function getRelatedProducts() {
-  const res = await fetch("http://localhost:3000/api/products", { cache: "no-store" });
   const data = await res.json();
-  return Array.isArray(data?.products) ? data.products : [];
+
+  return data.product;
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = await getProduct(id);
-  const relatedProducts = await getRelatedProducts();
+export default async function ProductPage({
+  params,
+}: {
+  params: {
+    id: string;
+  };
+}) {
+  const product = await getProduct(params.id);
 
   if (!product) {
     return (
-      <main className="min-h-screen bg-neutral-50 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-semibold">Producto no encontrado</h1>
-          <p className="mt-3 text-neutral-600">El producto que buscás no existe o ya no está disponible.</p>
-        </div>
-      </main>
+      <div className="min-h-screen flex items-center justify-center">
+        Producto no encontrado
+      </div>
     );
   }
 
-  return <ProductDetails product={product} relatedProducts={relatedProducts} />;
+  return (
+    <main className="min-h-screen p-10">
+
+      <Link href="/">
+        ← Volver
+      </Link>
+
+      <section className="grid md:grid-cols-2 gap-10 mt-8">
+
+        <div className="relative h-[500px]">
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            className="object-contain"
+          />
+        </div>
+
+        <div>
+
+          <h1 className="text-4xl font-bold">
+            {product.name}
+          </h1>
+
+          <p className="mt-5 text-gray-600">
+            {product.description}
+          </p>
+
+          <div className="mt-6">
+
+            {product.comparePrice && (
+              <span className="line-through text-gray-400">
+                ${product.comparePrice}
+              </span>
+            )}
+
+            <p className="text-3xl font-bold">
+              ${product.price}
+            </p>
+
+          </div>
+
+          <p className="mt-5">
+            🚚 Envío: {product.shippingDays}
+          </p>
+
+          <button
+            className="
+              mt-8
+              bg-black
+              text-white
+              px-8
+              py-4
+              rounded-xl
+            "
+          >
+            Agregar al carrito
+          </button>
+
+        </div>
+
+      </section>
+
+    </main>
+  );
 }
