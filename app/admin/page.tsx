@@ -236,9 +236,9 @@ export default function AdminPage() {
                 <div className="text-right">
                   <p className="font-semibold">${order.total}</p>
                   <select value={orderStatuses[String(order._id)] ?? order.status ?? order.paymentStatus ?? "pending"} onChange={(event) => updateOrderStatus(String(order._id), event.target.value)} className="mt-2 rounded-lg border border-neutral-300 px-3 py-2 text-sm">
-                    <option value="pending">Pendiente</option>
+                    <option value="pending">Pendiente pago</option>
                     <option value="paid">Pagado</option>
-                    <option value="processing">Procesando</option>
+                    <option value="processing">Preparando</option>
                     <option value="shipped">Enviado</option>
                     <option value="delivered">Entregado</option>
                     <option value="cancelled">Cancelado</option>

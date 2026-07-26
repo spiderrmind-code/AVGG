@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getDb } from "@/lib/mongo";
+import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 
 async function getSearchResults(query: string) {
   const db = await getDb();
@@ -10,10 +11,22 @@ async function getSearchResults(query: string) {
       { title: { $regex: query, $options: "i" } },
       { description: { $regex: query, $options: "i" } },
       { category: { $regex: query, $options: "i" } },
+      { sku: { $regex: query, $options: "i" } },
     ],
   }).limit(20).toArray();
 
-  return products;
+  // sanitize product fields for client
+  return products.map((p: any) => ({
+    _id: String(p._id),
+    title: p.title ?? p.name,
+    name: p.name,
+    description: p.description,
+    price: Number(p.price ?? 0),
+    comparePrice: p.comparePrice ? Number(p.comparePrice) : undefined,
+    image: p.image ?? p.images?.[0] ?? undefined,
+    category: p.category,
+    sku: p.sku,
+  }));
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -37,7 +50,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         ) : (
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {products.map((product: any) => {
-              const image = product.image ?? "/placeholder-product.png";
+              const image = product.image ?? PLACEHOLDER_IMAGE;
               const name = product.title ?? product.name ?? "Producto";
               return (
                 <Link key={String(product._id)} href={`/product/${product._id}`} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1">

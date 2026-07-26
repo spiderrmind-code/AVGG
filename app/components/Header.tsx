@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import MegaMenu from './MegaMenu';
+import { LogoSVG } from './Logo';
 import {
   Menu,
   X,
@@ -52,53 +53,73 @@ export default function Header() {
   const debounceRef = useRef<number | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    async function loadFeatured() {
-      try {
-        const r = await fetch('/api/products');
-        if (r.ok) {
-          const j = await r.json();
-          const arr = j.products ?? j.featured ?? j;
-          if (Array.isArray(arr)) {
-            const mapped: Product[] = arr.map((p: any) => ({
-              id: p._id ?? p.id,
-              title: p.title ?? p.name ?? '',
-              href: p.slug ? `/producto/${p.slug}` : `/producto/${p._id ?? p.id}`,
-              image: p.image ?? p.images?.[0] ?? '',
-              price:
-                typeof p.price === 'number'
-                  ? new Intl.NumberFormat('es-US', { style: 'currency', currency: 'USD' }).format(p.price)
-                  : p.price,
-            }));
-            setFeatured(mapped);
-            return;
-          }
-        }
-        setFeatured([]);
-      } catch (e) {
-        console.error('Error cargando productos destacados en Header:', e);
-        setFeatured([]);
-      }
-    }
+ useEffect(() => {
+  async function loadFeatured() {
+    try {
+      const apiUrl = "/api/products";
 
-    async function loadCategories() {
-      try {
-        const r = await fetch('/api/categories');
-        if (r.ok) {
-          const j = await r.json();
-          const cats = j.categories ?? j;
-          if (Array.isArray(cats)) { setCategories(cats as Category[]); return; }
-        }
-        setCategories([]);
-      } catch (e) {
-        console.error('Error cargando categorías en Header:', e);
-        setCategories([]);
-      }
-    }
+      const r = await fetch(apiUrl);
 
-    loadFeatured();
-    loadCategories();
-  }, []);
+      if (!r.ok) {
+        throw new Error("Error loading products");
+      }
+
+      const j = await r.json();
+      const arr = j.products ?? j.featured ?? j;
+
+      if (Array.isArray(arr)) {
+        const mapped: Product[] = arr.map((p: any) => ({
+          id: p._id ?? p.id,
+          title: p.title ?? p.name ?? "",
+          href: p.slug
+            ? `/product/${p._id ?? p.id}`
+            : `/product/${p._id ?? p.id}`,
+          image: p.image ?? p.images?.[0] ?? "",
+          price:
+            typeof p.price === "number"
+              ? new Intl.NumberFormat("es-US", {
+                  style: "currency",
+                  currency: "USD",
+                }).format(p.price)
+              : p.price,
+        }));
+
+        setFeatured(mapped);
+      }
+    } catch (error) {
+      console.error("Error loading featured products:", error);
+    }
+  }
+
+  loadFeatured();
+  
+  // load categories from API
+  async function loadCategories() {
+    try {
+      const res = await fetch('/api/categories');
+      if (!res.ok) throw new Error('Failed to load categories');
+      const json = await res.json();
+      const cats = json.categories ?? json;
+      if (Array.isArray(cats)) {
+        // map to expected shape
+        setCategories(cats.map((c: any) => ({
+          _id: c._id ?? c.id ?? undefined,
+          name: c.name,
+          slug: c.slug,
+          image: c.image,
+          children: Array.isArray(c.children)
+            ? c.children.map((ch: any) => ({ name: ch.name, slug: ch.slug }))
+            : [],
+        })));
+      }
+    } catch (err) {
+      console.error('Error loading categories:', err);
+      setCategories([]);
+    }
+  }
+
+  loadCategories();
+}, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 26);
@@ -243,7 +264,7 @@ export default function Header() {
             <div className="flex items-center gap-5">
               <Link href="/" className="flex items-center gap-3 group" aria-label="Ir al inicio">
                 <div className={`${logoBoxSize} rounded-lg flex items-center justify-center shadow-md transition-all duration-300 bg-neutral-100 border border-[#ff007f]/10`}>
-                  <Image src="/logo.png" alt="AVG CONNECTS" width={220} height={64} priority className="object-contain" />
+                  <LogoSVG />
                 </div>
                 <div className="hidden sm:flex flex-col !leading-none subpixel-antialiased translate-y-[0.1px]">
                   <span className={`font-extrabold tracking-tight ${logoTextSize} ${headerText} antialiased`}>AVG CONNECTS</span>
@@ -295,8 +316,22 @@ export default function Header() {
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const q = search.trim();
+                        if (!q) return;
+                        window.location.href = `/search?q=${encodeURIComponent(q)}`;
+                      }
+                    }}
                   />
-                  <IconSearch className={`absolute left-3 top-1/2 -translate-y-1/2 text-[#ff007f] w-4 h-4`} />
+                    <IconSearch className={`absolute left-3 top-1/2 -translate-y-1/2 text-[#ff007f] w-4 h-4`} />
+                    <button aria-label="Buscar" onClick={() => {
+                      const q = search.trim();
+                      if (!q) return;
+                      window.location.href = `/search?q=${encodeURIComponent(q)}`;
+                    }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 hover:bg-[#ff007f]/10">
+                      <IconSearch className="w-4 h-4 text-[#ff007f]" />
+                    </button>
                 </div>
 
                 <AnimatePresence>
@@ -392,7 +427,7 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href="/mi-cuenta" className={`hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-md transition hover:bg-[#ff007f]/8`}>
+              <Link href={session ? "/account" : "/login"} className={`hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-md transition hover:bg-[#ff007f]/8`}>
                 <User className={`w-5 h-5 text-neutral-800`} />
                 <span className={`text-sm text-neutral-800`}>Mi cuenta</span>
               </Link>
@@ -444,7 +479,13 @@ export default function Header() {
               </div>
 
               <div className="mb-4">
-                <input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} className={`w-full rounded-full py-2 pl-4 pr-3 bg-neutral-100 text-neutral-900`} />
+                <input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const q = search.trim();
+                    if (!q) return;
+                    window.location.href = `/search?q=${encodeURIComponent(q)}`;
+                  }
+                }} className={`w-full rounded-full py-2 pl-4 pr-3 bg-neutral-100 text-neutral-900`} />
               </div>
 
               <nav className="flex flex-col gap-3">
@@ -459,7 +500,7 @@ export default function Header() {
                   </div>
                 </details>
 
-                <Link href="/mi-cuenta" className={`py-3 text-neutral-900`}>Mi cuenta</Link>
+                <Link href={session ? "/account" : "/login"} className={`py-3 text-neutral-900`}>Mi cuenta</Link>
                 <Link href="/cart" className={`py-3 text-neutral-900`}>Carrito ({cartCount})</Link>
               </nav>
 

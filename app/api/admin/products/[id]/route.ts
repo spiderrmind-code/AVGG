@@ -1,8 +1,21 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
+import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
 
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || (session.user as any).role !== "admin") {
+    return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
+  }
+  return null;
+}
+
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -17,6 +30,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   try {
     const { id } = await context.params;
     const db = await getDb();

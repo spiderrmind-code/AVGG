@@ -1,10 +1,19 @@
-export async function GET() {
-  const res = await fetch("http://localhost:3000/data/featured.json");
+import { NextResponse } from "next/server";
 
-  return new Response(await res.text(), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+
+export async function GET() {
+
+
+  const featured = [
+    {
+      title: "AVG Connects",
+      description:
+        "Productos seleccionados con envío rápido."
+    }
+  ];
+
+
+
+  return NextResponse.json(featured);
+
 }

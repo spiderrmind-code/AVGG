@@ -2,7 +2,8 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/app/context/CartContext";
+import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 
 const initialValues = {
   firstName: "",
@@ -18,6 +19,7 @@ const initialValues = {
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, clearCart } = useCart();
+
   const [form, setForm] = useState(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,11 +28,15 @@ export default function CheckoutPage() {
   const subtotal = useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
   const total = subtotal;
 
-  const validate = () => {
+  function updateField(field: keyof typeof initialValues, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function validate() {
     const nextErrors: Record<string, string> = {};
     if (!form.firstName.trim()) nextErrors.firstName = "El nombre es obligatorio";
     if (!form.lastName.trim()) nextErrors.lastName = "El apellido es obligatorio";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = "Ingresa un correo válido";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = "Email inválido";
     if (!form.phone.trim()) nextErrors.phone = "El teléfono es obligatorio";
     if (!form.address.trim()) nextErrors.address = "La dirección es obligatoria";
     if (!form.city.trim()) nextErrors.city = "La ciudad es obligatoria";
@@ -38,9 +44,9 @@ export default function CheckoutPage() {
     if (!form.postalCode.trim()) nextErrors.postalCode = "El código postal es obligatorio";
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  };
+  }
 
-  const handleSubmit = async (event: FormEvent) => {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!validate()) return;
     if (cart.length === 0) {
@@ -55,124 +61,126 @@ export default function CheckoutPage() {
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer: form,
-          items: cart,
-          subtotal,
-          total,
-        }),
+        body: JSON.stringify({ customer: form, items: cart, subtotal, total }),
       });
+
+      if (!orderResponse.ok) throw new Error("No se pudo crear la orden");
 
       const orderData = await orderResponse.json();
-      const preferenceResponse = await fetch("/api/mercadopago", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: cart,
-          origin: typeof window !== "undefined" ? window.location.origin : "",
-          orderId: orderData.orderId,
-          customer: form,
-        }),
-      });
+      const orderId = orderData.orderId;
 
-      const preferenceData = await preferenceResponse.json();
-
-      if (preferenceData.initPoint) {
-        clearCart();
-        window.location.href = preferenceData.initPoint;
-        return;
+      if (!orderId) {
+        throw new Error("No se pudo crear la orden");
       }
 
       clearCart();
+
+      // Try Mercado Pago first
+      try {
+        const mp = await fetch("/api/mercadopago", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, customer: form, origin: window.location.origin }),
+        });
+        if (mp.ok) {
+          const mpJson = await mp.json();
+          if (mpJson.initPoint) {
+            window.location.href = mpJson.initPoint;
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("MercadoPago error:", e);
+      }
+
+      // Fallback to Stripe session from order
+      try {
+        const stripeResp = await fetch("/api/checkout/from-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, customerEmail: form.email }),
+        });
+        if (stripeResp.ok) {
+          const json = await stripeResp.json();
+          if (json.url) {
+            window.location.href = json.url;
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Stripe fallback error:", e);
+      }
+
       router.push("/checkout/success?status=pending");
-      return;
-    } catch {
-      setMessage("No se pudo iniciar el pago");
+    } catch (error) {
+      console.error(error);
+      setMessage("No se pudo iniciar el pago. Intentá nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-neutral-50 px-4 py-10">
       <div className="mx-auto max-w-7xl">
-        <h1 className="text-3xl font-semibold">Finalizá tu compra en minutos</h1>
-        <p className="mt-2 text-sm text-neutral-600">Completá tus datos de entrega y pagá con Mercado Pago de forma segura.</p>
+        <h1 className="text-3xl font-bold">Finalizar compra</h1>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.65fr]">
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <section>
-              <h2 className="text-xl font-semibold">Datos del comprador</h2>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Nombre</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
-                  {errors.firstName ? <p className="mt-1 text-sm text-rose-600">{errors.firstName}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Apellido</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.lastName} onChange={(event) => setForm({ ...form, lastName: event.target.value })} />
-                  {errors.lastName ? <p className="mt-1 text-sm text-rose-600">{errors.lastName}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Email</label>
-                  <input type="email" className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
-                  {errors.email ? <p className="mt-1 text-sm text-rose-600">{errors.email}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Teléfono</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} />
-                  {errors.phone ? <p className="mt-1 text-sm text-rose-600">{errors.phone}</p> : null}
-                </div>
-              </div>
-            </section>
+        <p className="mt-2 text-neutral-600">Completá tus datos y pagá de forma segura con Mercado Pago.</p>
 
-            <section>
-              <h2 className="text-xl font-semibold">Entrega</h2>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium">Dirección</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} />
-                  {errors.address ? <p className="mt-1 text-sm text-rose-600">{errors.address}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Ciudad</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} />
-                  {errors.city ? <p className="mt-1 text-sm text-rose-600">{errors.city}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Provincia</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.province} onChange={(event) => setForm({ ...form, province: event.target.value })} />
-                  {errors.province ? <p className="mt-1 text-sm text-rose-600">{errors.province}</p> : null}
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Código postal</label>
-                  <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={form.postalCode} onChange={(event) => setForm({ ...form, postalCode: event.target.value })} />
-                  {errors.postalCode ? <p className="mt-1 text-sm text-rose-600">{errors.postalCode}</p> : null}
-                </div>
-              </div>
-            </section>
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
+          <form onSubmit={handleSubmit} className="rounded-3xl bg-white border p-6 space-y-6">
+            <h2 className="text-xl font-semibold">Datos personales</h2>
 
-            {message ? <p className="text-sm text-rose-600">{message}</p> : null}
-
-            <button type="submit" disabled={isSubmitting} className="w-full rounded-xl bg-black px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">
-              {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago"}
-            </button>
-          </form>
-
-          <aside className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold">Resumen</h2>
-            <div className="mt-4 space-y-3">
-              {cart.map((item) => (
-                <div key={item._id} className="flex justify-between text-sm text-neutral-600">
-                  <span>{item.name} × {item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(0)}</span>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                ["firstName", "Nombre"],
+                ["lastName", "Apellido"],
+                ["email", "Email"],
+                ["phone", "Teléfono"],
+              ].map(([field, label]) => (
+                <div key={field}>
+                  <label className="text-sm font-medium">{label}</label>
+                  <input className="mt-2 w-full rounded-xl border px-3 py-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                  {errors[field] && <p className="text-sm text-red-500 mt-1">{errors[field]}</p>}
                 </div>
               ))}
             </div>
-            <div className="mt-6 border-t border-neutral-200 pt-4">
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>${subtotal.toFixed(0)}</span></div>
-              <div className="mt-3 flex justify-between text-lg font-semibold"><span>Total</span><span>${total.toFixed(0)}</span></div>
+
+            <h2 className="text-xl font-semibold">Dirección de entrega</h2>
+
+            {[
+              ["address", "Dirección"],
+              ["city", "Ciudad"],
+              ["province", "Provincia"],
+              ["postalCode", "Código postal"],
+            ].map(([field, label]) => (
+              <div key={field}>
+                <label className="text-sm font-medium">{label}</label>
+                <input className="mt-2 w-full rounded-xl border px-3 py-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+              </div>
+            ))}
+
+            {message && <p className="text-red-500">{message}</p>}
+
+            <button disabled={isSubmitting} className="w-full rounded-xl bg-black py-4 text-white font-semibold disabled:opacity-50">
+              {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago / Tarjeta"}
+            </button>
+          </form>
+
+          <aside className="rounded-3xl bg-white border p-6 h-fit">
+            <h2 className="text-xl font-semibold">Resumen</h2>
+            <div className="mt-5 space-y-3">
+              {cart.map((item) => (
+                <div key={item._id} className="flex justify-between text-sm">
+                  <span>{item.name} x{item.quantity}</span>
+                  <span>${(item.price * item.quantity).toLocaleString("es-AR")}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t mt-6 pt-4 flex justify-between text-xl font-bold">
+              <span>Total</span>
+              <span>${total.toLocaleString("es-AR")}</span>
             </div>
           </aside>
         </div>

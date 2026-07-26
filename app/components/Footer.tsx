@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { LogoSVG } from './Logo';
 
 export default function Footer() {
   return (
@@ -12,7 +13,7 @@ export default function Footer() {
         {/* Logo central/transparente */}
         <Link href="/" className="flex items-center gap-3 opacity-70 hover:opacity-100 transition">
           <div className="w-14 h-14 rounded-lg flex items-center justify-center bg-neutral-100/0 border border-[#ff007f]/10 shadow-sm">
-            <Image src="/logo.png" alt="AVG CONNECTs" width={220} height={64} className="object-contain" />
+            <LogoSVG />
           </div>
           <span className="font-extrabold text-neutral-900 text-base tracking-tight">AVG CONNECTS</span>
         </Link>

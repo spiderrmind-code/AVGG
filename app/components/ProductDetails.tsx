@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/app/context/CartContext";
 import type { ProductDocument } from "@/types/ecommerce";
+import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 
 interface ProductDetailsProps {
   product: ProductDocument;
@@ -13,7 +14,7 @@ interface ProductDetailsProps {
 
 export default function ProductDetails({ product, relatedProducts }: ProductDetailsProps) {
   const { addToCart } = useCart();
-  const [selectedImage, setSelectedImage] = useState(product.image ?? product.images?.[0] ?? "/placeholder-product.png");
+  const [selectedImage, setSelectedImage] = useState(product.image ?? product.images?.[0] ?? PLACEHOLDER_IMAGE);
 
   const images = [product.image, ...(product.images ?? [])].filter(Boolean) as string[];
   const discount = product.comparePrice && product.comparePrice > product.price
@@ -28,7 +29,8 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
         _id: String(product._id),
         name: title,
         price: product.price,
-        image: product.image ?? "/placeholder-product.png",
+        comparePrice: product.comparePrice ?? (product as any).oldPrice,
+        image: product.image ?? PLACEHOLDER_IMAGE,
       },
       1
     );
@@ -100,7 +102,7 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
           <h2 className="text-2xl font-semibold">Productos relacionados</h2>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             {relatedProducts.slice(0, 3).map((item) => {
-              const image = item.image ?? item.images?.[0] ?? "/placeholder-product.png";
+              const image = item.image ?? item.images?.[0] ?? PLACEHOLDER_IMAGE;
               const relatedTitle = item.title ?? item.name ?? "Producto";
               return (
                 <Link key={String(item._id)} href={`/product/${item._id}`} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1">

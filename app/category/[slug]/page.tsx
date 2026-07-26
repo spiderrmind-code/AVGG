@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getDb } from "@/lib/mongo";
+import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 
 interface ProductRecord {
   _id: string;
@@ -51,7 +52,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         ) : (
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => {
-              const image = product.image ?? "/placeholder-product.png";
+              const image = product.image ?? PLACEHOLDER_IMAGE;
               const name = product.title ?? product.name ?? "Producto";
               return (
                 <Link key={String(product._id)} href={`/product/${product._id}`} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1">

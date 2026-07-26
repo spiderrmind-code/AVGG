@@ -70,7 +70,10 @@ function currency(value: number) {
 }
 
 function getImage(src?: string) {
-  return src && src.trim().length > 0 ? src : '/logo.png';
+  if (!src || src.trim().length === 0) {
+    return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f0f0f0' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' font-size='24' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3EProducto%3C/text%3E%3C/svg%3E";
+  }
+  return src;
 }
 
 function calcDiscount(product: ProductDTO) {
@@ -162,12 +165,13 @@ function ProductCard({
 
   return (
     <article className="group rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-      <Link href={`/producto/${product.slug || product._id}`} className="block">
+      <Link href={`/product/${product.slug || product._id}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-100">
           {discount > 0 ? (
-            <span className="absolute left-3 top-3 z-10 rounded-full bg-[#ff007f] px-2.5 py-1 text-xs font-bold text-white shadow">
-              -{discount}%
-            </span>
+            <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
+              <span className="rounded-full bg-[#ff007f] px-2.5 py-1 text-xs font-bold text-white shadow">OFERTA</span>
+              <span className="rounded-full bg-white/90 text-[#ff007f] px-2 py-0.5 text-xs font-semibold">-{discount}%</span>
+            </div>
           ) : null}
           {product.stock != null ? (
             <span className="absolute right-3 top-3 z-10 rounded-full bg-black/80 px-2.5 py-1 text-xs font-medium text-white">
@@ -219,12 +223,11 @@ function ProductCard({
 
         <div className="flex items-end justify-between gap-3 pt-1">
           <div>
-            <div className="text-lg font-black text-neutral-950">
-              {currency(product.price)}
-            </div>
+            <div className="text-lg font-black text-neutral-950">{currency(product.price)}</div>
             {product.oldPrice && product.oldPrice > product.price ? (
-              <div className="text-xs text-neutral-400 line-through">
-                {currency(product.oldPrice)}
+              <div className="mt-1 flex items-center gap-3">
+                <div className="text-xs text-neutral-400 line-through">{currency(product.oldPrice)}</div>
+                <div className="text-xs font-semibold text-rose-600">Ahorra {currency(product.oldPrice - product.price)}</div>
               </div>
             ) : null}
           </div>
@@ -264,7 +267,7 @@ function BenefitCard({
 function CategoryCard({ category }: { category: CategoryDTO }) {
   return (
     <Link
-      href={`/categoria/${category.slug}`}
+      href={`/category/${category.slug}`}
       className="group block overflow-hidden rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-100">
@@ -322,7 +325,7 @@ export default function HomeClient({
   const bestSellers = useMemo(() => getBestProducts(initialProducts), [initialProducts]);
   const deals = useMemo(() => getDeals(initialProducts), [initialProducts]);
   const heroBanner = initialBanners[0];
-  const heroImage = heroBanner?.image || initialProducts[0]?.image || '/logo.png';
+  const heroImage = heroBanner?.image || initialProducts[0]?.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect fill='%23000000' width='1200' height='700'/%3E%3Ccircle cx='900' cy='220' r='180' fill='%23ff007f'/%3E%3Ccircle cx='280' cy='500' r='220' fill='%2300d4ff'/%3E%3Ctext x='50%25' y='50%25' font-size='42' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='Arial, sans-serif'%3EAVG Connects%3C/text%3E%3C/svg%3E";
 
   function showNotice(message: string) {
     setNotice(message);
@@ -335,6 +338,7 @@ export default function HomeClient({
       name: product.name,
       image: product.image,
       price: product.price,
+      comparePrice: (product.oldPrice ?? null) as number | null,
       quantity: 1,
       slug: product.slug,
     };

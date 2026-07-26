@@ -1,5 +1,15 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { getDb } from "@/lib/mongo";
+import { authOptions } from "@/auth";
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || (session.user as any).role !== "admin") {
+    return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
+  }
+  return null;
+}
 
 function toSlug(value: string) {
   return value
@@ -11,6 +21,9 @@ function toSlug(value: string) {
 }
 
 export async function POST(request: Request) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = await request.json();
     const payload = Array.isArray(body) ? body : body.products;
@@ -34,7 +47,7 @@ export async function POST(request: Request) {
       comparePrice: item.comparePrice ? Number(item.comparePrice) : undefined,
       costPrice: item.costPrice ? Number(item.costPrice) : undefined,
       margin: item.margin ? Number(item.margin) : 0,
-      image: item.image ?? item.images?.[0] ?? "/placeholder-product.png",
+      image: item.image ?? item.images?.[0] ?? undefined,
       images: Array.isArray(item.images) ? item.images : [],
       category: item.category ?? "Tecnología",
       slug: item.slug ?? toSlug(item.name ?? item.title ?? "producto"),

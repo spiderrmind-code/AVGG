@@ -38,20 +38,7 @@ const MegaMenu = React.forwardRef<HTMLDivElement, MegaMenuProps>(
         ref={ref}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className="
-          absolute
-          top-full
-          left-0
-          mt-4
-          w-[650px]
-          bg-white
-          rounded-2xl
-          shadow-2xl
-          border
-          border-neutral-200
-          p-6
-          z-[999]
-        "
+        className="absolute top-full left-0 mt-4 w-[900px] bg-white rounded-2xl shadow-2xl border border-neutral-200 p-6 z-[999]"
       >
 
         {categories.length === 0 ? (
@@ -61,48 +48,18 @@ const MegaMenu = React.forwardRef<HTMLDivElement, MegaMenuProps>(
         ) : (
 
           <div className="grid grid-cols-3 gap-6">
-
-            {categories.map((cat)=>(
-              <div key={cat._id ?? cat.slug}>
-
-                <Link
-                  href={`/categoria/${cat.slug}`}
-                  className="
-                    font-semibold
-                    text-neutral-900
-                    hover:text-pink-600
-                    transition
-                  "
-                >
-                  {cat.name}
-                </Link>
-
-
+            {categories.map((cat) => (
+              <div key={cat._id ?? cat.slug} className="border-r last:border-r-0 pr-4">
+                <Link href={`/category/${cat.slug}`} className="font-semibold text-neutral-900 hover:text-[#ff007f] transition">{cat.name}</Link>
                 {cat.children && cat.children.length > 0 && (
-
                   <div className="mt-3 flex flex-col gap-2">
-
-                    {cat.children.map((child)=>(
-                      <Link
-                        key={child.slug}
-                        href={`/categoria/${cat.slug}/${child.slug}`}
-                        className="
-                          text-sm
-                          text-neutral-600
-                          hover:text-pink-600
-                        "
-                      >
-                        {child.name}
-                      </Link>
+                    {cat.children.map((child) => (
+                      <Link key={child.slug} href={`/category/${child.slug}`} className="text-sm text-neutral-600 hover:text-[#ff007f]">{child.name}</Link>
                     ))}
-
                   </div>
-
                 )}
-
               </div>
             ))}
-
           </div>
 
         )}

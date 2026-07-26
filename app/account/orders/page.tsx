@@ -25,6 +25,21 @@ export default function AccountOrdersPage() {
     return <main className="min-h-screen bg-neutral-50 px-4 py-16">Debes iniciar sesión para ver tus pedidos.</main>;
   }
 
+  function friendlyStatus(order: any) {
+    const ps = order.paymentStatus ?? order.status ?? "pending";
+    const map: Record<string, string> = {
+      approved: "Pagado",
+      rejected: "Cancelado",
+      pending: "Pendiente pago",
+      paid: "Pagado",
+      processing: "Preparando",
+      cancelled: "Cancelado",
+      shipped: "Enviado",
+      delivered: "Entregado",
+    };
+    return map[String(ps).toLowerCase()] ?? String(ps);
+  }
+
   return (
     <main className="min-h-screen bg-neutral-50 px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
@@ -49,7 +64,7 @@ export default function AccountOrdersPage() {
                   </div>
                   <div className="text-sm text-neutral-600">Total: ${order.total}</div>
                 </div>
-                <div className="mt-3 text-sm text-neutral-600">Estado: {order.paymentStatus ?? order.status ?? "pendiente"}</div>
+                <div className="mt-3 text-sm text-neutral-600">Estado: {friendlyStatus(order)}</div>
               </div>
             ))
           )}

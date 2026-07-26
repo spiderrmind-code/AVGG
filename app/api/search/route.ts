@@ -20,30 +20,19 @@ export async function GET(req: NextRequest) {
 
     const client = await clientPromise;
 
-    const dbName = process.env.MONGODB_DB;
-
-    if (!dbName) {
-      throw new Error("Falta la variable MONGODB_DB");
-    }
-
+    const dbName = process.env.MONGODB_DB || process.env.MONGODB_DB_NAME || "AVGCONNECTS";
     const db = client.db(dbName);
 
     const products = await db
       .collection("products")
       .find({
+        active: { $ne: false },
         $or: [
-          {
-            name: {
-              $regex: query,
-              $options: "i",
-            },
-          },
-          {
-            title: {
-              $regex: query,
-              $options: "i",
-            },
-          },
+          { name: { $regex: query, $options: "i" } },
+          { title: { $regex: query, $options: "i" } },
+          { description: { $regex: query, $options: "i" } },
+          { category: { $regex: query, $options: "i" } },
+          { sku: { $regex: query, $options: "i" } },
         ],
       })
       .limit(10)
@@ -56,7 +45,7 @@ export async function GET(req: NextRequest) {
       image:
         product.image ??
         product.images?.[0] ??
-        "/placeholder-product.png",
+        undefined,
     }));
 
     return NextResponse.json(results);

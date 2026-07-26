@@ -1,5 +1,15 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { getDb } from "@/lib/mongo";
+import { authOptions } from "@/auth";
+
+async function requireAdmin() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || (session.user as any).role !== "admin") {
+    return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
+  }
+  return null;
+}
 
 export async function GET() {
   try {
@@ -13,6 +23,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = await request.json();
     const db = await getDb();

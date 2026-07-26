@@ -3,7 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import Header from "./Header";
 import Footer from "./Footer";
-import { CartProvider } from "../../context/CartContext";
+import { CartProvider } from "@/context/CartContext";
 
 export default function ClientLayoutWrapper({
   children,
