@@ -124,7 +124,7 @@ export default function ProductCard({
 
   return (
 
-    <article className="group rounded-3xl border border-neutral-200 bg-white p-5 shadow transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl">
+    <article className="group overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_80px_rgba(0,0,0,0.1)]">
 
 
 
@@ -134,29 +134,15 @@ export default function ProductCard({
       >
 
 
-        <div className="relative h-64 w-full overflow-hidden rounded-2xl bg-neutral-100">
-
-
+        <div className="relative h-72 w-full overflow-hidden rounded-[1.35rem] bg-neutral-100">
           <Image
-
             src={image}
-
             alt={title}
-
             fill
-
             sizes="(max-width:768px)100vw,25vw"
-
-            className="
-            object-cover
-            transition
-            duration-300
-            group-hover:scale-105
-            "
-
+            className="object-cover transition duration-500 group-hover:scale-105"
           />
-
-
+          {discount ? <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-700 backdrop-blur">-{discount}%</div> : null}
         </div>
 
 
@@ -164,71 +150,13 @@ export default function ProductCard({
 
 
 
-        <div className="mt-4 flex items-center justify-between">
-
-
-          <span
-            className="
-            rounded-full
-            bg-neutral-100
-            px-3
-            py-1
-            text-xs
-            font-semibold
-            uppercase
-            "
-          >
-
-            {product.category ?? "Producto"}
-
-          </span>
-
-
-
-
-          {discount && (
-
-            <span
-              className="
-              text-xs
-              font-bold
-              text-red-600
-              "
-            >
-
-              -{discount}%
-
-            </span>
-
-          )}
-
-
-
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">{product.category ?? "Producto"}</span>
+          {discount && product.comparePrice ? <span className="text-sm font-medium text-neutral-400 line-through">${product.comparePrice.toLocaleString("es-US")}</span> : null}
         </div>
 
-
-
-
-
-
-
-        <h3 className="mt-3 text-lg font-semibold text-neutral-900">
-
-          {title}
-
-        </h3>
-
-
-
-
-
-
-        <p className="mt-2 line-clamp-2 text-sm text-neutral-600">
-
-          {product.description ??
-            "Producto seleccionado para mejorar tu experiencia."}
-
-        </p>
+        <h3 className="mt-3 text-xl font-semibold tracking-[-0.02em] text-neutral-950">{title}</h3>
+        <p className="mt-2 line-clamp-2 text-sm leading-6 text-neutral-600">{product.description ?? "Producto seleccionado para mejorar tu experiencia."}</p>
 
 
 
@@ -240,7 +168,7 @@ export default function ProductCard({
 
 
 
-      <div className="mt-6 flex items-end justify-between">
+      <div className="mt-5 flex items-end justify-between gap-3">
 
 
 
@@ -268,7 +196,7 @@ export default function ProductCard({
 
 
 
-          <p className="text-2xl font-semibold text-black">${product.price.toLocaleString("es-US")}</p>
+          <p className="text-2xl font-semibold tracking-[-0.02em] text-neutral-950">${product.price.toLocaleString("es-US")}</p>
 
 
         </div>
@@ -279,7 +207,7 @@ export default function ProductCard({
 
 
 
-        <button onClick={handleAddCart} className="rounded-[28px] bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800">Comprar</button>
+        <button onClick={handleAddCart} className="rounded-full border border-neutral-200 bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800">Añadir</button>
 
 
 

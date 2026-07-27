@@ -121,14 +121,14 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-4 py-10">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-10">
       <div className="mx-auto max-w-7xl">
-        <h1 className="text-3xl font-bold">Finalizar compra</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Finalizar compra</h1>
 
         <p className="mt-2 text-neutral-600">Completá tus datos y pagá de forma segura con Mercado Pago.</p>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <form onSubmit={handleSubmit} className="rounded-3xl bg-white border p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl space-y-6">
             <h2 className="text-xl font-semibold">Datos personales</h2>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
               ].map(([field, label]) => (
                 <div key={field}>
                   <label className="text-sm font-medium">{label}</label>
-                  <input className="mt-2 w-full rounded-xl border px-3 py-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                  <input className="mt-2 w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
                   {errors[field] && <p className="text-sm text-red-500 mt-1">{errors[field]}</p>}
                 </div>
               ))}
@@ -162,12 +162,12 @@ export default function CheckoutPage() {
 
             {message && <p className="text-red-500">{message}</p>}
 
-            <button disabled={isSubmitting} className="w-full rounded-xl bg-black py-4 text-white font-semibold disabled:opacity-50">
+            <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50">
               {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago / Tarjeta"}
             </button>
           </form>
 
-          <aside className="rounded-3xl bg-white border p-6 h-fit">
+          <aside className="h-fit rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
             <h2 className="text-xl font-semibold">Resumen</h2>
             <div className="mt-5 space-y-3">
               {cart.map((item) => (

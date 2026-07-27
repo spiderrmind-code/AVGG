@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #ffffff;
+  --color-bg: #f7f7f8;
+  --color-surface: #ffffff;
   --color-text: #111111;
+  --color-muted: #5f6368;
+  --color-accent: #ff007f;
 }
 
 html {
@@ -12,14 +15,23 @@ html {
 }
 
 body {
-  background-color: var(--color-bg);
+  background: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
   color: var(--color-text);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: #111111;
+  background: var(--color-accent);
   color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  max-width: 100%;
+  display: block;
 }

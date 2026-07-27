@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongo";
+import { sanitizeProductForClient } from "@/lib/sanitization";
 
 export async function GET(request: Request) {
   try {
@@ -52,23 +53,7 @@ export async function GET(request: Request) {
 
 
 
-    // sanitize products before returning to clients
-    const sanitized = products.map((p: any) => ({
-      _id: String(p._id),
-      name: p.name,
-      title: p.title,
-      description: p.description,
-      price: Number(p.price ?? 0),
-      comparePrice: p.comparePrice ? Number(p.comparePrice) : undefined,
-      image: p.image ?? p.images?.[0] ?? undefined,
-      category: p.category,
-      slug: p.slug,
-      featured: Boolean(p.featured),
-      stock: p.stock,
-      supplier: p.supplier ?? "Proveedor",
-      shippingDays: p.shippingDays ?? "24-48 hs",
-      sku: p.sku ?? null,
-    }));
+    const sanitized = products.map((p: any) => sanitizeProductForClient(p));
 
     return NextResponse.json({
       success: true,

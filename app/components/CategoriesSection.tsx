@@ -3,19 +3,23 @@ import { catalogCategories } from "@/data/catalog-categories";
 
 export default function CategoriesSection() {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-12">
-      <h3 className="text-xl font-semibold text-neutral-900">Explorá por categorías</h3>
-      <p className="text-sm text-neutral-600 mt-1">Encontrá lo que necesitás en pocas clicks</p>
+    <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Exploración</p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950">Categorías seleccionadas</h3>
+        </div>
+      </div>
 
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {catalogCategories.map((cat) => (
-          <Link key={cat.slug} href={`/category/${cat.slug}`} className="group rounded-3xl overflow-hidden border bg-white p-4 shadow-sm hover:shadow-lg transition">
-            <div className="relative h-36 w-full rounded-2xl overflow-hidden bg-neutral-100">
-              <img src={cat.image} alt={cat.name} className="object-cover w-full h-full" />
+          <Link key={cat.slug} href={`/category/${cat.slug}`} className="group overflow-hidden rounded-[1.6rem] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
+            <div className="relative h-36 w-full overflow-hidden rounded-[1.2rem] bg-neutral-100">
+              <img src={cat.image} alt={cat.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
             </div>
             <div className="mt-4">
-              <div className="font-semibold text-neutral-900 text-lg">{cat.name}</div>
-              <div className="text-sm text-neutral-600 mt-1">{cat.description}</div>
+              <div className="text-lg font-semibold text-neutral-950">{cat.name}</div>
+              <div className="mt-1 text-sm leading-6 text-neutral-600">{cat.description}</div>
             </div>
           </Link>
         ))}

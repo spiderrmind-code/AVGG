@@ -21,7 +21,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const body = await request.json();
     const db = await getDb();
 
-    await db.collection("products").updateOne({ _id: new ObjectId(id) }, { $set: { ...body, updatedAt: new Date() } });
+    await db.collection("products").updateOne({ _id: new ObjectId(id) }, { $set: { ...body, updatedAt: new Date(), supplier: body.supplier ?? body.supplierName ?? undefined, supplierName: body.supplierName ?? body.supplier ?? undefined, supplierCost: body.supplierCost ?? body.costPrice ?? undefined, supplierStock: body.supplierStock ?? body.stock ?? undefined, supplierShippingTime: body.supplierShippingTime ?? body.shippingDays ?? undefined } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("ERROR UPDATE PRODUCT:", error);

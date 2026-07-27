@@ -45,14 +45,21 @@ export async function POST(request: Request) {
       stock: body.stock ?? true,
       active: body.active ?? true,
       featured: body.featured ?? false,
-      supplier: body.supplier ?? "Local",
-      supplierId: body.supplierId ?? "local",
+      supplier: body.supplier ?? body.supplierName ?? "Local",
+      supplierId: body.supplierId ?? null,
+      supplierName: body.supplierName ?? body.supplier ?? "Local",
+      supplierSku: body.supplierSku ?? null,
+      supplierProductId: body.supplierProductId ?? null,
+      supplierCost: body.supplierCost ?? body.costPrice ?? body.price,
+      supplierStock: body.supplierStock ?? body.stock ?? 0,
+      supplierShippingTime: body.supplierShippingTime ?? body.shippingDays ?? "24-48 hs",
       supplierLink: body.supplierLink ?? "",
       costPrice: body.costPrice ?? body.price,
       margin: body.margin ?? 0,
       sku: body.sku ?? `SKU-${Date.now()}`,
       shippingDays: body.shippingDays ?? "24-48 hs",
       shippingInfo: body.shippingInfo ?? "Envío coordinado con seguimiento.",
+      offer: body.offer ?? null,
     });
 
     return NextResponse.json({ success: true, insertedId: result.insertedId });

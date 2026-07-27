@@ -1,39 +1,67 @@
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { LogoSVG } from './Logo';
 
+const footerLinks = [
+  { href: '/nosotros', label: 'Nosotros' },
+  { href: '/envios', label: 'Envíos' },
+  { href: '/cambios', label: 'Cambios' },
+  { href: '/contacto', label: 'Contacto' },
+  { href: '/faq', label: 'FAQ' },
+];
+
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-black/5 backdrop-blur-sm border-t border-[#ff007f]/10">
-      <div className="max-w-[2400px] mx-auto px-6 lg:px-10 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-        
-        {/* Logo central/transparente */}
-        <Link href="/" className="flex items-center gap-3 opacity-70 hover:opacity-100 transition">
-          <div className="w-14 h-14 rounded-lg flex items-center justify-center bg-neutral-100/0 border border-[#ff007f]/10 shadow-sm">
-            <LogoSVG />
+    <footer className="border-t border-neutral-200 bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_60%)]">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-8 rounded-[2rem] border border-white/70 bg-white/70 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-2xl lg:grid-cols-[1.1fr_0.8fr_0.7fr]">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-white/90 shadow-sm">
+                <LogoSVG />
+              </div>
+              <div>
+                <p className="text-base font-semibold tracking-[-0.02em] text-neutral-950">AVG CONNECTS</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-neutral-500">Tecnología premium</p>
+              </div>
+            </Link>
+            <p className="mt-5 max-w-sm text-sm leading-7 text-neutral-600">
+              Diseñamos una experiencia de compra elegante, confiable y pensada para personas que valoran tecnología, claridad y detalle.
+            </p>
           </div>
-          <span className="font-extrabold text-neutral-900 text-base tracking-tight">AVG CONNECTS</span>
-        </Link>
 
-        {/* Mensaje de pertenencia */}
-        <p className="text-sm text-neutral-600 text-center md:text-left max-w-xs">
-          Gracias por ser parte de nuestra comunidad. Explora, aprende y conecta con lo mejor de la tecnología.
-        </p>
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Explorar</h3>
+            <ul className="mt-4 space-y-3 text-sm text-neutral-700">
+              {footerLinks.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="transition hover:text-neutral-950">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="flex flex-wrap justify-center gap-4 text-sm text-[#ff007f]/70 opacity-80 hover:opacity-100 transition">
-          <Link href="/nosotros" className="hover:underline">Nosotros</Link>
-          <Link href="/envios" className="hover:underline">Envíos</Link>
-          <Link href="/cambios" className="hover:underline">Cambios</Link>
-          <Link href="/contacto" className="hover:underline">Contacto</Link>
-          <Link href="/faq" className="hover:underline">FAQ</Link>
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Soporte</h3>
+            <ul className="mt-4 space-y-3 text-sm text-neutral-700">
+              <li>Atención por email y WhatsApp</li>
+              <li>Pagos seguros y seguimiento</li>
+              <li>Garantía y devoluciones claras</li>
+            </ul>
+            <div className="mt-6 flex items-center gap-3 text-sm text-neutral-600">
+              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="rounded-full border border-neutral-200 bg-white/80 px-3 py-2 transition hover:border-neutral-300 hover:text-neutral-950">Instagram</a>
+              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="rounded-full border border-neutral-200 bg-white/80 px-3 py-2 transition hover:border-neutral-300 hover:text-neutral-950">LinkedIn</a>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="w-full border-t border-[#ff007f]/10 mt-6 pt-4 text-center text-xs text-neutral-500">
-        &copy; {new Date().getFullYear()} AVG CONNECTS. Todos los derechos reservados.
+        <div className="mt-6 flex flex-col gap-3 border-t border-neutral-200 pt-6 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} AVG CONNECTS. Todos los derechos reservados.</p>
+          <p className="text-neutral-600">Diseñado para sentirse como una plataforma tecnológica sólida y premium.</p>
+        </div>
       </div>
     </footer>
   );

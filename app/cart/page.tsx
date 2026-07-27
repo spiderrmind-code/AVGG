@@ -24,27 +24,12 @@ export default function CartPage() {
   if (cart.length === 0) {
 
     return (
-      <main className="min-h-screen bg-neutral-50 px-4 py-16 sm:px-6 lg:px-8">
-
-        <div className="mx-auto max-w-5xl rounded-3xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
-
-          <h1 className="text-3xl font-semibold">
-            Tu carrito está vacío
-          </h1>
-
-          <p className="mt-3 text-neutral-600">
-            Agrega productos para empezar tu compra.
-          </p>
-
-          <Link
-            href="/"
-            className="mt-8 inline-flex rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white"
-          >
-            Explorar productos
-          </Link>
-
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+          <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Tu carrito está vacío</h1>
+          <p className="mt-3 text-neutral-600">Agrega productos para empezar tu compra.</p>
+          <Link href="/" className="mt-8 inline-flex rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800">Explorar productos</Link>
         </div>
-
       </main>
     );
   }
@@ -53,11 +38,11 @@ export default function CartPage() {
 
   return (
 
-    <main className="min-h-screen bg-neutral-50 px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-10 sm:px-6 lg:px-8">
 
       <div className="mx-auto max-w-7xl">
 
-        <h1 className="text-3xl font-semibold">
+        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950">
           Tu carrito está listo para cerrar la compra
         </h1>
 
@@ -71,7 +56,7 @@ export default function CartPage() {
 
               <div
                 key={item._id}
-                className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center"
+                className="flex flex-col gap-4 rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-center"
               >
 
                 <div className="relative h-24 w-full sm:w-24">
@@ -187,7 +172,7 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="mt-6 block rounded-xl bg-black px-5 py-4 text-center font-semibold text-white"
+                className="mt-6 block rounded-full bg-neutral-950 px-5 py-4 text-center font-semibold text-white transition hover:bg-neutral-800"
               >
                 Finalizar compra
               </Link>

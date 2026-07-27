@@ -244,9 +244,11 @@ export default function Header() {
     el.style.transition = 'transform 220ms cubic-bezier(.2,.9,.2,1)';
   }
 
-  const headerBg = scrolled ? 'bg-white/95' : 'bg-white/90';
+  const headerBg = scrolled
+    ? 'bg-white/80 backdrop-blur-2xl border-white/70 shadow-[0_16px_50px_rgba(0,0,0,0.08)]'
+    : 'bg-white/70 backdrop-blur-xl border-white/60 shadow-[0_8px_28px_rgba(0,0,0,0.04)]';
   const headerText = 'text-neutral-900';
-  const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-14 h-14';
+  const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-12 h-12';
   const logoTextSize = scrolled ? 'text-sm' : 'text-base';
 
   function setSuggestionRef(index: number) {
@@ -257,25 +259,25 @@ export default function Header() {
 
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 transition-[background,padding,box-shadow] duration-300 ${headerBg} shadow-[0_6px_30px_rgba(0,0,0,0.06)] border-b border-[#ff007f]/10`} role="banner" aria-label="Header principal">
-        <div className="max-w-[2400px] mx-auto px-6 lg:px-10 h-full">
-          <div className="h-full flex items-center justify-between gap-4">
+      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 sm:gap-5">
             {/* LEFT: logo + nav */}
             <div className="flex items-center gap-5">
-              <Link href="/" className="flex items-center gap-3 group" aria-label="Ir al inicio">
-                <div className={`${logoBoxSize} rounded-lg flex items-center justify-center shadow-md transition-all duration-300 bg-neutral-100 border border-[#ff007f]/10`}>
+              <Link href="/" className="flex items-center gap-3" aria-label="Ir al inicio">
+                <div className={`${logoBoxSize} flex items-center justify-center rounded-2xl border border-neutral-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-300`}>
                   <LogoSVG />
                 </div>
-                <div className="hidden sm:flex flex-col !leading-none subpixel-antialiased translate-y-[0.1px]">
-                  <span className={`font-extrabold tracking-tight ${logoTextSize} ${headerText} antialiased`}>AVG CONNECTS</span>
-                  <small className={`text-[#ff007f] text-xs -mt-0.5 antialiased`}>Tech & más</small>
+                <div className="hidden flex-col leading-none sm:flex">
+                  <span className={`font-semibold tracking-[-0.02em] ${logoTextSize} ${headerText}`}>AVG CONNECTS</span>
+                  <small className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.24em] text-neutral-500">Tech & more</small>
                 </div>
               </Link>
 
-              <nav className="hidden lg:flex items-center gap-6" aria-label="Navegación principal">
-                <Link href="/" className={`text-sm text-neutral-800 hover:text-neutral-900 transition`}>Inicio</Link>
-                <Link href="/search?q=tecnologia" className={`text-sm text-neutral-800 hover:text-neutral-900 transition`}>Ofertas</Link>
-                <Link href="/search?q=novedades" className={`text-sm text-neutral-800 hover:text-neutral-900 transition`}>Novedades</Link>
+              <nav className="hidden items-center gap-6 lg:flex" aria-label="Navegación principal">
+                <Link href="/" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950">Inicio</Link>
+                <Link href="/search?q=tecnologia" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950">Ofertas</Link>
+                <Link href="/search?q=novedades" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950">Novedades</Link>
 
                 <div className="relative">
                   <button
@@ -286,9 +288,9 @@ export default function Header() {
                     onBlur={() => scheduleClose(180)}
                     aria-expanded={megaOpen}
                     aria-controls="mega-menu"
-                    className={`flex items-center gap-1 text-sm text-neutral-800 hover:text-neutral-900 transition`}
+                    className="flex items-center gap-1 text-sm font-medium text-neutral-700 transition hover:text-neutral-950"
                   >
-                    Colecciones <ChevronDown className={`w-4 h-4 text-[#ff007f] ${megaOpen ? 'rotate-180' : ''}`} />
+                    Colecciones <ChevronDown className={`h-4 w-4 text-neutral-500 transition ${megaOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   <MegaMenu
@@ -303,16 +305,15 @@ export default function Header() {
               </nav>
             </div>
 
-            {/* CENTER: search */}
-            <div className="flex-1 hidden md:flex justify-center px-4">
-              <div className="w-full max-w-3xl relative">
+            <div className="hidden flex-1 justify-center px-2 md:flex">
+              <div className="relative w-full max-w-xl">
                 <div className="relative">
                   <input
                     ref={searchRef}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar celulares, accesorios, marcas..."
-                    className={`w-full rounded-full border border-[#ff007f]/12 bg-white text-neutral-900 py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff007f]/40 transition`}
+                    placeholder="Buscar productos"
+                    className="w-full rounded-full border border-neutral-200 bg-white/80 py-2.5 pl-10 pr-12 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200"
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"
@@ -324,13 +325,13 @@ export default function Header() {
                       }
                     }}
                   />
-                    <IconSearch className={`absolute left-3 top-1/2 -translate-y-1/2 text-[#ff007f] w-4 h-4`} />
+                    <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
                     <button aria-label="Buscar" onClick={() => {
                       const q = search.trim();
                       if (!q) return;
                       window.location.href = `/search?q=${encodeURIComponent(q)}`;
-                    }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 hover:bg-[#ff007f]/10">
-                      <IconSearch className="w-4 h-4 text-[#ff007f]" />
+                    }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 transition hover:bg-neutral-100">
+                      <IconSearch className="h-4 w-4 text-neutral-600" />
                     </button>
                 </div>
 
@@ -341,12 +342,12 @@ export default function Header() {
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      className={`absolute mt-2 w-full bg-white text-neutral-900 border-[#ff007f]/12 rounded-xl shadow-lg overflow-hidden z-50 border`}
+                      className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-neutral-200 bg-white/95 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl"
                       role="listbox"
                     >
                       {suggestions.map((s, i) => {
                         const isActive = selectedSuggestion === i;
-                        const itemClass = `block px-4 py-2 text-sm ${isActive ? 'bg-[#ff007f]/10 text-[#ff007f]' : 'text-neutral-800 hover:bg-[#ff007f]/10'}`;
+                        const itemClass = `block px-4 py-2.5 text-sm ${isActive ? 'bg-neutral-100 text-neutral-950' : 'text-neutral-700 hover:bg-neutral-50'}`;
                         return (
                           <li key={s}>
                             <Link
@@ -365,14 +366,13 @@ export default function Header() {
               </div>
             </div>
 
-            {/* RIGHT: actions */}
-            <div className="flex items-center gap-3">
-              <button aria-label="Favoritos" className={`hidden md:inline-flex p-2 rounded-md hover:bg-[#ff007f]/8 transition`}>
-                <Heart className={`w-5 h-5 text-[#ff007f]`} />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button aria-label="Favoritos" className="hidden rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50 md:inline-flex">
+                <Heart className="h-4 w-4" />
               </button>
 
-              <button aria-label="Notificaciones" className={`hidden md:inline-flex p-2 rounded-md hover:bg-[#ff007f]/8 transition`}>
-                <Bell className={`w-5 h-5 text-[#ff007f]`} />
+              <button aria-label="Notificaciones" className="hidden rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50 md:inline-flex">
+                <Bell className="h-4 w-4" />
               </button>
 
               <div className="relative">
@@ -383,15 +383,15 @@ export default function Header() {
                   onBlur={() => setCartOpen(false)}
                   aria-haspopup="dialog"
                   aria-expanded={cartOpen}
-                  className={`p-2 rounded-md hover:bg-[#ff007f]/8 transition relative`}
+                  className="relative rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50"
                 >
-                  <ShoppingCart className={`w-5 h-5 text-neutral-800`} />
-                  {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-[#ff007f] text-white text-xs rounded-full px-1.5">{cartCount}</span>}
+                  <ShoppingCart className="h-4 w-4" />
+                  {cartCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-neutral-950 px-1.5 py-0.5 text-[10px] font-semibold text-white">{cartCount}</span>}
                 </button>
 
                 <AnimatePresence>
                   {cartOpen && (
-                    <MotionDiv initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className={`absolute right-0 mt-2 w-80 bg-white text-neutral-900 border-[#ff007f]/12 rounded-xl shadow-xl border z-50`}>
+                    <MotionDiv initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.12)] backdrop-blur-xl">
                       <div className="p-4">
                         <h4 className="font-semibold text-sm">Carrito ({cartCount})</h4>
                         <div className="mt-3 space-y-3">
@@ -410,16 +410,16 @@ export default function Header() {
                                     {it.quantity > 1 && ` × ${it.quantity}`}
                                   </div>
                                 </div>
-                                <button onClick={() => removeFromCart(it._id)} className="p-1 rounded hover:bg-[#ff007f]/10">
-                                  <Trash2 className="w-4 h-4 text-[#ff007f]" />
+                                <button onClick={() => removeFromCart(it._id)} className="rounded-full p-1.5 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900">
+                                  <Trash2 className="h-4 w-4" />
                                 </button>
                               </div>
                             ))
                           )}
                         </div>
                         <div className="mt-4 flex items-center justify-between">
-                          <Link href="/cart" className={`w-1/2 text-center px-3 py-2 border rounded-md text-sm text-neutral-800 border-[#ff007f]/12 hover:bg-[#ff007f]/10`}>Ver carrito</Link>
-                          <Link href="/checkout" className={`w-1/2 ml-3 text-center px-3 py-2 rounded-md text-sm bg-[#ff007f] text-black hover:bg-[#ff007f]/90`}>Checkout</Link>
+                          <Link href="/cart" className="w-1/2 rounded-full border border-neutral-200 px-3 py-2 text-center text-sm font-medium text-neutral-700 transition hover:bg-neutral-50">Ver carrito</Link>
+                          <Link href="/checkout" className="ml-2 w-1/2 rounded-full bg-neutral-950 px-3 py-2 text-center text-sm font-semibold text-white transition hover:bg-neutral-800">Checkout</Link>
                         </div>
                       </div>
                     </MotionDiv>
@@ -427,16 +427,22 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={session ? "/account" : "/login"} className={`hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-md transition hover:bg-[#ff007f]/8`}>
-                <User className={`w-5 h-5 text-neutral-800`} />
-                <span className={`text-sm text-neutral-800`}>Mi cuenta</span>
+              <Link href={session ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 md:inline-flex">
+                <User className="h-4 w-4" />
+                <span>Mi cuenta</span>
               </Link>
+
+              {(session as any)?.user?.role === "admin" ? (
+                <Link href="/admin" className="hidden rounded-full border border-neutral-200 bg-neutral-950 px-3 py-2 text-sm font-semibold text-white md:inline-flex">
+                  Admin
+                </Link>
+              ) : null}
 
               <div>
                 {!session ? (
                   <button
                     onClick={() => signIn('google')}
-                    className={`hidden lg:inline-flex px-4 py-2 rounded-full font-semibold bg-[#ff007f] hover:bg-[#ff007f]/90 text-black`}
+                    className="hidden rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 lg:inline-flex"
                     aria-label="Iniciar sesión con Google"
                   >
                     Iniciar con Google
@@ -451,7 +457,7 @@ export default function Header() {
                     <span className="text-sm text-neutral-800">{session.user?.name ?? session.user?.email}</span>
                     <button
                       onClick={() => signOut()}
-                      className="ml-2 px-2 py-1 bg-[#ff007f] text-black rounded hover:bg-[#ff007f]/90"
+                      className="ml-1 rounded-full bg-neutral-950 px-2 py-1 text-xs font-semibold text-white"
                     >
                       Cerrar
                     </button>
@@ -459,8 +465,8 @@ export default function Header() {
                 )}
               </div>
 
-              <button onClick={() => setMobileOpen(true)} className={`md:hidden p-2 rounded-md hover:bg-[#ff007f]/8 transition`} aria-label="Abrir menú">
-                <Menu className={`w-6 h-6 text-neutral-800`} />
+              <button onClick={() => setMobileOpen(true)} className="rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50 md:hidden" aria-label="Abrir menú">
+                <Menu className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -472,10 +478,12 @@ export default function Header() {
         {mobileOpen && (
           <MotionAside initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-            <div className={`absolute right-0 top-0 bottom-0 w-4/5 max-w-sm p-6 overflow-auto bg-white text-neutral-900 border-l border-[#ff007f]/8`}>
-              <div className="flex items-center justify-between mb-6">
-                <Link href="/" className={`font-bold text-lg text-neutral-900`}>AVG CONNECTS</Link>
-                <button onClick={() => setMobileOpen(false)} className="p-2"><X className={`w-6 h-6 text-neutral-900`} /></button>
+            <div className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm overflow-auto border-l border-neutral-200 bg-white/95 p-6 backdrop-blur-2xl">
+              <div className="mb-6 flex items-center justify-between">
+                <Link href="/" className="text-lg font-semibold text-neutral-950">AVG CONNECTS</Link>
+                <button onClick={() => setMobileOpen(false)} className="rounded-full p-2 text-neutral-700 transition hover:bg-neutral-100">
+                  <X className="h-5 w-5" />
+                </button>
               </div>
 
               <div className="mb-4">
@@ -485,34 +493,37 @@ export default function Header() {
                     if (!q) return;
                     window.location.href = `/search?q=${encodeURIComponent(q)}`;
                   }
-                }} className={`w-full rounded-full py-2 pl-4 pr-3 bg-neutral-100 text-neutral-900`} />
+                }} className="w-full rounded-full border border-neutral-200 bg-neutral-50 py-2.5 pl-4 pr-3 text-sm text-neutral-900 outline-none" />
               </div>
 
               <nav className="flex flex-col gap-3">
-                <details open className={`border-b border-[#ff007f]/12 pb-2`}>
-                  <summary className={`flex justify-between items-center cursor-pointer text-neutral-900`}>Colecciones <ChevronDown className={`w-4 h-4 text-neutral-900`} /></summary>
+                <details open className="border-b border-neutral-200 pb-3">
+                  <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-neutral-900">Colecciones <ChevronDown className="h-4 w-4 text-neutral-500" /></summary>
                   <div className="mt-3 flex flex-col gap-2">
                     {categories.length === 0 ? (
-                      <span className="text-sm text-neutral-400 py-2">Sin categorías disponibles.</span>
+                      <span className="py-2 text-sm text-neutral-400">Sin categorías disponibles.</span>
                     ) : (
-                      categories.map(cat => <Link key={cat.slug} href={`/category/${cat.slug}`} className={`py-2 text-neutral-900`}>{cat.name}</Link>)
+                      categories.map(cat => <Link key={cat.slug} href={`/category/${cat.slug}`} className="py-2 text-sm text-neutral-700">{cat.name}</Link>)
                     )}
                   </div>
                 </details>
 
-                <Link href={session ? "/account" : "/login"} className={`py-3 text-neutral-900`}>Mi cuenta</Link>
-                <Link href="/cart" className={`py-3 text-neutral-900`}>Carrito ({cartCount})</Link>
+                <Link href={session ? "/account" : "/login"} className="py-2 text-sm font-medium text-neutral-800">Mi cuenta</Link>
+                {(session as any)?.user?.role === "admin" ? (
+                  <Link href="/admin" className="py-2 text-sm font-semibold text-neutral-950">Panel admin</Link>
+                ) : null}
+                <Link href="/cart" className="py-2 text-sm font-medium text-neutral-800">Carrito ({cartCount})</Link>
               </nav>
 
-              <div className={`pt-6 mt-6 border-t border-[#ff007f]/12`}>
+              <div className="mt-6 border-t border-neutral-200 pt-6">
                 <button
                   onClick={() => signIn('google')}
-                  className={`w-full text-center py-2 rounded-full font-semibold bg-[#ff007f] text-black`}
+                  className="w-full rounded-full bg-neutral-950 py-2.5 text-center text-sm font-semibold text-white"
                   aria-label="Iniciar sesión con Google"
                 >
-                  Alístate ✨
+                  Iniciá sesión ✨
                 </button>
-                <div className="mt-4 text-xs text-neutral-400">Soporte · Términos · Política de privacidad</div>
+                <div className="mt-4 text-xs text-neutral-500">Soporte · Términos · Privacidad</div>
               </div>
             </div>
           </MotionAside>

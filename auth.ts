@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/mongo";
 import type { UserRole } from "@/models/User";
+import { normalizeEmail, normalizeRole } from "@/lib/auth-validation";
 
 const providers: any[] = [
   CredentialsProvider({
@@ -18,7 +19,8 @@ const providers: any[] = [
       }
 
       const db = await getDb();
-      const user = await db.collection("users").findOne({ email: credentials.email });
+      const email = normalizeEmail(String(credentials.email));
+      const user = await db.collection("users").findOne({ email });
 
       if (!user) {
         throw new Error("Usuario no encontrado");
@@ -38,7 +40,7 @@ const providers: any[] = [
         id: user._id.toString(),
         email: user.email,
         name: user.name ?? "",
-        role: user.role as UserRole,
+        role: normalizeRole(user.role) as UserRole,
       };
     },
   }),
@@ -84,13 +86,13 @@ export const authOptions: AuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role;
+        token.role = normalizeRole((user as any).role);
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role;
+        (session.user as any).role = normalizeRole(String(token.role || "customer"));
       }
       return session;
     },

@@ -67,6 +67,8 @@ export async function GET(
       slug: product.slug,
       shippingDays: product.shippingDays,
       stock: product.stock,
+      supplier: product.supplier ?? product.supplierName ?? "Proveedor",
+      offer: product.offer ?? null,
     };
 
     return NextResponse.json({

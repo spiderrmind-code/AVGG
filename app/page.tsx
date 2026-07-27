@@ -43,17 +43,20 @@ export default async function Home() {
   const products = await getProducts();
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-transparent">
       <Hero product={products?.[0]} />
 
       <CategoriesSection />
 
       <PromotionsSection products={products} />
 
-      <section className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Productos destacados</h3>
-          <Link href="/search?q=destacados" className="text-sm text-[#ff007f]">
+      <section className="mx-auto max-w-7xl px-6 py-6 lg:px-8">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Colección</p>
+            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950">Productos destacados</h3>
+          </div>
+          <Link href="/search?q=destacados" className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-950">
             Ver más
           </Link>
         </div>

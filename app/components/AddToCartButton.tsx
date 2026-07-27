@@ -39,30 +39,12 @@ export default function AddToCartButton({
 
 
   return (
-
     <button
-
       onClick={handleAdd}
-
-      className="
-      mt-8
-      w-full
-      rounded-xl
-      bg-black
-      px-8
-      py-4
-      font-semibold
-      text-white
-      transition
-      hover:bg-neutral-800
-      "
-
+      className="mt-8 w-full rounded-full bg-neutral-950 px-8 py-4 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:bg-neutral-800"
     >
-
       Agregar al carrito
-
     </button>
-
   );
 
 }
