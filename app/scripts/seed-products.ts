@@ -24,7 +24,7 @@ const products = [
   },
   {
     name: "Smartwatch Fitness Plus",
-    title: "Smartwatch Fitness Plus — Monitoreo diario y estilo premium",
+    title: "Smartwatch Fitness Plus   — Monitoreo diario y estilo premium",
     shortDescription: "Rastrea actividad, sueño y frecuencia cardíaca con diseño elegante y batería confiable.",
     description: "Ideal para quienes quieren llevar el control de su rutina en la muñeca. Mide actividad física, sueño, ritmo cardíaco y ofrece alertas inteligentes.",
     benefits: ["Monitoreo de actividad", "Diseño elegante", "Notificaciones inteligentes"],
