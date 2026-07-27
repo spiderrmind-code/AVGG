@@ -50,15 +50,17 @@ export default async function Home() {
 
       <PromotionsSection products={products} />
 
-      <section className="mx-auto max-w-7xl px-6 py-6 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Colección</p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950">Productos destacados</h3>
+      <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+        <div className="premium-shell rounded-[2rem] border border-black/5 bg-white/80 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-zinc-900/70">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">Colección</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Una selección tecnológica pensada para comprar con confianza</h3>
+            </div>
+            <Link href="/search?q=destacados" className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">
+              Ver más
+            </Link>
           </div>
-          <Link href="/search?q=destacados" className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-950">
-            Ver más
-          </Link>
         </div>
       </section>
 

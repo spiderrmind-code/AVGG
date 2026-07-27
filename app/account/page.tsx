@@ -40,17 +40,17 @@ export default function AccountPage() {
     setMessage(data.message ?? "Perfil actualizado");
   }
 
-  if (status === "loading" || loading) return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Cargando perfil...</div></main>;
-  if (!session) return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Debes iniciar sesión para ver tu cuenta.</div></main>;
+  if (status === "loading" || loading) return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70">Cargando perfil...</div></main>;
+  if (!session) return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70">Debes iniciar sesión para ver tu cuenta.</div></main>;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:p-10">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_35%),linear-gradient(180deg,_#f7f2ea_0%,_#efe7dd_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
+      <div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:p-10 dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Mi cuenta</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Hola, {profile?.name || session.user?.email}</h1>
-            <p className="mt-2 text-neutral-600">Gestioná tus datos, direcciones y pedidos desde un solo lugar.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Mi cuenta</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Hola, {profile?.name || session.user?.email}</h1>
+            <p className="mt-2 text-neutral-600 dark:text-zinc-300">Gestioná tus datos, direcciones y pedidos desde un solo lugar.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/account/orders" className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800">Ver pedidos</Link>
@@ -58,18 +58,18 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 rounded-[1.6rem] border border-black/10 bg-white/70 p-4 md:grid-cols-3">
-          <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-4">
-            <p className="text-sm text-neutral-500">Perfil</p>
-            <p className="mt-2 font-semibold text-neutral-950">{profile?.name || session.user?.email}</p>
+        <div className="mt-8 grid gap-4 rounded-[1.6rem] border border-black/10 bg-white/70 p-4 md:grid-cols-3 dark:border-white/10 dark:bg-white/10">
+          <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-4 dark:border-white/10 dark:bg-zinc-900/70">
+            <p className="text-sm text-neutral-500 dark:text-zinc-400">Perfil</p>
+            <p className="mt-2 font-semibold text-neutral-950 dark:text-white">{profile?.name || session.user?.email}</p>
           </div>
-          <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-4">
-            <p className="text-sm text-neutral-500">Estado</p>
-            <p className="mt-2 font-semibold text-neutral-950">Activo</p>
+          <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-4 dark:border-white/10 dark:bg-zinc-900/70">
+            <p className="text-sm text-neutral-500 dark:text-zinc-400">Estado</p>
+            <p className="mt-2 font-semibold text-neutral-950 dark:text-white">Activo</p>
           </div>
-          <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-4">
-            <p className="text-sm text-neutral-500">Soporte</p>
-            <p className="mt-2 font-semibold text-neutral-950">Respuesta rápida</p>
+          <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-4 dark:border-white/10 dark:bg-zinc-900/70">
+            <p className="text-sm text-neutral-500 dark:text-zinc-400">Soporte</p>
+            <p className="mt-2 font-semibold text-neutral-950 dark:text-white">Respuesta rápida</p>
           </div>
         </div>
 
@@ -99,8 +99,8 @@ export default function AccountPage() {
             <input className="premium-input" value={form.postalCode} onChange={(event) => setForm({ ...form, postalCode: event.target.value })} />
           </div>
           <div className="md:col-span-2">
-            <button type="submit" className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.98]">Guardar cambios</button>
-            {message ? <p className="mt-3 rounded-[1rem] border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700">{message}</p> : null}
+            <button type="submit" className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98]">Guardar cambios</button>
+            {message ? <p className="mt-3 rounded-[1rem] border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700 dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">{message}</p> : null}
           </div>
         </form>
       </div>

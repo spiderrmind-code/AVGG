@@ -19,29 +19,29 @@ export default function Hero({ product }: { product?: any }) {
   }
 
   return (
-    <section className="relative overflow-hidden border-b border-white/40 bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.35),_transparent_40%),linear-gradient(135deg,_#f7f0e6_0%,_#efe7dd_55%,_#f8f4ee_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.2),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.08),_transparent_35%),linear-gradient(135deg,_#08090d_0%,_#0f1117_50%,_#131622_100%)]">
+    <section className="relative overflow-hidden border-b border-white/40 bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.35),_transparent_40%),linear-gradient(135deg,_#f7f0e6_0%,_#efe7dd_55%,_#f8f4ee_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.2),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(255,255,255,0.08),_transparent_35%),linear-gradient(135deg,_#08090d_0%,_#0f1117_50%,_#131622_100%)]">
       <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(17,17,17,0.04),transparent)]" />
       <div className="floating-orb absolute -left-8 top-16 h-56 w-56 rounded-full bg-white/70 blur-3xl dark:bg-pink-500/20" />
       <div className="floating-orb absolute right-[-6%] top-[-10%] h-72 w-72 rounded-full bg-[#ff2f92]/20 blur-3xl" />
       <div className="absolute bottom-0 left-1/2 h-40 w-[70%] -translate-x-1/2 rounded-full bg-white/30 blur-[120px] dark:bg-pink-500/10" />
       <div className="relative mx-auto flex max-w-7xl flex-col gap-10 px-6 py-20 sm:px-8 lg:flex-row lg:items-center lg:py-28 lg:px-8">
         <div className="max-w-2xl flex-1">
-          <div className="theme-chip">
+          <div className="brand-pill">
             Tecnología premium · Nuevo lanzamiento
           </div>
-          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.03em] text-neutral-950 dark:text-white sm:text-5xl lg:text-6xl">
-            La experiencia de compra, redefinida.
+          <h1 className="mt-6 text-4xl font-semibold leading-[0.95] tracking-[-0.035em] text-neutral-950 dark:text-white sm:text-5xl lg:text-6xl">
+            Tecnología premium, compra simple y confiable.
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-8 text-neutral-600 dark:text-zinc-300">
-            Productos seleccionados con diseño, rendimiento y la confianza de una marca que piensa en detalle.
+            Descubrí productos seleccionados con diseño, rendimiento y una experiencia de compra clara, segura y preparada para vender.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            <button onClick={handleBuyNow} className="theme-btn">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <button onClick={handleBuyNow} className="theme-btn w-full sm:w-auto">
               Comprar ahora
             </button>
-            <a href="/search?q=tecnologia" className="theme-btn-secondary">
-              Explorar colección
+            <a href="/search?q=tecnologia" className="theme-btn-secondary w-full sm:w-auto">
+              Ver catálogo
             </a>
           </div>
 
@@ -53,9 +53,9 @@ export default function Hero({ product }: { product?: any }) {
         </div>
 
         <div className="w-full max-w-lg">
-          <div className="theme-card surface-glow p-4 sm:p-5">
+          <div className="premium-ring brand-card surface-glow p-4 sm:p-5">
             <div className="relative h-[420px] overflow-hidden rounded-[1.6rem] bg-neutral-100 dark:bg-zinc-900">
-              <Image src={product?.image ?? PLACEHOLDER_IMAGE} alt={product?.name ?? product?.title ?? "Producto destacado"} fill className="object-cover" />
+              <Image src={product?.image ?? PLACEHOLDER_IMAGE} alt={product?.name ?? product?.title ?? "Producto destacado"} fill sizes="(max-width: 768px) 100vw, 45vw" priority className="object-cover" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,rgba(0,0,0,0.16)_100%)]" />
               <div className="absolute left-4 top-4 rounded-full border border-white/60 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-700 backdrop-blur">
                 Destacado

@@ -9,13 +9,13 @@ export default function PromotionsSection({ products }: { products: any[] }) {
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-      <div className="mb-6 flex flex-col gap-2 rounded-[2rem] border border-black/5 bg-white/85 p-6 shadow-[0_22px_90px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-6 flex flex-col gap-2 rounded-[2rem] border border-black/5 bg-white/85 p-6 shadow-[0_22px_90px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between dark:border-white/10 dark:bg-zinc-900/70">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Selección limitada</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950">Ofertas destacadas</h3>
-          <p className="mt-2 text-sm text-neutral-600">Hasta {maxDiscount}% OFF en productos seleccionados.</p>
+          <p className="section-label">Selección limitada</p>
+          <h3 className="section-title dark:text-white">Ofertas destacadas</h3>
+          <p className="section-copy dark:text-zinc-300">Hasta {maxDiscount}% OFF en productos seleccionados.</p>
         </div>
-        <a href="/search?q=ofertas" className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-950">Ver todas</a>
+        <a href="/search?q=ofertas" className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Ver todas</a>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

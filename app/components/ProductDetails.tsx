@@ -37,14 +37,14 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_40%),linear-gradient(180deg,_#f7f2ea_0%,_#efe7dd_100%)] px-4 py-10 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_35%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
       <div className="mx-auto max-w-7xl">
-        <Link href="/" className="mb-8 inline-flex items-center text-sm font-medium text-neutral-700 transition hover:text-neutral-950">
+        <Link href="/" className="mb-8 inline-flex items-center text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">
           ← Volver a la tienda
         </Link>
 
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="rounded-[2rem] border border-white/70 bg-white/70 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-6">
+          <section className="rounded-[2rem] border border-white/70 bg-white/70 p-4 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-6 dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_20px_80px_rgba(0,0,0,0.25)]">
             <div className="relative aspect-[4/4.1] overflow-hidden rounded-[1.5rem] bg-neutral-100">
               <Image src={selectedImage} alt={title} fill className="object-contain" />
             </div>
@@ -59,12 +59,12 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
             ) : null}
           </section>
 
-          <section className="flex flex-col justify-center rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-8">
-            <span className="inline-flex w-fit rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-600">
+          <section className="flex flex-col justify-center rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_20px_80px_rgba(0,0,0,0.25)]">
+            <span className="inline-flex w-fit rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-600 dark:border-white/10 dark:bg-white/10 dark:text-zinc-300">
               {product.category ?? "Producto"}
             </span>
             <h1 className="mt-4 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 sm:text-4xl">{title}</h1>
-            <p className="mt-4 text-base leading-7 text-neutral-600">{product.description ?? "Producto seleccionado para aportar valor real, diseño premium y una experiencia de compra más confiable."}</p>
+            <p className="mt-4 text-base leading-7 text-neutral-600 dark:text-zinc-300">{product.description ?? "Producto seleccionado para aportar valor real, diseño premium y una experiencia de compra más confiable."}</p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               {product.comparePrice && product.comparePrice > product.price ? (
@@ -76,18 +76,18 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
               <p className="text-4xl font-semibold tracking-[-0.02em] text-neutral-950">${product.price}</p>
             </div>
 
-            <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-neutral-200 bg-white/90 p-4 text-sm text-neutral-600">
+            <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-neutral-200 bg-white/90 p-4 text-sm text-neutral-600 dark:border-white/10 dark:bg-white/10 dark:text-zinc-300">
               <div className="flex items-center justify-between"><span>Stock</span><span className="font-semibold text-neutral-950">{product.stock === false ? "Agotado" : "Disponible"}</span></div>
               <div className="flex items-center justify-between"><span>Envío</span><span className="font-semibold text-neutral-950">{product.shippingDays ?? "24-48 hs"}</span></div>
               <div className="flex items-center justify-between"><span>Categoría</span><span className="font-semibold text-neutral-950">{product.category ?? "General"}</span></div>
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <button onClick={handleAddToCart} className="flex-1 rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800">Agregar al carrito</button>
-              <Link href="/checkout" className="flex-1 rounded-full border border-neutral-300 px-5 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:border-neutral-400">Comprar ahora</Link>
+              <button onClick={handleAddToCart} className="flex-1 min-h-[48px] rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98]">Agregar al carrito</button>
+              <Link href="/checkout" className="flex-1 min-h-[48px] rounded-full border border-neutral-300 px-5 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:border-neutral-400 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/10">Comprar ahora</Link>
             </div>
 
-            <div className="mt-8 rounded-[1.5rem] border border-neutral-200 bg-white/90 p-5 text-sm text-neutral-600">
+            <div className="mt-8 rounded-[1.5rem] border border-neutral-200 bg-white/90 p-5 text-sm text-neutral-600 dark:border-white/10 dark:bg-white/10 dark:text-zinc-300">
               <h2 className="font-semibold text-neutral-950">Por qué comprar en AVG Connects</h2>
               <ul className="mt-3 space-y-2">
                 <li>• Envíos con seguimiento y procesos claros.</li>

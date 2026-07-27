@@ -8,9 +8,9 @@ export default function BenefitsSection() {
   return (
     <section className="mx-auto mt-12 grid max-w-7xl gap-4 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
       {benefits.map((benefit) => (
-        <div key={benefit.title} className="rounded-[1.8rem] border border-black/5 bg-white/85 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl">
-          <h3 className="font-semibold text-neutral-950">{benefit.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-neutral-600">{benefit.description}</p>
+        <div key={benefit.title} className="rounded-[1.8rem] border border-black/5 bg-white/85 p-6 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-zinc-900/70">
+          <h3 className="font-semibold text-neutral-950 dark:text-white">{benefit.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-zinc-300">{benefit.description}</p>
         </div>
       ))}
     </section>

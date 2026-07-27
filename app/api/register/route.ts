@@ -1,29 +1,23 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/mongo";
+import { validateRegisterInput } from "@/lib/auth-validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, lastName, email, phone, password } = body;
+    const { name, lastName, email, phone, password, confirmPassword } = body;
 
-    if (!email || !password || !name || !lastName) {
-      return NextResponse.json({ success: false, message: "Nombre, apellido, email y contraseña son obligatorios" }, { status: 400 });
+    const validation = validateRegisterInput({ name, lastName, email, password, confirmPassword });
+    if (!validation.valid) {
+      return NextResponse.json({ success: false, message: validation.errors[0] }, { status: 400 });
     }
 
-    if (typeof email !== "string" || typeof password !== "string") {
-      return NextResponse.json({ success: false, message: "Formato de datos inválido" }, { status: 400 });
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ success: false, message: "El email no es válido" }, { status: 400 });
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json({ success: false, message: "La contraseña debe tener al menos 8 caracteres" }, { status: 400 });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedName = String(name).trim();
+    const normalizedLastName = String(lastName).trim();
+    const normalizedPassword = String(password);
+    const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
     const db = await getDb();
     const users = db.collection("users");
 
@@ -32,13 +26,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "El usuario ya existe" }, { status: 409 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
 
     const result = await users.insertOne({
-      name: name.trim(),
-      lastName: lastName.trim(),
+      name: normalizedName,
+      lastName: normalizedLastName,
       email: normalizedEmail,
-      phone: phone?.trim() ?? "",
+      phone: normalizedPhone,
       password: hashedPassword,
       role: "customer",
       status: "active",

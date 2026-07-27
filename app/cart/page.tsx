@@ -24,11 +24,11 @@ export default function CartPage() {
   if (cart.length === 0) {
 
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
-          <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Tu carrito está vacío</h1>
-          <p className="mt-3 text-neutral-600">Agrega productos para empezar tu compra.</p>
-          <Link href="/" className="mt-8 inline-flex rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800">Explorar productos</Link>
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.08),_transparent_45%),linear-gradient(180deg,_#f8f5ef_0%,_#f3eee7_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_45%),linear-gradient(180deg,_#08090d_0%,_#0f1117_100%)]">
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70">
+          <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Tu carrito está vacío</h1>
+          <p className="mt-3 text-neutral-600 dark:text-zinc-300">Agrega productos para empezar tu compra.</p>
+          <Link href="/" className="mt-8 inline-flex min-h-[48px] rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98]">Explorar productos</Link>
         </div>
       </main>
     );
@@ -56,7 +56,7 @@ export default function CartPage() {
 
               <div
                 key={item._id}
-                className="flex flex-col gap-4 rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-center"
+                className="flex flex-col gap-4 rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-center dark:border-white/10 dark:bg-zinc-900/70"
               >
 
                 <div className="relative h-24 w-full sm:w-24">
@@ -88,7 +88,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-2">
 
                   <button
-                    className="rounded-lg border px-3 py-1"
+                    className="min-h-[40px] rounded-full border border-black/10 bg-white/80 px-3 py-1 text-sm font-semibold text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
                     onClick={() =>
                       updateQuantity(
                         item._id,
@@ -100,13 +100,13 @@ export default function CartPage() {
                   </button>
 
 
-                  <span className="min-w-8 text-center">
+                  <span className="min-w-8 text-center text-sm font-semibold text-neutral-900 dark:text-white">
                     {item.quantity}
                   </span>
 
 
                   <button
-                    className="rounded-lg border px-3 py-1"
+                    className="min-h-[40px] rounded-full border border-black/10 bg-white/80 px-3 py-1 text-sm font-semibold text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
                     onClick={() =>
                       updateQuantity(
                         item._id,
@@ -129,7 +129,7 @@ export default function CartPage() {
 
 
                   <button
-                    className="mt-2 text-sm text-rose-600"
+                    className="mt-2 text-sm font-medium text-rose-600 transition hover:text-rose-700"
                     onClick={() =>
                       removeFromCart(item._id)
                     }
@@ -172,7 +172,7 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="mt-6 block rounded-full bg-neutral-950 px-5 py-4 text-center font-semibold text-white transition hover:bg-neutral-800"
+                className="mt-6 block min-h-[48px] rounded-full bg-neutral-950 px-5 py-4 text-center font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98]"
               >
                 Finalizar compra
               </Link>

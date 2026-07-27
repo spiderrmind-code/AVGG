@@ -123,22 +123,22 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.14),_transparent_35%),linear-gradient(180deg,_#f8f5ef_0%,_#f3eee7_100%)] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_35%),linear-gradient(180deg,_#f8f5ef_0%,_#f3eee7_100%)] px-4 py-10 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-3 rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-8 flex flex-col gap-3 rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)]">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Checkout</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Finalizar compra</h1>
-            <p className="mt-2 text-neutral-600">Completá tus datos con una experiencia de pago limpia, rápida y confiable.</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">Checkout</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Finalizar compra</h1>
+            <p className="mt-2 text-neutral-600 dark:text-zinc-300">Completá tus datos con una experiencia de pago limpia, rápida y confiable.</p>
           </div>
-          <div className="rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm text-neutral-700">Pago protegido</div>
+          <div className="rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm text-neutral-700 dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Pago protegido</div>
         </div>
 
         <div className="mt-2 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
-            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4">
-              <h2 className="text-xl font-semibold text-neutral-950">Datos personales</h2>
-              <p className="mt-1 text-sm text-neutral-600">Tu información queda protegida y se usa solo para gestionar el pedido.</p>
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
+            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
+              <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Datos personales</h2>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu información queda protegida y se usa solo para gestionar el pedido.</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -156,9 +156,9 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4">
-              <h2 className="text-xl font-semibold text-neutral-950">Dirección de entrega</h2>
-              <p className="mt-1 text-sm text-neutral-600">Toda la información se presenta de forma clara para que el proceso se sienta seguro.</p>
+            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
+              <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Dirección de entrega</h2>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Toda la información se presenta de forma clara para que el proceso se sienta seguro.</p>
             </div>
 
             {[
@@ -175,15 +175,15 @@ export default function CheckoutPage() {
 
             {message && <p className="text-red-500">{message}</p>}
 
-            <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50">
+            <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">
               {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago / Tarjeta"}
             </button>
           </form>
 
-          <aside className="h-fit rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
-            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4">
-              <h2 className="text-xl font-semibold text-neutral-950">Resumen</h2>
-              <p className="mt-1 text-sm text-neutral-600">Tu pedido se ve claro desde el primer vistazo.</p>
+          <aside className="h-fit rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
+            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
+              <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Resumen</h2>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu pedido se ve claro desde el primer vistazo.</p>
             </div>
             <div className="mt-5 space-y-3">
               {cart.map((item) => (
@@ -199,7 +199,7 @@ export default function CheckoutPage() {
                 <span>Subtotal</span>
                 <span>${subtotal.toLocaleString("es-AR")}</span>
               </div>
-              <div className="mt-3 flex justify-between text-xl font-semibold text-neutral-950">
+              <div className="mt-3 flex justify-between text-xl font-semibold text-neutral-950 dark:text-white">
                 <span>Total</span>
                 <span>${total.toLocaleString("es-AR")}</span>
               </div>

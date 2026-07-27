@@ -13,7 +13,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/50 bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_45%),linear-gradient(180deg,_#f8f5ef_0%,_#f1ece4_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_45%),linear-gradient(180deg,_#08090d_0%,_#0f1117_100%)]">
+    <footer className="border-t border-white/50 bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_45%),linear-gradient(180deg,_#f8f5ef_0%,_#f1ece4_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_45%),linear-gradient(180deg,_#08090d_0%,_#0f1117_100%)]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-8 rounded-[2.2rem] border border-white/70 bg-white/75 p-8 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)] lg:grid-cols-[1.1fr_0.7fr_0.7fr]">
           <div>

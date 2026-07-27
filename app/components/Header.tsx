@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/app/context/CartContext';
+import ThemeToggle from './ThemeToggle';
 
 const MotionDiv = motion.div as React.ComponentType<any>;
 const MotionUL = motion.ul as React.ComponentType<any>;
@@ -250,6 +251,7 @@ export default function Header() {
   const headerText = 'text-neutral-900 dark:text-zinc-100';
   const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-12 h-12';
   const logoTextSize = scrolled ? 'text-sm' : 'text-base';
+  const navLinkClass = 'relative text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-pink-500 after:to-fuchsia-500 after:transition-transform after:duration-300 hover:after:scale-x-100';
 
   function setSuggestionRef(index: number) {
     return (el: HTMLAnchorElement | null) => {
@@ -275,9 +277,9 @@ export default function Header() {
               </Link>
 
               <nav className="hidden items-center gap-6 lg:flex" aria-label="Navegación principal">
-                <Link href="/" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Inicio</Link>
-                <Link href="/search?q=tecnologia" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Ofertas</Link>
-                <Link href="/search?q=novedades" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Novedades</Link>
+                <Link href="/" className={navLinkClass}>Inicio</Link>
+                <Link href="/search?q=tecnologia" className={navLinkClass}>Ofertas</Link>
+                <Link href="/search?q=novedades" className={navLinkClass}>Novedades</Link>
 
                 <div className="relative">
                   <button
@@ -427,7 +429,7 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={session ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
+              <Link href={session ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <User className="h-4 w-4" />
                 <span>Mi cuenta</span>
               </Link>
@@ -438,11 +440,11 @@ export default function Header() {
                 </Link>
               ) : null}
 
-              <div>
+              <div className="hidden lg:block">
                 {!session ? (
                   <button
                     onClick={() => signIn('google')}
-                    className="hidden rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800 lg:inline-flex"
+                    className="hidden rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition hover:bg-neutral-800 lg:inline-flex"
                     aria-label="Iniciar sesión con Google"
                   >
                     Iniciar con Google
@@ -465,6 +467,10 @@ export default function Header() {
                 )}
               </div>
 
+              <div className="hidden md:block">
+                <ThemeToggle />
+              </div>
+
               <button onClick={() => setMobileOpen(true)} className="rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:hidden dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800" aria-label="Abrir menú">
                 <Menu className="h-5 w-5" />
               </button>
@@ -480,45 +486,49 @@ export default function Header() {
             <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
             <div className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm overflow-auto border-l border-black/10 bg-white/95 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/95">
               <div className="mb-6 flex items-center justify-between">
-                <Link href="/" className="text-lg font-semibold text-neutral-950">AVG CONNECTS</Link>
-                <button onClick={() => setMobileOpen(false)} className="rounded-full p-2 text-neutral-700 transition hover:bg-neutral-100">
+                <Link href="/" className="text-lg font-semibold text-neutral-950 dark:text-white">AVG CONNECTS</Link>
+                <button onClick={() => setMobileOpen(false)} className="rounded-full p-2 text-neutral-700 transition hover:bg-neutral-100 dark:text-zinc-200 dark:hover:bg-zinc-800">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const q = search.trim();
                     if (!q) return;
                     window.location.href = `/search?q=${encodeURIComponent(q)}`;
                   }
-                }} className="w-full rounded-full border border-neutral-200 bg-neutral-50 py-2.5 pl-4 pr-3 text-sm text-neutral-900 outline-none" />
+                }} className="w-full rounded-full border border-neutral-200 bg-neutral-50 py-2.5 pl-4 pr-3 text-sm text-neutral-900 outline-none dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-100" />
+              </div>
+
+              <div className="mb-4">
+                <ThemeToggle />
               </div>
 
               <nav className="flex flex-col gap-3">
-                <details open className="border-b border-neutral-200 pb-3">
-                  <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-neutral-900">Colecciones <ChevronDown className="h-4 w-4 text-neutral-500" /></summary>
+                <details open className="rounded-[1.2rem] border border-black/10 bg-white/70 p-3 dark:border-white/10 dark:bg-white/10">
+                  <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-neutral-900 dark:text-white">Colecciones <ChevronDown className="h-4 w-4 text-neutral-500" /></summary>
                   <div className="mt-3 flex flex-col gap-2">
                     {categories.length === 0 ? (
                       <span className="py-2 text-sm text-neutral-400">Sin categorías disponibles.</span>
                     ) : (
-                      categories.map(cat => <Link key={cat.slug} href={`/category/${cat.slug}`} className="py-2 text-sm text-neutral-700">{cat.name}</Link>)
+                      categories.map(cat => <Link key={cat.slug} href={`/category/${cat.slug}`} className="rounded-xl px-2 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 dark:text-zinc-300 dark:hover:bg-white/10">{cat.name}</Link>)
                     )}
                   </div>
                 </details>
 
-                <Link href={session ? "/account" : "/login"} className="py-2 text-sm font-medium text-neutral-800">Mi cuenta</Link>
+                <Link href={session ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Mi cuenta</Link>
                 {(session as any)?.user?.role === "admin" ? (
-                  <Link href="/admin" className="py-2 text-sm font-semibold text-neutral-950">Panel admin</Link>
+                  <Link href="/admin" className="rounded-[1rem] border border-black/10 bg-neutral-950 px-3 py-3 text-sm font-semibold text-white">Panel admin</Link>
                 ) : null}
-                <Link href="/cart" className="py-2 text-sm font-medium text-neutral-800">Carrito ({cartCount})</Link>
+                <Link href="/cart" className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Carrito ({cartCount})</Link>
               </nav>
 
               <div className="mt-6 border-t border-neutral-200 pt-6">
                 <button
                   onClick={() => signIn('google')}
-                  className="w-full rounded-full bg-neutral-950 py-2.5 text-center text-sm font-semibold text-white"
+                  className="w-full rounded-full bg-neutral-950 py-2.5 text-center text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] dark:bg-white dark:text-neutral-950"
                   aria-label="Iniciar sesión con Google"
                 >
                   Iniciá sesión ✨
