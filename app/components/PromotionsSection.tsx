@@ -9,7 +9,7 @@ export default function PromotionsSection({ products }: { products: any[] }) {
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-      <div className="mb-6 flex flex-col gap-2 rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-[0_20px_80px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-6 flex flex-col gap-2 rounded-[2rem] border border-black/5 bg-white/85 p-6 shadow-[0_22px_90px_rgba(0,0,0,0.05)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Selección limitada</p>
           <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950">Ofertas destacadas</h3>

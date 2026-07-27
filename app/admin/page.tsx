@@ -196,9 +196,9 @@ export default function AdminPage() {
   }, [costPriceInput, shippingCostInput, commissionInput, otherCostsInput, marginInput]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-4 rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:p-8">
+        <div className="mb-8 flex flex-col gap-4 rounded-[2.2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:p-8">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">AVG CONNECTS</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Panel de operaciones</h1>
@@ -215,11 +215,11 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {message ? <div className="mb-6 rounded-[1.4rem] border border-white/70 bg-white/80 p-4 text-sm text-neutral-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] backdrop-blur-xl">{message}</div> : null}
+        {message ? <div className="mb-6 rounded-[1.4rem] border border-black/10 bg-white/80 p-4 text-sm text-neutral-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] backdrop-blur-xl">{message}</div> : null}
 
         <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {statCards.map((card) => (
-            <div key={card.label} className="rounded-[1.6rem] border border-white/70 bg-white/80 p-5 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl">
+            <div key={card.label} className="rounded-[1.6rem] border border-black/10 bg-white/80 p-5 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl">
               <p className="text-sm text-neutral-600">{card.label}</p>
               <p className="mt-3 text-2xl font-semibold text-neutral-950">{card.value}</p>
             </div>

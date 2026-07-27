@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 export const metadata = {
@@ -28,3 +30,4 @@ export default function CambiosPage() {
     </main>
   );
 }
+

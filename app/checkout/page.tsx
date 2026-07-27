@@ -75,12 +75,14 @@ export default function CheckoutPage() {
 
       clearCart();
 
+      const paymentOrigin = typeof window !== "undefined" ? window.location.origin : undefined;
+
       // Try Mercado Pago first
       try {
         const mp = await fetch("/api/mercadopago", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId, customer: form, origin: window.location.origin }),
+          body: JSON.stringify({ orderId, customer: form, origin: paymentOrigin }),
         });
         if (mp.ok) {
           const mpJson = await mp.json();
@@ -121,15 +123,23 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-10">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.14),_transparent_35%),linear-gradient(180deg,_#f8f5ef_0%,_#f3eee7_100%)] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Finalizar compra</h1>
+        <div className="mb-8 flex flex-col gap-3 rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500">Checkout</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">Finalizar compra</h1>
+            <p className="mt-2 text-neutral-600">Completá tus datos con una experiencia de pago limpia, rápida y confiable.</p>
+          </div>
+          <div className="rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm text-neutral-700">Pago protegido</div>
+        </div>
 
-        <p className="mt-2 text-neutral-600">Completá tus datos y pagá de forma segura con Mercado Pago.</p>
-
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <form onSubmit={handleSubmit} className="rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl space-y-6">
-            <h2 className="text-xl font-semibold">Datos personales</h2>
+        <div className="mt-2 grid gap-8 lg:grid-cols-[1fr_380px]">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4">
+              <h2 className="text-xl font-semibold text-neutral-950">Datos personales</h2>
+              <p className="mt-1 text-sm text-neutral-600">Tu información queda protegida y se usa solo para gestionar el pedido.</p>
+            </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               {[
@@ -139,14 +149,17 @@ export default function CheckoutPage() {
                 ["phone", "Teléfono"],
               ].map(([field, label]) => (
                 <div key={field}>
-                  <label className="text-sm font-medium">{label}</label>
-                  <input className="mt-2 w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
-                  {errors[field] && <p className="text-sm text-red-500 mt-1">{errors[field]}</p>}
+                  <label className="text-sm font-medium text-neutral-700">{label}</label>
+                  <input className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                  {errors[field] && <p className="mt-1 text-sm text-red-500">{errors[field]}</p>}
                 </div>
               ))}
             </div>
 
-            <h2 className="text-xl font-semibold">Dirección de entrega</h2>
+            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4">
+              <h2 className="text-xl font-semibold text-neutral-950">Dirección de entrega</h2>
+              <p className="mt-1 text-sm text-neutral-600">Toda la información se presenta de forma clara para que el proceso se sienta seguro.</p>
+            </div>
 
             {[
               ["address", "Dirección"],
@@ -155,20 +168,23 @@ export default function CheckoutPage() {
               ["postalCode", "Código postal"],
             ].map(([field, label]) => (
               <div key={field}>
-                <label className="text-sm font-medium">{label}</label>
-                <input className="mt-2 w-full rounded-xl border px-3 py-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                <label className="text-sm font-medium text-neutral-700">{label}</label>
+                <input className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
               </div>
             ))}
 
             {message && <p className="text-red-500">{message}</p>}
 
-            <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50">
+            <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white transition hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50">
               {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago / Tarjeta"}
             </button>
           </form>
 
           <aside className="h-fit rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
-            <h2 className="text-xl font-semibold">Resumen</h2>
+            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4">
+              <h2 className="text-xl font-semibold text-neutral-950">Resumen</h2>
+              <p className="mt-1 text-sm text-neutral-600">Tu pedido se ve claro desde el primer vistazo.</p>
+            </div>
             <div className="mt-5 space-y-3">
               {cart.map((item) => (
                 <div key={item._id} className="flex justify-between text-sm">
@@ -178,9 +194,15 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="border-t mt-6 pt-4 flex justify-between text-xl font-bold">
-              <span>Total</span>
-              <span>${total.toLocaleString("es-AR")}</span>
+            <div className="mt-6 border-t border-black/10 pt-4">
+              <div className="flex justify-between text-sm text-neutral-600">
+                <span>Subtotal</span>
+                <span>${subtotal.toLocaleString("es-AR")}</span>
+              </div>
+              <div className="mt-3 flex justify-between text-xl font-semibold text-neutral-950">
+                <span>Total</span>
+                <span>${total.toLocaleString("es-AR")}</span>
+              </div>
             </div>
           </aside>
         </div>

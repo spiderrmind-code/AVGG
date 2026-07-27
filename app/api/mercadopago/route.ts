@@ -3,6 +3,16 @@ import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
+import { canInitializePayment, resolvePaymentOrigin } from "@/lib/payment";
+
+function isPaymentStateCandidate(order: unknown): order is { status?: string; paymentStatus?: string } {
+  if (!order || typeof order !== "object") {
+    return false;
+  }
+
+  const candidate = order as Record<string, unknown>;
+  return typeof candidate.status === "string" || typeof candidate.paymentStatus === "string";
+}
 
 interface MercadoPagoRequest {
   orderId: string;
@@ -60,7 +70,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "La orden no tiene items válidos" }, { status: 400 });
     }
 
-    if (order.status !== "pending" || order.paymentStatus === "approved") {
+    if (!isPaymentStateCandidate(order) || !canInitializePayment(order)) {
       return NextResponse.json({ success: false, message: "La orden no está en estado pendiente" }, { status: 400 });
     }
 
@@ -78,7 +88,7 @@ export async function POST(request: Request) {
       };
     });
 
-    const origin = body.origin || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const origin = resolvePaymentOrigin(body.origin, process.env.NEXT_PUBLIC_SITE_URL, process.env.NEXTAUTH_URL);
 
     const preference = {
       items,

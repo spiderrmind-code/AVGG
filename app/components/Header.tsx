@@ -245,9 +245,9 @@ export default function Header() {
   }
 
   const headerBg = scrolled
-    ? 'bg-white/80 backdrop-blur-2xl border-white/70 shadow-[0_16px_50px_rgba(0,0,0,0.08)]'
-    : 'bg-white/70 backdrop-blur-xl border-white/60 shadow-[0_8px_28px_rgba(0,0,0,0.04)]';
-  const headerText = 'text-neutral-900';
+    ? 'border-white/70 bg-white/70 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/70'
+    : 'border-white/60 bg-white/70 shadow-[0_10px_32px_rgba(0,0,0,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/60';
+  const headerText = 'text-neutral-900 dark:text-zinc-100';
   const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-12 h-12';
   const logoTextSize = scrolled ? 'text-sm' : 'text-base';
 
@@ -260,12 +260,12 @@ export default function Header() {
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 sm:gap-5">
             {/* LEFT: logo + nav */}
             <div className="flex items-center gap-5">
               <Link href="/" className="flex items-center gap-3" aria-label="Ir al inicio">
-                <div className={`${logoBoxSize} flex items-center justify-center rounded-2xl border border-neutral-200 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-300`}>
+                <div className={`${logoBoxSize} flex items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-300 dark:border-white/10 dark:bg-zinc-900/80`}>
                   <LogoSVG />
                 </div>
                 <div className="hidden flex-col leading-none sm:flex">
@@ -275,9 +275,9 @@ export default function Header() {
               </Link>
 
               <nav className="hidden items-center gap-6 lg:flex" aria-label="Navegación principal">
-                <Link href="/" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950">Inicio</Link>
-                <Link href="/search?q=tecnologia" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950">Ofertas</Link>
-                <Link href="/search?q=novedades" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950">Novedades</Link>
+                <Link href="/" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Inicio</Link>
+                <Link href="/search?q=tecnologia" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Ofertas</Link>
+                <Link href="/search?q=novedades" className="text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white">Novedades</Link>
 
                 <div className="relative">
                   <button
@@ -288,7 +288,7 @@ export default function Header() {
                     onBlur={() => scheduleClose(180)}
                     aria-expanded={megaOpen}
                     aria-controls="mega-menu"
-                    className="flex items-center gap-1 text-sm font-medium text-neutral-700 transition hover:text-neutral-950"
+                    className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-white/70 hover:text-neutral-950 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
                   >
                     Colecciones <ChevronDown className={`h-4 w-4 text-neutral-500 transition ${megaOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -313,7 +313,7 @@ export default function Header() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar productos"
-                    className="w-full rounded-full border border-neutral-200 bg-white/80 py-2.5 pl-10 pr-12 text-sm text-neutral-900 shadow-sm outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200"
+                    className="w-full rounded-full border border-black/10 bg-white/90 py-2.5 pl-10 pr-12 text-sm text-neutral-900 shadow-[0_10px_30px_rgba(0,0,0,0.05)] outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-100 dark:focus:border-pink-400/50 dark:focus:ring-pink-500/20"
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"
@@ -367,11 +367,11 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <button aria-label="Favoritos" className="hidden rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50 md:inline-flex">
+              <button aria-label="Favoritos" className="hidden rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <Heart className="h-4 w-4" />
               </button>
 
-              <button aria-label="Notificaciones" className="hidden rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50 md:inline-flex">
+              <button aria-label="Notificaciones" className="hidden rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <Bell className="h-4 w-4" />
               </button>
 
@@ -383,7 +383,7 @@ export default function Header() {
                   onBlur={() => setCartOpen(false)}
                   aria-haspopup="dialog"
                   aria-expanded={cartOpen}
-                  className="relative rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50"
+                  className="relative rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
                 >
                   <ShoppingCart className="h-4 w-4" />
                   {cartCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-neutral-950 px-1.5 py-0.5 text-[10px] font-semibold text-white">{cartCount}</span>}
@@ -427,7 +427,7 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={session ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-neutral-200 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 md:inline-flex">
+              <Link href={session ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <User className="h-4 w-4" />
                 <span>Mi cuenta</span>
               </Link>
@@ -465,7 +465,7 @@ export default function Header() {
                 )}
               </div>
 
-              <button onClick={() => setMobileOpen(true)} className="rounded-full border border-neutral-200 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-neutral-50 md:hidden" aria-label="Abrir menú">
+              <button onClick={() => setMobileOpen(true)} className="rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:hidden dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800" aria-label="Abrir menú">
                 <Menu className="h-5 w-5" />
               </button>
             </div>
@@ -478,7 +478,7 @@ export default function Header() {
         {mobileOpen && (
           <MotionAside initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm overflow-auto border-l border-neutral-200 bg-white/95 p-6 backdrop-blur-2xl">
+            <div className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm overflow-auto border-l border-black/10 bg-white/95 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/95">
               <div className="mb-6 flex items-center justify-between">
                 <Link href="/" className="text-lg font-semibold text-neutral-950">AVG CONNECTS</Link>
                 <button onClick={() => setMobileOpen(false)} className="rounded-full p-2 text-neutral-700 transition hover:bg-neutral-100">

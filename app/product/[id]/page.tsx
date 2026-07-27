@@ -231,17 +231,7 @@ export default async function ProductPage({
 
 
 
-          <div
-
-            className="
-            relative
-            h-[500px]
-            overflow-hidden
-            rounded-2xl
-            bg-neutral-100
-            "
-
-          >
+          <div className="relative h-[520px] overflow-hidden rounded-[1.8rem] bg-neutral-100">
 
 
             <Image
@@ -257,9 +247,7 @@ export default async function ProductPage({
               50vw
               "
 
-              className="
-              object-contain
-              "
+              className="object-contain transition duration-500 hover:scale-[1.02]"
 
             />
 
@@ -291,12 +279,7 @@ export default async function ProductPage({
 
             <span
 
-              className="
-              text-xs
-              uppercase
-              tracking-[0.3em]
-              text-neutral-500
-              "
+              className="inline-flex w-fit rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-600 backdrop-blur"
 
             >
 
@@ -311,12 +294,7 @@ export default async function ProductPage({
 
             <h1
 
-              className="
-              mt-4
-              text-4xl
-              font-bold
-              text-neutral-900
-              "
+              className="mt-4 text-4xl font-semibold tracking-[-0.02em] text-neutral-950 sm:text-5xl"
 
             >
 
@@ -332,11 +310,7 @@ export default async function ProductPage({
 
             <p
 
-              className="
-              mt-5
-              leading-7
-              text-neutral-600
-              "
+              className="mt-5 max-w-2xl text-base leading-8 text-neutral-600"
 
             >
 
@@ -360,11 +334,7 @@ export default async function ProductPage({
 
                   <p
 
-                    className="
-                    text-lg
-                    text-neutral-400
-                    line-through
-                    "
+                    className="text-lg text-neutral-400 line-through"
 
                   >
 
@@ -381,21 +351,14 @@ export default async function ProductPage({
 
 
               <div
-                className="
-                flex
-                items-center
-                gap-4
-                "
+                className="mt-2 flex items-center gap-4"
               >
 
 
 
                 <p
 
-                  className="
-                  text-4xl
-                  font-bold
-                  "
+                  className="text-4xl font-semibold tracking-[-0.02em] text-neutral-950"
 
                 >
 
@@ -412,15 +375,7 @@ export default async function ProductPage({
 
                     <span
 
-                      className="
-                      rounded-full
-                      bg-red-100
-                      px-3
-                      py-1
-                      text-sm
-                      font-bold
-                      text-red-600
-                      "
+                      className="rounded-full bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-600"
 
                     >
 
@@ -446,26 +401,10 @@ export default async function ProductPage({
 
 
 
-            <div className="mt-6 space-y-2 text-sm">
-
-
-              <p>
-                🚚 Envío:
-                {" "}
-                {product.shippingDays ?? "Rápido y seguro"}
-              </p>
-
-
-              <p>
-                ✅ Compra segura
-              </p>
-
-
-              <p>
-                🔒 Pago protegido con Mercado Pago
-              </p>
-
-
+            <div className="mt-6 grid gap-3 rounded-[1.4rem] border border-black/10 bg-white/80 p-4 text-sm text-neutral-700">
+              <div className="flex items-center justify-between"><span>Envío</span><span className="font-semibold text-neutral-950">{product.shippingDays ?? "24-48 hs"}</span></div>
+              <div className="flex items-center justify-between"><span>Compra segura</span><span className="font-semibold text-neutral-950">Protegida</span></div>
+              <div className="flex items-center justify-between"><span>Pago</span><span className="font-semibold text-neutral-950">Mercado Pago</span></div>
             </div>
 
 

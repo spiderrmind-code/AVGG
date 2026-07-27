@@ -13,30 +13,35 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-neutral-200 bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_60%)]">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-8 rounded-[2rem] border border-white/70 bg-white/70 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-2xl lg:grid-cols-[1.1fr_0.8fr_0.7fr]">
+    <footer className="border-t border-white/50 bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_45%),linear-gradient(180deg,_#f8f5ef_0%,_#f1ece4_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_45%),linear-gradient(180deg,_#08090d_0%,_#0f1117_100%)]">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-8 rounded-[2.2rem] border border-white/70 bg-white/75 p-8 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)] lg:grid-cols-[1.1fr_0.7fr_0.7fr]">
           <div>
             <Link href="/" className="inline-flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-neutral-200 bg-white/90 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] dark:border-white/10 dark:bg-zinc-800/80">
                 <LogoSVG />
               </div>
               <div>
-                <p className="text-base font-semibold tracking-[-0.02em] text-neutral-950">AVG CONNECTS</p>
-                <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-neutral-500">Tecnología premium</p>
+                <p className="text-base font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">AVG CONNECTS</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Tecnología premium</p>
               </div>
             </Link>
-            <p className="mt-5 max-w-sm text-sm leading-7 text-neutral-600">
+            <p className="mt-5 max-w-sm text-sm leading-7 text-neutral-600 dark:text-zinc-300">
               Diseñamos una experiencia de compra elegante, confiable y pensada para personas que valoran tecnología, claridad y detalle.
             </p>
+            <div className="mt-6 flex flex-wrap gap-2 text-sm text-neutral-600">
+              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/10">Soporte real</span>
+              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/10">Pago seguro</span>
+              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/10">Envíos claros</span>
+            </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Explorar</h3>
-            <ul className="mt-4 space-y-3 text-sm text-neutral-700">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Explorar</h3>
+            <ul className="mt-4 space-y-3 text-sm text-neutral-700 dark:text-zinc-300">
               {footerLinks.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="transition hover:text-neutral-950">
+                  <Link href={item.href} className="transition hover:text-neutral-950 dark:hover:text-white">
                     {item.label}
                   </Link>
                 </li>
@@ -45,22 +50,22 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Soporte</h3>
-            <ul className="mt-4 space-y-3 text-sm text-neutral-700">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Soporte</h3>
+            <ul className="mt-4 space-y-3 text-sm text-neutral-700 dark:text-zinc-300">
               <li>Atención por email y WhatsApp</li>
               <li>Pagos seguros y seguimiento</li>
               <li>Garantía y devoluciones claras</li>
             </ul>
-            <div className="mt-6 flex items-center gap-3 text-sm text-neutral-600">
-              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="rounded-full border border-neutral-200 bg-white/80 px-3 py-2 transition hover:border-neutral-300 hover:text-neutral-950">Instagram</a>
-              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="rounded-full border border-neutral-200 bg-white/80 px-3 py-2 transition hover:border-neutral-300 hover:text-neutral-950">LinkedIn</a>
+            <div className="mt-6 flex items-center gap-3 text-sm text-neutral-600 dark:text-zinc-300">
+              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="rounded-full border border-black/10 bg-white/80 px-3 py-2 transition hover:border-neutral-300 hover:text-neutral-950 dark:border-white/10 dark:bg-white/10 dark:hover:text-white">Instagram</a>
+              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="rounded-full border border-black/10 bg-white/80 px-3 py-2 transition hover:border-neutral-300 hover:text-neutral-950 dark:border-white/10 dark:bg-white/10 dark:hover:text-white">LinkedIn</a>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 border-t border-neutral-200 pt-6 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-3 border-t border-white/60 pt-6 text-sm text-neutral-500 dark:border-white/10 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} AVG CONNECTS. Todos los derechos reservados.</p>
-          <p className="text-neutral-600">Diseñado para sentirse como una plataforma tecnológica sólida y premium.</p>
+          <p className="text-neutral-600 dark:text-zinc-300">Diseñado para sentirse como una plataforma tecnológica sólida y premium.</p>
         </div>
       </div>
     </footer>

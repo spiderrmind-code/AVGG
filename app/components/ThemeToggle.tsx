@@ -1,25 +1,17 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/providers/theme-provider';
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  function toggleTheme() {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
-  }
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full border border-white/20 hover:border-primary transition-colors"
+      className="rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-100"
       aria-label="Toggle theme"
     >
-      {theme === 'dark' ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-blue-400" />}
+      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </button>
   );
 }

@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import Header from "./Header";
 import Footer from "./Footer";
 import { CartProvider } from "@/context/CartContext";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 export default function ClientLayoutWrapper({
   children,
@@ -11,16 +12,18 @@ export default function ClientLayoutWrapper({
   children: React.ReactNode;
 }) {
   return (
-    <SessionProvider>
-      <CartProvider>
-        <Header />
+    <ThemeProvider>
+      <SessionProvider>
+        <CartProvider>
+          <Header />
 
-        <main className="flex-1">
-          {children}
-        </main>
+          <main className="flex-1">
+            {children}
+          </main>
 
-        <Footer />
-      </CartProvider>
-    </SessionProvider>
+          <Footer />
+        </CartProvider>
+      </SessionProvider>
+    </ThemeProvider>
   );
 }

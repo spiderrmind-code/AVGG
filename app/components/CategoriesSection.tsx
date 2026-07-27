@@ -13,8 +13,8 @@ export default function CategoriesSection() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {catalogCategories.map((cat) => (
-          <Link key={cat.slug} href={`/category/${cat.slug}`} className="group overflow-hidden rounded-[1.6rem] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_24px_80px_rgba(0,0,0,0.08)]">
-            <div className="relative h-36 w-full overflow-hidden rounded-[1.2rem] bg-neutral-100">
+          <Link key={cat.slug} href={`/category/${cat.slug}`} className="group overflow-hidden rounded-[1.8rem] border border-black/5 bg-white/85 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(0,0,0,0.08)]">
+            <div className="relative h-36 w-full overflow-hidden rounded-[1.3rem] bg-neutral-100">
               <img src={cat.image} alt={cat.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
             </div>
             <div className="mt-4">

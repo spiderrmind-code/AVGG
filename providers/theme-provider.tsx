@@ -13,13 +13,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (saved) setTheme(saved);
+    const saved = window.localStorage.getItem("theme") as "light" | "dark" | null;
+    if (saved === "dark" || saved === "light") {
+      setTheme(saved);
+      return;
+    }
+
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
   }, []);
 
   useEffect(() => {
-    document.documentElement.className = theme;
-    localStorage.setItem("theme", theme);
+    const root = document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    root.style.colorScheme = theme;
+    window.localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () =>

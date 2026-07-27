@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongo";
+import { getWebhookOrderUpdate } from "@/lib/payment";
 
 export async function POST(request: Request) {
   try {
@@ -23,9 +24,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Falta paymentId u orderId" }, { status: 400 });
     }
 
-    const paymentStatus = status === "approved" ? "approved" : status === "rejected" ? "rejected" : "pending";
     const updateFields: Record<string, unknown> = {
-      paymentStatus,
+      ...getWebhookOrderUpdate(status),
       updatedAt: new Date(),
     };
 
