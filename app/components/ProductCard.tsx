@@ -31,6 +31,7 @@ export interface Product {
   shippingDays?: string;
 
   stock?: number | boolean;
+  featured?: boolean;
 
 }
 
@@ -117,14 +118,23 @@ export default function ProductCard({
 
   }
 
-
-
-
-
+  function handleBuyNow(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    addToCart({
+      _id: product._id,
+      name: title,
+      price: product.price,
+      comparePrice: product.comparePrice,
+      sku: product.sku,
+      image,
+    },1);
+    window.location.href = "/checkout";
+  }
 
   return (
 
-    <article className="group overflow-hidden rounded-[1.9rem] border border-black/5 bg-white/85 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(0,0,0,0.12)] active:scale-[0.99] dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_20px_80px_rgba(0,0,0,0.3)]">
+    <article className="group overflow-hidden rounded-[2rem] border border-black/5 bg-white/90 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.05)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_100px_rgba(0,0,0,0.12)] active:scale-[0.99] dark:border-white/10 dark:bg-zinc-900/75 dark:shadow-[0_20px_80px_rgba(0,0,0,0.3)]">
 
 
 
@@ -144,6 +154,7 @@ export default function ProductCard({
             loading="lazy"
           />
           {discount ? <div className="absolute left-3 top-3 rounded-full border border-black/10 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-700 backdrop-blur dark:border-white/10 dark:bg-zinc-900/70 dark:text-zinc-100">-{discount}%</div> : null}
+          {product.featured ? <div className="absolute right-3 top-3 rounded-full border border-white/60 bg-black/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white backdrop-blur">Destacado</div> : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
         </div>
 
@@ -210,7 +221,10 @@ export default function ProductCard({
 
 
 
-        <button onClick={handleAddCart} className="min-h-[44px] w-full rounded-full border border-black/10 bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100 sm:w-auto">Añadir</button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto">
+          <button onClick={handleAddCart} className="min-h-[44px] rounded-full border border-black/10 bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">Añadir</button>
+          <button onClick={handleBuyNow} className="min-h-[44px] rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:-translate-y-0.5 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">Comprar ahora</button>
+        </div>
 
 
 

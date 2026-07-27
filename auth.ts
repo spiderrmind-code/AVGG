@@ -5,6 +5,9 @@ import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/mongo";
 import type { UserRole } from "@/models/User";
 import { normalizeEmail, normalizeRole } from "@/lib/auth-validation";
+import { getGoogleAuthConfig } from "@/lib/auth-config";
+
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "avg-connects-dev-secret";
 
 const providers: any[] = [
   CredentialsProvider({
@@ -46,11 +49,13 @@ const providers: any[] = [
   }),
 ];
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+const { googleEnabled, googleClientId, googleClientSecret } = getGoogleAuthConfig();
+
+if (googleEnabled) {
   providers.unshift(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: googleClientId as string,
+      clientSecret: googleClientSecret as string,
     })
   );
 }
@@ -66,19 +71,35 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user.email) {
-        const db = await getDb();
-        const users = db.collection("users");
-        const existing = await users.findOne({ email: user.email });
+        try {
+          const db = await getDb();
+          const users = db.collection("users");
+          const existing = await users.findOne({ email: user.email });
 
-        if (!existing) {
-          await users.insertOne({
-            email: user.email,
-            name: user.name ?? "",
-            image: user.image ?? null,
-            password: null,
-            role: "customer",
-            createdAt: new Date(),
-          });
+          if (!existing) {
+            await users.insertOne({
+              email: user.email,
+              name: user.name ?? "",
+              image: user.image ?? null,
+              password: null,
+              role: "customer",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          } else {
+            await users.updateOne(
+              { _id: existing._id },
+              {
+                $set: {
+                  name: user.name ?? existing.name ?? "",
+                  image: user.image ?? existing.image ?? null,
+                  updatedAt: new Date(),
+                },
+              }
+            );
+          }
+        } catch (error) {
+          console.error("Error creating Google user:", error);
         }
       }
 
@@ -97,5 +118,5 @@ export const authOptions: AuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: authSecret,
 };

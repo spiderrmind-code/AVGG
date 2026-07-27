@@ -38,7 +38,7 @@ const MegaMenu = React.forwardRef<HTMLDivElement, MegaMenuProps>(
         ref={ref}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className="absolute top-full left-0 mt-4 w-[900px] bg-white rounded-2xl shadow-2xl border border-neutral-200 p-6 z-[999]"
+        className="absolute top-full left-0 mt-4 w-[min(92vw,900px)] max-w-[900px] rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl z-[999]"
       >
 
         {categories.length === 0 ? (
@@ -47,7 +47,7 @@ const MegaMenu = React.forwardRef<HTMLDivElement, MegaMenuProps>(
           </div>
         ) : (
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {categories.map((cat) => (
               <div key={cat._id ?? cat.slug} className="border-r last:border-r-0 pr-4">
                 <Link href={`/category/${cat.slug}`} className="font-semibold text-neutral-900 hover:text-[#ff007f] transition">{cat.name}</Link>

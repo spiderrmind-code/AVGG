@@ -44,7 +44,7 @@ async function syncCJ() {
       + "-" + p.pid,
 
     description:
-      "Producto importado desde CJ Dropshipping",
+      "Producto disponible en la tienda",
 
     image: p.productImage,
 
@@ -59,7 +59,7 @@ async function syncCJ() {
 
     active: true,
 
-    provider: "CJ Dropshipping",
+    provider: "Tienda",
 
     createdAt: new Date(),
   }));

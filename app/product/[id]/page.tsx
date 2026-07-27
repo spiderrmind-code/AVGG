@@ -33,7 +33,8 @@ interface Product {
 
 async function getProduct(id: string) {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const envOrigin = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+    const baseUrl = envOrigin || "http://localhost:3000";
     const res = await fetch(`${baseUrl}/api/products/${id}`, {
       cache: "no-store",
     });

@@ -16,7 +16,7 @@ export default function DropshippingDocsPage() {
             ["Agregar producto", "Crear ficha con nombre comercial, precio, descripción, beneficios, imágenes y proveedor."],
             ["Calcular precio", "Aplicar margen sobre costo proveedor y sumar costo de envío estimado."],
             ["Procesar pedido", "Confirmar pago, derivar a proveedor, monitorear entrega y comunicar estado al cliente."],
-            ["Proveedores", "AliExpress, CJ Dropshipping y proveedores locales pueden organizarse con un mismo modelo de ficha."],
+            ["Proveedores", "AliExpress y proveedores locales pueden organizarse con un mismo modelo de ficha."],
           ].map(([title, text]) => (
             <div key={title} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
               <h2 className="font-semibold text-neutral-900">{title}</h2>

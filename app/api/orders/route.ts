@@ -4,6 +4,10 @@ import { ObjectId } from "mongodb";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
 
+function isValidOrderId(value: string) {
+  return ObjectId.isValid(value) || /^[a-zA-Z0-9_-]+$/.test(value);
+}
+
 interface OrderItem {
   _id: string;
   name: string;
@@ -155,12 +159,9 @@ export async function POST(
 
 
 
-    const rawItems = body.items;
-    const itemIds = Array.isArray(rawItems)
-      ? rawItems.map((item: any) => String(item._id))
-      : [];
+    const rawItems = Array.isArray(body.items) ? body.items : [];
 
-    if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    if (rawItems.length === 0) {
       return NextResponse.json(
         {
           success:false,
@@ -172,44 +173,29 @@ export async function POST(
       );
     }
 
-    if (!itemIds.every((id: string) => ObjectId.isValid(id))) {
-      return NextResponse.json(
-        {
-          success:false,
-          message:"Algún producto del carrito es inválido",
-        },
-        {
-          status:400,
-        }
-      );
-    }
+    const itemIds = rawItems
+      .map((item: any) => String(item._id ?? ""))
+      .filter(Boolean);
 
-    const products = await db
-      .collection("products")
-      .find({
-        _id: { $in: itemIds.map((id: string) => new ObjectId(id)) },
-        active: { $ne: false },
-      })
-      .toArray();
+    const objectIds = itemIds
+      .map((id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null))
+      .filter((value: ObjectId | null): value is ObjectId => Boolean(value));
 
-    if (products.length !== itemIds.length) {
-      return NextResponse.json(
-        {
-          success:false,
-          message:"Algún producto no existe o no está disponible",
-        },
-        {
-          status:400,
-        }
-      );
-    }
+    const products = await db.collection("products").find({
+      $or: [
+        ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+        ...(itemIds.length > 0 ? [{ slug: { $in: itemIds } }, { sku: { $in: itemIds } }] : []),
+      ],
+      active: { $ne: false },
+    }).toArray();
 
     const items: OrderItem[] = [];
 
     for (const item of rawItems) {
-      const product = products.find(
-        (product) => String(product._id) === String(item._id)
-      );
+      const product = products.find((candidate: any) => {
+        const lookupId = String(item._id ?? "");
+        return String(candidate._id) === lookupId || String(candidate.slug ?? "") === lookupId || String(candidate.sku ?? "") === lookupId;
+      });
 
       if (!product) {
         return NextResponse.json(
@@ -237,7 +223,6 @@ export async function POST(
         );
       }
 
-      // include supplier/internal fields in the stored order item for fulfillment
       const orderItem: OrderItem = {
         _id: String(product._id),
         name: String(product.name ?? product.title ?? "Producto"),
@@ -246,7 +231,6 @@ export async function POST(
         image: String(product.image ?? product.images?.[0] ?? ""),
       };
 
-      // attach internal dropshipping fields under an internal namespace
       (orderItem as any)._internal = {
         supplier: product.supplier ?? null,
         supplierId: product.supplierId ?? null,

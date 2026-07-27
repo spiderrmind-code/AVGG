@@ -23,13 +23,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { signIn, useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/app/context/CartContext';
 import ThemeToggle from './ThemeToggle';
+import { catalogCategories } from '@/data/catalog-categories';
 
 const MotionDiv = motion.div as React.ComponentType<any>;
 const MotionUL = motion.ul as React.ComponentType<any>;
 const MotionAside = motion.aside as React.ComponentType<any>;
 
 export type Product = { id: string; title: string; href: string; image: string; price?: string };
-export type Category = { name: string; slug: string; children?: { name: string; slug: string }[] };
+export type Category = {
+  _id?: string;
+  name: string;
+  slug: string;
+  image?: string;
+  children?: { name: string; slug: string }[];
+};
 
 export default function Header() {
   const { data: session } = useSession();
@@ -46,9 +53,17 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const fallbackCategories: Category[] = catalogCategories.map((cat) => ({
+    name: cat.name,
+    slug: cat.slug,
+    image: cat.image,
+    children: (cat.children ?? []).map((child) => ({ name: child.name, slug: child.slug })),
+  }));
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const cartTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const cartMenuRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
   const suggestionRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const debounceRef = useRef<number | null>(null);
@@ -101,21 +116,24 @@ export default function Header() {
       if (!res.ok) throw new Error('Failed to load categories');
       const json = await res.json();
       const cats = json.categories ?? json;
-      if (Array.isArray(cats)) {
-        // map to expected shape
-        setCategories(cats.map((c: any) => ({
-          _id: c._id ?? c.id ?? undefined,
-          name: c.name,
-          slug: c.slug,
-          image: c.image,
-          children: Array.isArray(c.children)
-            ? c.children.map((ch: any) => ({ name: ch.name, slug: ch.slug }))
-            : [],
-        })));
-      }
+      const normalized = Array.isArray(cats)
+        ? cats
+            .filter((c: any) => c?.name && c?.slug)
+            .map((c: any) => ({
+              _id: c._id ?? c.id ?? undefined,
+              name: c.name,
+              slug: c.slug,
+              image: c.image,
+              children: Array.isArray(c.children)
+                ? c.children.map((ch: any) => ({ name: ch.name, slug: ch.slug }))
+                : [],
+            }))
+        : [];
+
+      setCategories(normalized.length > 0 ? normalized : fallbackCategories);
     } catch (err) {
       console.error('Error loading categories:', err);
-      setCategories([]);
+      setCategories(fallbackCategories);
     }
   }
 
@@ -191,6 +209,18 @@ export default function Header() {
     if (megaOpen) document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [megaOpen]);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!cartMenuRef.current || !cartTriggerRef.current) return;
+      const target = e.target as Node;
+      if (cartMenuRef.current.contains(target)) return;
+      if (cartTriggerRef.current.contains(target)) return;
+      setCartOpen(false);
+    }
+    if (cartOpen) document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [cartOpen]);
 
   useEffect(() => {
     if (selectedSuggestion !== null) {
@@ -276,7 +306,7 @@ export default function Header() {
                 </div>
               </Link>
 
-              <nav className="hidden items-center gap-6 lg:flex" aria-label="Navegación principal">
+              <nav className="hidden items-center gap-6 md:flex lg:flex" aria-label="Navegación principal">
                 <Link href="/" className={navLinkClass}>Inicio</Link>
                 <Link href="/search?q=tecnologia" className={navLinkClass}>Ofertas</Link>
                 <Link href="/search?q=novedades" className={navLinkClass}>Novedades</Link>
@@ -377,12 +407,12 @@ export default function Header() {
                 <Bell className="h-4 w-4" />
               </button>
 
-              <div className="relative">
+              <div className="relative" onMouseLeave={() => setCartOpen(false)}>
                 <button
+                  ref={cartTriggerRef}
                   onMouseEnter={() => setCartOpen(true)}
-                  onMouseLeave={() => setCartOpen(false)}
                   onFocus={() => setCartOpen(true)}
-                  onBlur={() => setCartOpen(false)}
+                  onClick={() => setCartOpen((prev) => !prev)}
                   aria-haspopup="dialog"
                   aria-expanded={cartOpen}
                   className="relative rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
@@ -393,7 +423,14 @@ export default function Header() {
 
                 <AnimatePresence>
                   {cartOpen && (
-                    <MotionDiv initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.12)] backdrop-blur-xl">
+                    <MotionDiv
+                      ref={cartMenuRef as any}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      onMouseEnter={() => setCartOpen(true)}
+                      className="absolute right-0 z-50 mt-2 w-[min(88vw,320px)] rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.12)] backdrop-blur-xl"
+                    >
                       <div className="p-4">
                         <h4 className="font-semibold text-sm">Carrito ({cartCount})</h4>
                         <div className="mt-3 space-y-3">
@@ -447,7 +484,7 @@ export default function Header() {
                     className="hidden rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition hover:bg-neutral-800 lg:inline-flex"
                     aria-label="Iniciar sesión con Google"
                   >
-                    Iniciar con Google
+                    Continuar con Google
                   </button>
                 ) : (
                   <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 rounded-md border border-[#ff007f]/20">
@@ -526,13 +563,15 @@ export default function Header() {
               </nav>
 
               <div className="mt-6 border-t border-neutral-200 pt-6">
-                <button
-                  onClick={() => signIn('google')}
-                  className="w-full rounded-full bg-neutral-950 py-2.5 text-center text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] dark:bg-white dark:text-neutral-950"
-                  aria-label="Iniciar sesión con Google"
-                >
-                  Iniciá sesión ✨
-                </button>
+                {!session ? (
+                  <button
+                    onClick={() => signIn('google')}
+                    className="w-full rounded-full bg-neutral-950 py-2.5 text-center text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] dark:bg-white dark:text-neutral-950"
+                    aria-label="Iniciar sesión con Google"
+                  >
+                    Continuar con Google
+                  </button>
+                ) : null}
                 <div className="mt-4 text-xs text-neutral-500">Soporte · Términos · Privacidad</div>
               </div>
             </div>

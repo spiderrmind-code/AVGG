@@ -125,10 +125,10 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-8 flex flex-col gap-3">
-      <span className="text-xs font-semibold uppercase tracking-[0.28em] text-[#ff007f]">
+      <span className="inline-flex w-fit items-center rounded-full border border-[#ff007f]/20 bg-[#ff007f]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#ff007f]">
         {eyebrow}
       </span>
-      <h2 className="text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl">
+      <h2 className="text-2xl font-black tracking-[-0.02em] text-neutral-950 sm:text-3xl">
         {title}
       </h2>
       <p className="max-w-2xl text-sm leading-6 text-neutral-600 sm:text-base">
@@ -164,20 +164,21 @@ function ProductCard({
   const rating = clampRating(product.rating);
 
   return (
-    <article className="group rounded-3xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+    <article className="group rounded-[1.75rem] border border-neutral-200/80 bg-white p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(0,0,0,0.12)]">
       <Link href={`/product/${product.slug || product._id}`} className="block">
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-100">
+        <div className="relative aspect-square overflow-hidden rounded-[1.35rem] bg-neutral-100">
           {discount > 0 ? (
             <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
-              <span className="rounded-full bg-[#ff007f] px-2.5 py-1 text-xs font-bold text-white shadow">OFERTA</span>
-              <span className="rounded-full bg-white/90 text-[#ff007f] px-2 py-0.5 text-xs font-semibold">-{discount}%</span>
+              <span className="rounded-full bg-[#ff007f] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow">Oferta</span>
+              <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-[#ff007f]">-{discount}%</span>
             </div>
           ) : null}
           {product.stock != null ? (
-            <span className="absolute right-3 top-3 z-10 rounded-full bg-black/80 px-2.5 py-1 text-xs font-medium text-white">
+            <span className="absolute right-3 top-3 z-10 rounded-full bg-black/80 px-2.5 py-1 text-[11px] font-medium text-white">
               Stock {product.stock}
             </span>
           ) : null}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
           <Image
             src={getImage(product.image)}
             alt={product.name}
@@ -234,7 +235,7 @@ function ProductCard({
 
           <button
             onClick={() => onAddToCart(product)}
-            className="inline-flex items-center justify-center rounded-full bg-[#ff007f] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[#ff007f]/90"
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#ff007f] px-4 py-2 text-sm font-semibold text-black transition hover:-translate-y-0.5 hover:bg-[#ff007f]/90"
           >
             Agregar
           </button>
@@ -326,6 +327,7 @@ export default function HomeClient({
   const deals = useMemo(() => getDeals(initialProducts), [initialProducts]);
   const heroBanner = initialBanners[0];
   const heroImage = heroBanner?.image || initialProducts[0]?.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect fill='%23000000' width='1200' height='700'/%3E%3Ccircle cx='900' cy='220' r='180' fill='%23ff007f'/%3E%3Ccircle cx='280' cy='500' r='220' fill='%2300d4ff'/%3E%3Ctext x='50%25' y='50%25' font-size='42' fill='white' text-anchor='middle' dominant-baseline='middle' font-family='Arial, sans-serif'%3EAVG Connects%3C/text%3E%3C/svg%3E";
+  const featuredHeroProduct = initialProducts.find((product) => product.featured) ?? initialProducts[0];
 
   function showNotice(message: string) {
     setNotice(message);
@@ -368,7 +370,7 @@ export default function HomeClient({
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafa] text-neutral-900">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,0,127,0.06),_transparent_28%),linear-gradient(180deg,_#fcfaf7_0%,_#f5f2eb_100%)] text-neutral-900">
       <div className="mx-auto max-w-[1600px] px-4 pb-20 pt-4 sm:px-6 lg:px-8">
         {notice ? (
           <div className="fixed right-4 top-4 z-[60] rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm shadow-lg">
@@ -376,7 +378,7 @@ export default function HomeClient({
           </div>
         ) : null}
 
-        <section className="relative overflow-hidden rounded-[2rem] border border-neutral-200 bg-neutral-950 text-white shadow-2xl">
+        <section className="relative overflow-hidden rounded-[2.2rem] border border-neutral-200/80 bg-neutral-950 text-white shadow-[0_30px_120px_rgba(0,0,0,0.16)]">
           <div className="absolute inset-0">
             <Image
               src={heroImage}
@@ -386,46 +388,56 @@ export default function HomeClient({
               className="object-cover opacity-35"
               unoptimized
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,_rgba(0,0,0,0.92)_0%,_rgba(0,0,0,0.76)_48%,_rgba(0,0,0,0.42)_100%)]" />
           </div>
 
-          <div className="relative grid min-h-[560px] items-center gap-10 px-6 py-12 sm:px-10 lg:grid-cols-[1.2fr_0.8fr] lg:px-14">
+          <div className="absolute right-6 top-6 hidden items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/85 backdrop-blur sm:flex">
+            <span className="h-2 w-2 rounded-full bg-[#ff007f]" />
+            Marketplace premium
+          </div>
+
+          <div className="relative grid min-h-[620px] items-center gap-10 px-6 py-12 sm:px-10 lg:grid-cols-[1.15fr_0.85fr] lg:px-14">
             <div>
-              <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-white/85">
+              <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/85 backdrop-blur">
                 AVG Connects
               </span>
-              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                Tecnología y accesorios con estética premium.
+              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[0.95] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
+                Tecnología premium, ofertas reales y compra confiable.
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/78 sm:text-lg">
-                Descubrí productos seleccionados, ofertas destacadas y una experiencia de compra moderna,
-                rápida y pensada para vender mejor.
+                Descubrí productos seleccionados, promociones atractivas y una experiencia de compra moderna, rápida y pensada para convertir visitas en ventas.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="#destacados"
-                  className="inline-flex items-center justify-center rounded-full bg-[#ff007f] px-6 py-3.5 text-sm font-bold text-black transition hover:bg-[#ff007f]/90"
+                  className="inline-flex items-center justify-center rounded-full bg-[#ff007f] px-6 py-3.5 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-[#ff007f]/90"
                 >
                   Comprar ahora
                 </Link>
                 <Link
-                  href="#categorias"
-                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15"
+                  href="#destacados"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/15"
                 >
-                  Ver categorías
+                  Explorar productos
                 </Link>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-2 text-sm text-white/80">
+                <span className="rounded-full border border-white/10 bg-white/10 px-3 py-2 backdrop-blur">Envíos claros</span>
+                <span className="rounded-full border border-white/10 bg-white/10 px-3 py-2 backdrop-blur">Pago seguro</span>
+                <span className="rounded-full border border-white/10 bg-white/10 px-3 py-2 backdrop-blur">Soporte real</span>
               </div>
             </div>
 
             <div className="grid gap-4">
-              <div className="rounded-[2rem] border border-white/10 bg-white/8 p-5 backdrop-blur">
+              <div className="rounded-[2rem] border border-white/10 bg-white/10 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.2)] backdrop-blur-xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.25em] text-white/60">
-                      Promo principal
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">
+                      Destacado de la semana
                     </p>
-                    <h2 className="mt-2 text-2xl font-black">
+                    <h2 className="mt-2 text-2xl font-black tracking-[-0.02em]">
                       {heroBanner?.title || 'Las mejores ofertas'}
                     </h2>
                   </div>
@@ -433,8 +445,8 @@ export default function HomeClient({
                     <BadgePercent size={22} />
                   </div>
                 </div>
-                <p className="mt-3 max-w-md text-sm leading-6 text-white/70">
-                  {heroBanner?.subtitle || 'Armado para destacar productos y convertir visitas en ventas.'}
+                <p className="mt-3 max-w-md text-sm leading-6 text-white/72">
+                  {heroBanner?.subtitle || 'Una experiencia visual pensada para destacar productos y aumentar la conversión.'}
                 </p>
                 <Link
                   href={heroBanner?.ctaHref || '#destacados'}
@@ -444,31 +456,31 @@ export default function HomeClient({
                 </Link>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                {initialBanners.slice(1, 3).map((banner) => (
-                  <div
-                    key={banner._id}
-                    className="rounded-[1.75rem] border border-white/10 bg-white/8 p-4 backdrop-blur"
-                  >
-                    <div className="relative h-40 overflow-hidden rounded-2xl">
-                      <Image
-                        src={getImage(banner.image)}
-                        alt={banner.title}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                    <h3 className="mt-4 text-base font-bold">{banner.title}</h3>
-                    <p className="mt-1 text-sm text-white/70">{banner.subtitle}</p>
+              <div className="rounded-[2rem] border border-white/10 bg-black/20 p-4 backdrop-blur-xl">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Producto recomendado</p>
+                    <h3 className="mt-2 text-base font-bold text-white">{featuredHeroProduct?.name || 'Producto destacado'}</h3>
                   </div>
-                ))}
+                  <div className="rounded-full bg-white/15 px-3 py-1 text-sm font-semibold text-white">
+                    {currency(featuredHeroProduct?.price ?? 0)}
+                  </div>
+                </div>
+                <div className="mt-4 relative h-40 overflow-hidden rounded-[1.4rem]">
+                  <Image
+                    src={getImage(featuredHeroProduct?.image)}
+                    alt={featuredHeroProduct?.name || 'Producto destacado'}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="categorias" className="pt-16">
+        <section id="categorias" className="pt-20">
           <SectionTitle
             eyebrow="Categorías"
             title="Explorá colecciones destacadas"
@@ -485,7 +497,7 @@ export default function HomeClient({
           </div>
         </section>
 
-        <section id="destacados" className="pt-16">
+        <section id="destacados" className="pt-20">
           <SectionTitle
             eyebrow="Productos destacados"
             title="Lo mejor para mostrar primero"

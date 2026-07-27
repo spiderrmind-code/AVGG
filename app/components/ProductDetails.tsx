@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import type { ProductDocument } from "@/types/ecommerce";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
@@ -13,6 +14,7 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ product, relatedProducts }: ProductDetailsProps) {
+  const router = useRouter();
   const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(product.image ?? product.images?.[0] ?? PLACEHOLDER_IMAGE);
 
@@ -34,6 +36,11 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
       },
       1
     );
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    router.push("/checkout");
   };
 
   return (
@@ -84,7 +91,7 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <button onClick={handleAddToCart} className="flex-1 min-h-[48px] rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98]">Agregar al carrito</button>
-              <Link href="/checkout" className="flex-1 min-h-[48px] rounded-full border border-neutral-300 px-5 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:border-neutral-400 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/10">Comprar ahora</Link>
+              <button onClick={handleBuyNow} className="flex-1 min-h-[48px] rounded-full border border-neutral-300 px-5 py-3 text-center text-sm font-semibold text-neutral-900 transition hover:border-neutral-400 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/10">Comprar ahora</button>
             </div>
 
             <div className="mt-8 rounded-[1.5rem] border border-neutral-200 bg-white/90 p-5 text-sm text-neutral-600 dark:border-white/10 dark:bg-white/10 dark:text-zinc-300">

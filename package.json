@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/istanbul-reports": "^3.0.4",
     "@types/jest": "^30.0.0",
     "@types/node": "24.10.1",
     "@types/react": "^19.2.7",

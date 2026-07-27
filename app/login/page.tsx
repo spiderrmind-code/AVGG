@@ -12,6 +12,10 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const handleGoogleLogin = () => {
+    signIn("google", { callbackUrl: "/account" });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
@@ -59,6 +63,20 @@ export default function LoginPage() {
               <input type="password" placeholder="Ingresá tu contraseña" value={password} onChange={(event) => setPassword(event.target.value)} required className="premium-input mt-2" />
             </div>
             <button type="submit" disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 px-4 py-3.5 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-60 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">{isSubmitting ? "Ingresando..." : "Ingresar"}</button>
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-neutral-200 dark:bg-white/10" />
+              <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">o</span>
+              <div className="h-px flex-1 bg-neutral-200 dark:bg-white/10" />
+            </div>
+            <button type="button" onClick={handleGoogleLogin} className="flex w-full items-center justify-center gap-3 rounded-full border border-neutral-200 bg-white px-4 py-3.5 text-sm font-semibold text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                <path fill="#4285F4" d="M21.6 12.23c0-.78-.07-1.53-.2-2.25H12v4.26h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.53Z" />
+                <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.24-2.5c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z" />
+                <path fill="#FBBC05" d="M6.41 13.91A6.02 6.02 0 0 1 6.41 10.1V7.52H3.07a10 10 0 0 0 0 12.78l3.34-2.59Z" />
+                <path fill="#EA4335" d="M12 6.08c1.47 0 2.79.5 3.83 1.49l2.87-2.87A9.95 9.95 0 0 0 12 2a10 10 0 0 0-8.93 5.52l3.34 2.59C7.2 7.84 9.4 6.08 12 6.08Z" />
+              </svg>
+              Continuar con Google
+            </button>
             {message ? <p className="rounded-[1rem] border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">{message}</p> : null}
             <p className="text-sm text-neutral-600">
               ¿No tenés cuenta? <Link href="/register" className="font-semibold text-neutral-950 dark:text-white">Crear cuenta</Link>

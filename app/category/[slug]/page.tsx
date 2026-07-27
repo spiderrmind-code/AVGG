@@ -16,7 +16,20 @@ interface ProductRecord {
 
 async function getCategoryProducts(slug: string) {
   const db = await getDb();
-  const products = await db.collection("products").find({ category: { $regex: slug, $options: "i" } }).toArray();
+  const normalizedSlug = slug.replace(/-/g, " ").trim();
+  const products = await db.collection("products").find({
+    $and: [
+      { active: { $ne: false } },
+      {
+        $or: [
+          { category: { $regex: normalizedSlug, $options: "i" } },
+          { name: { $regex: normalizedSlug, $options: "i" } },
+          { title: { $regex: normalizedSlug, $options: "i" } },
+          { tags: { $elemMatch: { $regex: normalizedSlug, $options: "i" } } },
+        ],
+      },
+    ],
+  }).sort({ featured: -1, createdAt: -1 }).toArray();
   return products.map((product) => ({
     _id: String(product._id),
     name: typeof product.name === "string" ? product.name : undefined,
