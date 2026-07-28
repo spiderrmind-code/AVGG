@@ -3,130 +3,94 @@ import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
-import { canInitializePayment, resolvePaymentOrigin } from "@/lib/payment";
+import { authorizeOrderAccess, canInitializePayment, resolvePaymentOrigin } from "@/lib/payment";
+import { checkRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
+import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 
-function isPaymentStateCandidate(order: unknown): order is { status?: string; paymentStatus?: string } {
-  if (!order || typeof order !== "object") {
-    return false;
-  }
+interface MercadoPagoRequest { orderId?: unknown; guestAccessToken?: unknown; }
+interface PreferenceItem { title: string; quantity: number; unit_price: number; currency_id: string; picture_url?: string; }
 
-  const candidate = order as Record<string, unknown>;
-  return typeof candidate.status === "string" || typeof candidate.paymentStatus === "string";
+function object(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" ? value as Record<string, unknown> : null;
 }
 
-interface MercadoPagoRequest {
-  orderId: string;
-  origin?: string;
-  customer?: {
-    email?: string;
-  };
+function readCustomerEmail(order: Record<string, unknown>): string | undefined {
+  if (typeof order.customerEmail === "string") return order.customerEmail;
+  const customer = object(order.customer);
+  return typeof customer?.email === "string" ? customer.email : undefined;
 }
 
-async function authorizeOrderAccess(order: any, customerEmail?: string) {
-  const session = await getServerSession(authOptions);
-  const userEmail = session?.user?.email;
-  const userRole = (session?.user as { role?: string })?.role;
-
-  if (userRole === "admin") {
-    return true;
+function preferenceItems(value: unknown, currency: string): PreferenceItem[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const items: PreferenceItem[] = [];
+  for (const valueItem of value) {
+    const item = object(valueItem);
+    if (!item) return null;
+    const title = typeof item?.name === "string" ? item.name.trim() : "";
+    const quantity = typeof item?.quantity === "number" ? item.quantity : NaN;
+    const unitPrice = typeof item?.price === "number" ? item.price : NaN;
+    if (!title || !Number.isInteger(quantity) || quantity < 1 || !Number.isFinite(unitPrice) || unitPrice <= 0) return null;
+    const preferenceItem: PreferenceItem = { title, quantity, unit_price: unitPrice, currency_id: currency };
+    if (typeof item.image === "string" && item.image.startsWith("https://")) preferenceItem.picture_url = item.image;
+    items.push(preferenceItem);
   }
-
-  if (userEmail) {
-    return order.customerEmail === userEmail;
-  }
-
-  if (typeof customerEmail === "string" && customerEmail.trim()) {
-    return String(order.customer?.email ?? order.customerEmail ?? "").toLowerCase() === String(customerEmail).trim().toLowerCase();
-  }
-
-  return false;
+  return items;
 }
 
 export async function POST(request: Request) {
+  if (!hasTrustedOrigin(request)) return NextResponse.json({ success: false, message: "Origen no permitido" }, { status: 403 });
+  if (!hasJsonContentType(request)) return NextResponse.json({ success: false, message: "Content-Type inválido" }, { status: 415 });
+  const limit = checkRateLimit(`payment:${requestIdentifier(request)}`, 10, 10 * 60 * 1000);
+  if (!limit.allowed) return NextResponse.json({ success: false, message: "Demasiadas solicitudes" }, { status: 429, headers: { "Retry-After": String(limit.retryAfter) } });
   try {
-    const body: MercadoPagoRequest = await request.json();
+    const body = await request.json() as MercadoPagoRequest;
+    const orderId = typeof body.orderId === "string" ? body.orderId : "";
+    const guestAccessToken = typeof body.guestAccessToken === "string" ? body.guestAccessToken : undefined;
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-
-    if (!accessToken) {
-      return NextResponse.json({ success: false, message: "Mercado Pago no configurado" }, { status: 500 });
-    }
-
-    if (!body.orderId || !ObjectId.isValid(body.orderId)) {
-      return NextResponse.json({ success: false, message: "OrderId inválido para Mercado Pago" }, { status: 400 });
-    }
+    if (!accessToken) return NextResponse.json({ success: false, message: "Mercado Pago no configurado" }, { status: 503 });
+    if (!ObjectId.isValid(orderId)) return NextResponse.json({ success: false, message: "OrderId inválido" }, { status: 400 });
 
     const db = await getDb();
-    const order = await db.collection("orders").findOne({ _id: new ObjectId(body.orderId) });
-
-    if (!order) {
-      return NextResponse.json({ success: false, message: "La orden no existe" }, { status: 404 });
-    }
-
-    if (!authorizeOrderAccess(order, body.customer?.email)) {
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(orderId) });
+    if (!order) return NextResponse.json({ success: false, message: "La orden no existe" }, { status: 404 });
+    const email = readCustomerEmail(order);
+    const session = await getServerSession(authOptions);
+    if (!(await authorizeOrderAccess({ customerEmail: email, customer: { email }, userId: typeof order.userId === "string" ? order.userId : undefined, guestAccessTokenHash: typeof order.guestAccessTokenHash === "string" ? order.guestAccessTokenHash : undefined }, session ?? undefined, guestAccessToken))) {
       return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
     }
-
-    if (!Array.isArray(order.items) || order.items.length === 0) {
-      return NextResponse.json({ success: false, message: "La orden no tiene items válidos" }, { status: 400 });
+    if (!canInitializePayment({ status: typeof order.status === "string" ? order.status : undefined, paymentStatus: typeof order.paymentStatus === "string" ? order.paymentStatus : undefined })) {
+      return NextResponse.json({ success: false, message: "La orden no está pendiente" }, { status: 400 });
     }
 
-    if (!isPaymentStateCandidate(order) || !canInitializePayment(order)) {
-      return NextResponse.json({ success: false, message: "La orden no está en estado pendiente" }, { status: 400 });
-    }
-
-    const items = order.items.map((item: any) => {
-      if (!item.name || item.price == null || !item.quantity) {
-        throw new Error("Producto inválido en la orden");
-      }
-
-      return {
-        title: String(item.name),
-        quantity: Number(item.quantity),
-        unit_price: Number(item.price),
-        currency_id: process.env.MERCADOPAGO_CURRENCY ?? "ARS",
-        picture_url: item.image || undefined,
-      };
-    });
-
-    const origin = resolvePaymentOrigin(body.origin, process.env.NEXT_PUBLIC_SITE_URL, process.env.NEXTAUTH_URL);
-
+    const currency = String(order.currency ?? process.env.MERCADOPAGO_CURRENCY ?? "ARS").toUpperCase();
+    const items = preferenceItems(order.items, currency);
+    if (!items) return NextResponse.json({ success: false, message: "La orden no tiene items válidos" }, { status: 400 });
+    const origin = resolvePaymentOrigin();
     const preference = {
       items,
-      back_urls: {
-        success: `${origin}/checkout/success`,
-        failure: `${origin}/checkout/failure`,
-        pending: `${origin}/checkout/pending`,
-      },
+      back_urls: { success: `${origin}/checkout/success`, failure: `${origin}/checkout/failure`, pending: `${origin}/checkout/pending` },
       auto_return: "approved",
-      external_reference: String(body.orderId),
-      metadata: {
-        orderId: String(body.orderId),
-        customerEmail: body.customer?.email ?? order.customer?.email ?? null,
-      },
+      external_reference: orderId,
       notification_url: `${origin}/api/webhooks/mercadopago`,
     };
-
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
       body: JSON.stringify(preference),
     });
-
-    const data = await response.json();
-
+    const data: unknown = await response.json();
+    const preferenceResponse = object(data);
     if (!response.ok) {
-      console.error("ERROR MERCADO PAGO:", data);
-      return NextResponse.json({ success: false, message: data.message || "Error creando pago" }, { status: 500 });
+      console.error("Mercado Pago preference creation failed", { status: response.status, orderId });
+      return NextResponse.json({ success: false, message: "Error creando pago" }, { status: 502 });
     }
-
-    await db.collection("orders").updateOne({ _id: new ObjectId(body.orderId) }, { $set: { preferenceId: data.id ?? null, initPoint: data.init_point ?? null, updatedAt: new Date() } });
-
-    return NextResponse.json({ success: true, preferenceId: data.id, initPoint: data.init_point });
+    const preferenceId = typeof preferenceResponse?.id === "string" ? preferenceResponse.id : null;
+    const initPoint = typeof preferenceResponse?.init_point === "string" ? preferenceResponse.init_point : null;
+    if (!preferenceId || !initPoint) return NextResponse.json({ success: false, message: "Respuesta inválida de Mercado Pago" }, { status: 502 });
+    await db.collection("orders").updateOne({ _id: new ObjectId(orderId) }, { $set: { preferenceId, initPoint, updatedAt: new Date() } });
+    return NextResponse.json({ success: true, preferenceId, initPoint });
   } catch (error) {
-    console.error("ERROR API MERCADOPAGO:", error);
+    console.error("Mercado Pago preference initialization failed", { errorType: error instanceof Error ? error.name : "unknown" });
     return NextResponse.json({ success: false, message: "Error interno procesando pago" }, { status: 500 });
   }
 }

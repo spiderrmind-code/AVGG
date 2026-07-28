@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeEmail, normalizeRole, validateRegisterInput } from "../lib/auth-validation.ts";
+import { normalizeEmail, normalizeRole, validateRegisterInput } from "../lib/auth-validation";
 
 test("validateRegisterInput accepts a strong customer registration", () => {
   const result = validateRegisterInput({

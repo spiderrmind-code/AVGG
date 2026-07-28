@@ -11,7 +11,7 @@ export default function Hero({ product }: { product?: any }) {
 
   function handleBuyNow() {
     if (product && product._id) {
-      addToCart({ _id: String(product._id), name: product.name ?? product.title ?? "Producto", price: Number(product.price ?? 0), comparePrice: Number(product.comparePrice ?? product.oldPrice ?? 0) || undefined, image: product.image ?? product.images?.[0] ?? PLACEHOLDER_IMAGE }, 1);
+      addToCart({ _id: String(product._id), name: product.name ?? product.title ?? "Producto", price: Number(product.price ?? 0), comparePrice: Number(product.comparePrice ?? product.oldPrice ?? 0) || undefined, image: product.image ?? product.images?.[0] ?? PLACEHOLDER_IMAGE, inStock: product.inStock === true, stockQuantity: product.stockQuantity }, 1);
       router.push("/checkout");
       return;
     }

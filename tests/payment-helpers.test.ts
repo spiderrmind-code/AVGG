@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { canInitializePayment, getWebhookOrderUpdate, resolvePaymentOrigin } from "../lib/payment";
 
-test("resolvePaymentOrigin prefers explicit origin and strips paths", () => {
-  assert.equal(resolvePaymentOrigin("https://checkout.example.com/current", "https://store.example.com/checkout", "https://env.example.com"), "https://checkout.example.com");
-  assert.equal(resolvePaymentOrigin("", "https://store.example.com/checkout", "https://env.example.com"), "https://store.example.com");
-  assert.equal(resolvePaymentOrigin("", "", ""), "http://localhost:3000");
+test("resolvePaymentOrigin uses the configured public URL", () => {
+  const original = process.env.NEXT_PUBLIC_APP_URL;
+  process.env.NEXT_PUBLIC_APP_URL = "https://checkout.example.com/";
+  assert.equal(resolvePaymentOrigin(), "https://checkout.example.com");
+  if (original === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+  else process.env.NEXT_PUBLIC_APP_URL = original;
 });
 
 test("canInitializePayment only allows pending orders before approval", () => {

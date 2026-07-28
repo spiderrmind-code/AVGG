@@ -16,6 +16,11 @@ export function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
+export function isValidEmail(value: string): boolean {
+  const normalized = normalizeEmail(value);
+  return normalized.length > 0 && normalized.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
+}
+
 export function normalizeRole(value?: string) {
   if (!value) return "customer";
   const normalized = value.toLowerCase();
@@ -31,12 +36,16 @@ export function validateRegisterInput(input: RegisterInput): ValidationResult {
   if (!input.password?.trim()) errors.push("La contraseña es obligatoria");
 
   const email = input.email?.trim().toLowerCase() ?? "";
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (email.length > 254) errors.push("El email es demasiado largo");
+  if (email && !isValidEmail(email)) {
     errors.push("El email debe tener un formato válido");
   }
 
   if (input.password && input.password.length < 8) {
     errors.push("La contraseña debe tener al menos 8 caracteres");
+  }
+  if (input.password && input.password.length > 128) {
+    errors.push("La contraseña es demasiado larga");
   }
 
   if (input.password && !/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(input.password)) {

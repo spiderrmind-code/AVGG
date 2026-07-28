@@ -1,4 +1,6 @@
-type ProductLike = Record<string, any>;
+import { normalizePublicProduct } from "@/lib/catalog";
+
+type ProductLike = Record<string, unknown>;
 type OrderLike = Record<string, any>;
 
 const INTERNAL_FIELDS = [
@@ -17,29 +19,7 @@ const INTERNAL_FIELDS = [
 ];
 
 export function sanitizeProductForClient(product: ProductLike) {
-  const safe: Record<string, unknown> = {
-    _id: String(product._id ?? product.id ?? ""),
-    name: product.name ?? product.title ?? "Producto",
-    title: product.title ?? product.name ?? "Producto",
-    description: product.description ?? "",
-    price: Number(product.price ?? 0),
-    comparePrice: product.comparePrice ? Number(product.comparePrice) : undefined,
-    image: product.image ?? product.images?.[0] ?? undefined,
-    category: product.category ?? "",
-    slug: product.slug ?? null,
-    featured: Boolean(product.featured),
-    stock: product.stock ?? 0,
-    supplier: product.supplier ?? product.supplierName ?? "Proveedor",
-    shippingDays: product.shippingDays ?? "24-48 hs",
-    sku: product.sku ?? null,
-    offer: product.offer ?? null,
-  };
-
-  for (const field of INTERNAL_FIELDS) {
-    delete safe[field];
-  }
-
-  return safe;
+  return normalizePublicProduct(product);
 }
 
 export function sanitizeOrderForClient(order: OrderLike, isAdmin = false) {

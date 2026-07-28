@@ -2,36 +2,35 @@ import Link from "next/link";
 import Image from "next/image";
 import { getDb } from "@/lib/mongo";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
+import { escapeRegex, normalizePublicProduct, type PublicProduct } from "@/lib/catalog";
 
-async function getSearchResults(query: string) {
+async function getSearchResults(query: string): Promise<PublicProduct[]> {
+  if (!query.trim() || query.length > 80) return [];
   const db = await getDb();
+  const escapedQuery = escapeRegex(query.trim());
   const products = await db.collection("products").find({
+    active: { $ne: false },
     $or: [
-      { name: { $regex: query, $options: "i" } },
-      { title: { $regex: query, $options: "i" } },
-      { description: { $regex: query, $options: "i" } },
-      { category: { $regex: query, $options: "i" } },
-      { sku: { $regex: query, $options: "i" } },
+      { name: { $regex: escapedQuery, $options: "i" } },
+      { title: { $regex: escapedQuery, $options: "i" } },
+      { description: { $regex: escapedQuery, $options: "i" } },
+      { category: { $regex: escapedQuery, $options: "i" } },
     ],
   }).limit(20).toArray();
 
-  // sanitize product fields for client
-  return products.map((p: any) => ({
-    _id: String(p._id),
-    title: p.title ?? p.name,
-    name: p.name,
-    description: p.description,
-    price: Number(p.price ?? 0),
-    comparePrice: p.comparePrice ? Number(p.comparePrice) : undefined,
-    image: p.image ?? p.images?.[0] ?? undefined,
-    category: p.category,
-    sku: p.sku,
-  }));
+  return products.map((product) => normalizePublicProduct(product)).filter((product): product is PublicProduct => product !== null);
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
-  const products = q ? await getSearchResults(q) : [];
+  let products: PublicProduct[] = [];
+  let unavailable = false;
+  try {
+    products = q ? await getSearchResults(q) : [];
+  } catch (error) {
+    console.error("ERROR SEARCH PAGE:", error);
+    unavailable = true;
+  }
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8">
@@ -42,14 +41,16 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <p className="mt-3 text-neutral-600">Encontrá productos por nombre, categoría o descripción.</p>
         </div>
 
-        {products.length === 0 ? (
+        {unavailable ? (
+          <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl"><h2 className="text-xl font-semibold text-neutral-950">No pudimos realizar la búsqueda</h2><p className="mt-2 text-neutral-600">Intentá nuevamente en unos minutos.</p></div>
+        ) : products.length === 0 ? (
           <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">
             <h2 className="text-xl font-semibold text-neutral-950">No hay resultados</h2>
             <p className="mt-2 text-neutral-600">Probá con otro término o navegá por nuestras categorías.</p>
           </div>
         ) : (
           <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {products.map((product: any) => {
+            {products.map((product) => {
               const image = product.image ?? PLACEHOLDER_IMAGE;
               const name = product.title ?? product.name ?? "Producto";
               return (

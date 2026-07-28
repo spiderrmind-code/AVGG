@@ -1,30 +1,34 @@
 import { NextResponse } from "next/server";
+import { catalogCategories } from "@/data/catalog-categories";
+import { normalizeCatalogSlug } from "@/lib/catalog";
 import { getDb } from "@/lib/mongo";
+
+type CategoryRecord = Record<string, unknown>;
+
+function toCategory(record: CategoryRecord) {
+  const name = typeof record.name === "string" ? record.name.trim() : "";
+  const slugValue = typeof record.slug === "string" ? record.slug : name;
+  const slug = normalizeCatalogSlug(slugValue);
+  if (!name || !slug) return null;
+  return {
+    _id: String(record._id ?? slug), name, slug,
+    ...(typeof record.description === "string" ? { description: record.description } : {}),
+    ...(typeof record.image === "string" ? { image: record.image } : {}),
+  };
+}
 
 export async function GET() {
   try {
     const db = await getDb();
-
-    const categorias = await db
-      .collection("categorias")
-      .find({})
-      .sort({ order: 1 })
-      .toArray();
-
-    const parents = categorias.filter((c) => !c.parentId);
-    const withChildren = parents.map((parent) => ({
-      ...parent,
-      children: categorias.filter(
-        (c) => c.parentId?.toString() === parent._id.toString()
-      ),
-    }));
-
-    return NextResponse.json({ success: true, categories: withChildren });
+    const documents = await db.collection("categorias").find({ active: { $ne: false } }).sort({ order: 1, name: 1 }).toArray();
+    const stored = documents.map((document) => toCategory(document)).filter((category) => category !== null);
+    const source = stored.length > 0
+      ? stored
+      : catalogCategories.map((category) => ({ _id: category.slug, name: category.name, slug: category.slug, description: category.description, image: category.image }));
+    const categories = source.map((category) => ({ ...category, children: [] as Array<{ name: string; slug: string }> }));
+    return NextResponse.json({ success: true, categories });
   } catch (error) {
     console.error("Error /api/categories:", error);
-    return NextResponse.json(
-      { success: false, message: "Error al obtener categorías" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: "No se pudieron cargar las categorías" }, { status: 503 });
   }
 }

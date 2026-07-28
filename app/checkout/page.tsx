@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
@@ -17,7 +16,6 @@ const initialValues = {
 };
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { cart, clearCart } = useCart();
 
   const [form, setForm] = useState(initialValues);
@@ -61,59 +59,36 @@ export default function CheckoutPage() {
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer: form, items: cart, subtotal, total }),
+        body: JSON.stringify({ customer: form, items: cart.map((item) => ({ _id: item._id, quantity: item.quantity })) }),
       });
 
       if (!orderResponse.ok) throw new Error("No se pudo crear la orden");
 
       const orderData = await orderResponse.json();
       const orderId = orderData.orderId;
+      const guestAccessToken = typeof orderData.guestAccessToken === "string" ? orderData.guestAccessToken : undefined;
 
       if (!orderId) {
         throw new Error("No se pudo crear la orden");
       }
 
+      const paymentResponse = await fetch("/api/mercadopago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, ...(guestAccessToken ? { guestAccessToken } : {}) }),
+      });
+      const paymentData = await paymentResponse.json().catch(() => null);
+
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData?.message || "No se pudo iniciar el pago");
+      }
+
+      if (typeof paymentData?.initPoint !== "string" || !paymentData.initPoint) {
+        throw new Error("Mercado Pago no devolvió una URL de pago válida");
+      }
+
       clearCart();
-
-      const paymentOrigin = typeof window !== "undefined" ? window.location.origin : undefined;
-
-      // Try Mercado Pago first
-      try {
-        const mp = await fetch("/api/mercadopago", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId, customer: form, origin: paymentOrigin }),
-        });
-        if (mp.ok) {
-          const mpJson = await mp.json();
-          if (mpJson.initPoint) {
-            window.location.href = mpJson.initPoint;
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("MercadoPago error:", e);
-      }
-
-      // Fallback to Stripe session from order
-      try {
-        const stripeResp = await fetch("/api/checkout/from-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId, customerEmail: form.email }),
-        });
-        if (stripeResp.ok) {
-          const json = await stripeResp.json();
-          if (json.url) {
-            window.location.href = json.url;
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("Stripe fallback error:", e);
-      }
-
-      router.push("/checkout/success?status=pending");
+      window.location.href = paymentData.initPoint;
     } catch (error) {
       console.error(error);
       setMessage("No se pudo iniciar el pago. Intentá nuevamente.");
@@ -149,9 +124,9 @@ export default function CheckoutPage() {
                 ["phone", "Teléfono"],
               ].map(([field, label]) => (
                 <div key={field}>
-                  <label className="text-sm font-medium text-neutral-700">{label}</label>
-                  <input className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
-                  {errors[field] && <p className="mt-1 text-sm text-red-500">{errors[field]}</p>}
+                  <label htmlFor={field} className="text-sm font-medium text-neutral-700">{label}</label>
+                  <input id={field} type={field === "email" ? "email" : field === "phone" ? "tel" : "text"} autoComplete={field === "firstName" ? "given-name" : field === "lastName" ? "family-name" : field === "email" ? "email" : "tel"} aria-invalid={Boolean(errors[field])} aria-describedby={errors[field] ? `${field}-error` : undefined} className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                  {errors[field] && <p id={`${field}-error`} role="alert" className="mt-1 text-sm text-red-500">{errors[field]}</p>}
                 </div>
               ))}
             </div>
@@ -168,12 +143,13 @@ export default function CheckoutPage() {
               ["postalCode", "Código postal"],
             ].map(([field, label]) => (
               <div key={field}>
-                <label className="text-sm font-medium text-neutral-700">{label}</label>
-                <input className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                <label htmlFor={field} className="text-sm font-medium text-neutral-700">{label}</label>
+                <input id={field} autoComplete={field === "address" ? "street-address" : field === "city" ? "address-level2" : field === "province" ? "address-level1" : "postal-code"} aria-invalid={Boolean(errors[field])} aria-describedby={errors[field] ? `${field}-error` : undefined} className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                {errors[field] && <p id={`${field}-error`} role="alert" className="mt-1 text-sm text-red-500">{errors[field]}</p>}
               </div>
             ))}
 
-            {message && <p className="text-red-500">{message}</p>}
+            {message && <p role="alert" className="text-red-500">{message}</p>}
 
             <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">
               {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago / Tarjeta"}

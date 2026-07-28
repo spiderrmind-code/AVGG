@@ -1,64 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/lib/mongo";
+import { escapeRegex, normalizePublicProduct } from "@/lib/catalog";
+import { getDb } from "@/lib/mongo";
 
-interface ProductSearchResult {
-  _id: string;
-  title?: string;
-  name?: string;
-  price?: number;
-  image?: string;
-}
-
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const query =
-      req.nextUrl.searchParams.get("q")?.trim() || "";
+    const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+    if (!query) return NextResponse.json({ success: true, count: 0, results: [] });
+    if (query.length > 80) return NextResponse.json({ success: false, message: "La búsqueda es demasiado larga" }, { status: 400 });
 
-    if (!query) {
-      return NextResponse.json([]);
-    }
-
-    const client = await clientPromise;
-
-    const dbName = process.env.MONGODB_DB || process.env.MONGODB_DB_NAME || "AVGCONNECTS";
-    const db = client.db(dbName);
-
-    const products = await db
-      .collection("products")
-      .find({
-        active: { $ne: false },
-        $or: [
-          { name: { $regex: query, $options: "i" } },
-          { title: { $regex: query, $options: "i" } },
-          { description: { $regex: query, $options: "i" } },
-          { category: { $regex: query, $options: "i" } },
-          { sku: { $regex: query, $options: "i" } },
-        ],
-      })
-      .limit(10)
-      .toArray();
-
-    const results: ProductSearchResult[] = products.map((product) => ({
-      _id: product._id.toString(),
-      title: product.title ?? product.name ?? "Producto",
-      price: product.price ?? 0,
-      image:
-        product.image ??
-        product.images?.[0] ??
-        undefined,
-    }));
-
-    return NextResponse.json(results);
+    const escapedQuery = escapeRegex(query);
+    const products = await (await getDb()).collection("products").find({
+      active: { $ne: false },
+      $or: [
+        { name: { $regex: escapedQuery, $options: "i" } },
+        { title: { $regex: escapedQuery, $options: "i" } },
+        { description: { $regex: escapedQuery, $options: "i" } },
+        { category: { $regex: escapedQuery, $options: "i" } },
+      ],
+    }).limit(20).toArray();
+    const results = products.map((product) => normalizePublicProduct(product)).filter((product) => product !== null);
+    return NextResponse.json({ success: true, count: results.length, results });
   } catch (error) {
     console.error("API /search error:", error);
-
-    return NextResponse.json(
-      {
-        error: "No se pudo realizar la búsqueda",
-      },
-      {
-        status: 500,
-      }
-    );
+    return NextResponse.json({ success: false, message: "No se pudo realizar la búsqueda" }, { status: 503 });
   }
 }

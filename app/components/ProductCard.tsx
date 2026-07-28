@@ -31,6 +31,8 @@ export interface Product {
   shippingDays?: string;
 
   stock?: number | boolean;
+  inStock?: boolean;
+  stockQuantity?: number;
   featured?: boolean;
 
 }
@@ -110,8 +112,9 @@ export default function ProductCard({
       price: product.price,
 
       comparePrice: product.comparePrice,
-      sku: product.sku,
       image,
+      inStock: product.inStock === true,
+      stockQuantity: product.stockQuantity,
 
     },1);
 
@@ -126,8 +129,9 @@ export default function ProductCard({
       name: title,
       price: product.price,
       comparePrice: product.comparePrice,
-      sku: product.sku,
       image,
+      inStock: product.inStock === true,
+      stockQuantity: product.stockQuantity,
     },1);
     window.location.href = "/checkout";
   }
@@ -222,8 +226,8 @@ export default function ProductCard({
 
 
         <div className="flex w-full flex-col gap-2 sm:w-auto">
-          <button onClick={handleAddCart} className="min-h-[44px] rounded-full border border-black/10 bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">Añadir</button>
-          <button onClick={handleBuyNow} className="min-h-[44px] rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:-translate-y-0.5 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">Comprar ahora</button>
+          <button type="button" onClick={handleAddCart} disabled={product.inStock !== true} aria-label={`Agregar ${title} al carrito`} className="min-h-[44px] rounded-full border border-black/10 bg-neutral-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">{product.inStock === true ? "Añadir" : "Sin stock"}</button>
+          <button type="button" onClick={handleBuyNow} disabled={product.inStock !== true} aria-label={`Comprar ${title} ahora`} className="min-h-[44px] rounded-full border border-neutral-300 bg-white px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:-translate-y-0.5 hover:bg-neutral-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">Comprar ahora</button>
         </div>
 
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
+import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -37,6 +38,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  if (!hasTrustedOrigin(request)) return NextResponse.json({ success: false, message: "Origen no permitido" }, { status: 403 });
+  if (!hasJsonContentType(request)) return NextResponse.json({ success: false, message: "Content-Type inválido" }, { status: 415 });
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {

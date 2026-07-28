@@ -1,86 +1,55 @@
-import Link from "next/link";
 import Image from "next/image";
-import { getDb } from "@/lib/mongo";
+import Link from "next/link";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { catalogCategories } from "@/data/catalog-categories";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
+import { buildCategorySearchTerms } from "@/lib/category-routing";
+import { isValidCatalogSlug, normalizeCatalogSlug, normalizePublicProduct, type PublicProduct } from "@/lib/catalog";
+import { getDb } from "@/lib/mongo";
 
-interface ProductRecord {
-  _id: string;
-  name?: string;
-  title?: string;
-  description?: string;
-  price: number;
-  image?: string;
-  category?: string;
-  stock?: boolean;
+export const dynamic = "force-dynamic";
+
+async function getCategory(slug: string): Promise<{ name: string; products: PublicProduct[] } | null> {
+  if (!isValidCatalogSlug(slug)) return null;
+  const normalizedSlug = normalizeCatalogSlug(slug);
+  const knownCategory = catalogCategories.find((category) => category.slug === normalizedSlug);
+  const db = await getDb();
+  const [storedCategory, documents] = await Promise.all([
+    db.collection("categorias").findOne({ $or: [{ slug: normalizedSlug }, { name: { $regex: `^${normalizedSlug}$`, $options: "i" } }] }),
+    db.collection("products").find({ active: { $ne: false } }).sort({ featured: -1, createdAt: -1 }).limit(250).toArray(),
+  ]);
+  const terms = new Set(buildCategorySearchTerms(normalizedSlug).map(normalizeCatalogSlug));
+  const products = documents
+    .map((document) => normalizePublicProduct(document))
+    .filter((product): product is PublicProduct => product !== null && product.inStock)
+    .filter((product) => product.categorySlug === normalizedSlug || (product.categorySlug !== null && terms.has(product.categorySlug)));
+  const storedName = storedCategory && typeof storedCategory.name === "string" ? storedCategory.name : undefined;
+  if (!knownCategory && !storedName && products.length === 0) return null;
+  return { name: storedName ?? knownCategory?.name ?? slug, products };
 }
 
-async function getCategoryProducts(slug: string) {
-  const db = await getDb();
-  const normalizedSlug = slug.replace(/-/g, " ").trim();
-  const products = await db.collection("products").find({
-    $and: [
-      { active: { $ne: false } },
-      {
-        $or: [
-          { category: { $regex: normalizedSlug, $options: "i" } },
-          { name: { $regex: normalizedSlug, $options: "i" } },
-          { title: { $regex: normalizedSlug, $options: "i" } },
-          { tags: { $elemMatch: { $regex: normalizedSlug, $options: "i" } } },
-        ],
-      },
-    ],
-  }).sort({ featured: -1, createdAt: -1 }).toArray();
-  return products.map((product) => ({
-    _id: String(product._id),
-    name: typeof product.name === "string" ? product.name : undefined,
-    title: typeof product.title === "string" ? product.title : undefined,
-    description: typeof product.description === "string" ? product.description : undefined,
-    price: typeof product.price === "number" ? product.price : 0,
-    image: typeof product.image === "string" ? product.image : undefined,
-    category: typeof product.category === "string" ? product.category : undefined,
-    stock: typeof product.stock === "boolean" ? product.stock : true,
-  })) as ProductRecord[];
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const category = await getCategory(slug);
+    if (!category) return { title: "Categoría no encontrada", robots: { index: false, follow: false } };
+    return { title: category.name, description: `Explorá productos de ${category.name} en AVG Connects.`, alternates: { canonical: `/category/${encodeURIComponent(slug)}` } };
+  } catch {
+    return { title: "Categoría", robots: { index: false, follow: false } };
+  }
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const products = await getCategoryProducts(slug);
-  const title = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  let category: Awaited<ReturnType<typeof getCategory>>;
+  try {
+    category = await getCategory(slug);
+  } catch (error) {
+    console.error("ERROR CATEGORY PAGE:", error);
+    return <main className="min-h-screen px-4 py-16"><div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 text-center shadow-sm"><h1 className="text-2xl font-semibold">No pudimos cargar esta categoría</h1><p className="mt-3 text-neutral-600">Intentá nuevamente en unos minutos.</p></div></main>;
+  }
+  if (!category) notFound();
 
-  return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-[2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Categoría</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">{title}</h1>
-          <p className="mt-3 max-w-2xl text-neutral-600">Explora los productos disponibles de esta categoría con una experiencia de compra preparada para vender.</p>
-          <p className="mt-4 text-sm font-medium text-neutral-500">{products.length} productos disponibles</p>
-        </div>
-
-        {products.length === 0 ? (
-          <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-neutral-950">No hay productos todavía</h2>
-            <p className="mt-2 text-neutral-600">Pronto agregaremos más productos para esta categoría.</p>
-          </div>
-        ) : (
-          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => {
-              const image = product.image ?? PLACEHOLDER_IMAGE;
-              const name = product.title ?? product.name ?? "Producto";
-              return (
-                <Link key={String(product._id)} href={`/product/${product._id}`} className="rounded-[1.6rem] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition hover:-translate-y-1">
-                  <div className="relative aspect-square overflow-hidden rounded-[1.2rem] bg-neutral-100">
-                    <Image src={image} alt={name} fill className="object-cover" />
-                  </div>
-                  <h3 className="mt-4 font-semibold text-neutral-950">{name}</h3>
-                  <p className="mt-2 text-sm text-neutral-600">{product.description ?? "Producto de alto rendimiento"}</p>
-                  <p className="mt-4 font-semibold text-neutral-950">${product.price}</p>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </main>
-  );
+  return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-7xl"><div className="rounded-[2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl"><p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Categoría</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">{category.name}</h1><p className="mt-4 text-sm font-medium text-neutral-500">{category.products.length} productos disponibles</p></div>{category.products.length === 0 ? <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl"><h2 className="text-xl font-semibold text-neutral-950">No hay productos disponibles</h2><p className="mt-2 text-neutral-600">Esta categoría existe, pero no tiene productos con stock actualmente.</p></div> : <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{category.products.map((product) => { const image = product.image ?? PLACEHOLDER_IMAGE; return <Link key={product._id} href={`/product/${product.slug ?? product._id}`} className="rounded-[1.6rem] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition hover:-translate-y-1"><div className="relative aspect-square overflow-hidden rounded-[1.2rem] bg-neutral-100"><Image src={image} alt={product.name} fill className="object-cover" /></div><h3 className="mt-4 font-semibold text-neutral-950">{product.title}</h3><p className="mt-4 font-semibold text-neutral-950">${product.price}</p></Link>; })}</div>}</div></main>;
 }

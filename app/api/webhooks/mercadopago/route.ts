@@ -1,53 +1,55 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
-import { getDb } from "@/lib/mongo";
-import { getWebhookOrderUpdate } from "@/lib/payment";
+import { extractMercadoPagoPaymentId, getMercadoPagoPayment, MercadoPagoProviderError } from "@/lib/mercadopago";
+import { applyPaidOrderStock, processVerifiedMercadoPagoPayment } from "@/lib/mercadopago-orders";
+import { canAllowUnsignedMercadoPagoWebhook, verifyMercadoPagoWebhookSignature } from "@/lib/mercadopago-webhook-signature";
+
+function isIrrelevantNotification(body: unknown): boolean {
+  if (!body || typeof body !== "object") return false;
+  const event = body as Record<string, unknown>;
+  const type = typeof event.type === "string" ? event.type.toLowerCase() : "";
+  const action = typeof event.action === "string" ? event.action.toLowerCase() : "";
+  return Boolean(type && type !== "payment" && !action.startsWith("payment."));
+}
 
 export async function POST(request: Request) {
+  let body: unknown;
+  try { body = await request.json(); } catch { return NextResponse.json({ success: false, message: "Notificación inválida" }, { status: 400 }); }
+  if (isIrrelevantNotification(body)) return NextResponse.json({ success: true, processed: false });
+  const paymentId = extractMercadoPagoPaymentId(body, request.url);
+  if (!paymentId) return NextResponse.json({ success: false, message: "Notificación sin identificador de pago válido" }, { status: 400 });
+  const signatureCheck = verifyMercadoPagoWebhookSignature({
+    paymentId,
+    signature: request.headers.get("x-signature"),
+    requestId: request.headers.get("x-request-id"),
+    secret: process.env.MERCADOPAGO_WEBHOOK_SECRET,
+  });
+  if (!signatureCheck.valid && !canAllowUnsignedMercadoPagoWebhook()) {
+    if (signatureCheck.reason === "missing_secret") {
+      return NextResponse.json({ success: false, message: "Webhook de Mercado Pago no configurado" }, { status: 503 });
+    }
+    return NextResponse.json({ success: false, message: "Firma de webhook inválida" }, { status: 401 });
+  }
   try {
-    const body = await request.json();
-    const db = await getDb();
-
-    const paymentId = body?.data?.id ?? body?.resource?.id ?? body?.id;
-    const orderId =
-      body?.data?.external_reference ??
-      body?.resource?.external_reference ??
-      body?.data?.metadata?.orderId ??
-      body?.resource?.metadata?.orderId ??
-      body?.external_reference;
-    const status =
-      body?.action === "payment.updated"
-        ? body?.data?.status
-        : body?.resource?.status ?? body?.status ?? body?.data?.status ?? body?.data?.collection_status;
-
-    if (!paymentId && !orderId) {
-      return NextResponse.json({ success: false, message: "Falta paymentId u orderId" }, { status: 400 });
+    const payment = await getMercadoPagoPayment(paymentId);
+    const result = await processVerifiedMercadoPagoPayment(payment);
+    if (result.success) {
+      if (payment.status.toLowerCase() !== "approved") {
+        return NextResponse.json({ success: true, processed: !result.duplicate, ...(payment.status.toLowerCase() === "pending" || payment.status.toLowerCase() === "in_process" ? { paymentPending: true } : { paymentApproved: false }) });
+      }
+      const stock = await applyPaidOrderStock(result.orderId);
+      if (stock.success) return NextResponse.json({ success: true, processed: stock.outcome === "applied", stockApplied: true, ...(stock.outcome === "already_applied" ? { duplicate: true } : {}) });
+      if (stock.outcome === "database_error") return NextResponse.json({ success: false, message: "El inventario no pudo procesarse temporalmente" }, { status: 503 });
+      if (stock.outcome === "processing_conflict") return NextResponse.json({ success: true, processed: false, duplicate: true, stockApplied: false });
+      if (stock.outcome === "invalid_items" || stock.outcome === "product_not_found" || stock.outcome === "insufficient_stock") return NextResponse.json({ success: true, processed: true, stockApplied: false, stockIssue: true });
+      return NextResponse.json({ success: false, message: "No se pudo procesar el inventario" }, { status: 503 });
     }
-
-    const updateFields: Record<string, unknown> = {
-      ...getWebhookOrderUpdate(status),
-      updatedAt: new Date(),
-    };
-
-    if (paymentId) {
-      updateFields.paymentId = paymentId;
-    }
-
-    if (orderId && ObjectId.isValid(orderId)) {
-      await db.collection("orders").updateOne(
-        { _id: new ObjectId(orderId) },
-        { $set: updateFields }
-      );
-    } else if (paymentId) {
-      await db.collection("orders").updateMany(
-        { paymentId },
-        { $set: updateFields }
-      );
-    }
-
-    return NextResponse.json({ success: true });
+    const statuses = { missing_reference: 422, order_not_found: 404, amount_mismatch: 422, currency_mismatch: 422, payment_conflict: 409, invalid_transition: 409, database_error: 503 } as const;
+    return NextResponse.json({ success: false, message: "Pago no válido para la orden" }, { status: statuses[result.reason] });
   } catch (error) {
-    console.error("ERROR WEBHOOK MP:", error);
-    return NextResponse.json({ success: false, message: "Error webhook" }, { status: 500 });
+    if (error instanceof MercadoPagoProviderError) {
+      if (error.statusCode === 404) return NextResponse.json({ success: false, message: "Pago no encontrado" }, { status: 404 });
+      return NextResponse.json({ success: false, message: "No se pudo verificar el pago" }, { status: 502 });
+    }
+    return NextResponse.json({ success: false, message: "Mercado Pago no configurado" }, { status: 503 });
   }
 }

@@ -1,10 +1,15 @@
 import { MongoClient, MongoClientOptions } from "mongodb";
 
-if (!process.env.MONGO_URI) {
-  throw new Error('Falta la variable de entorno "MONGO_URI" en .env.local');
+const uri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
+
+if (!process.env.MONGODB_URI && process.env.MONGO_URI) {
+  console.warn('Using deprecated MongoDB environment variable "MONGO_URI"; migrate to "MONGODB_URI".');
 }
 
-const uri = process.env.MONGO_URI;
+if (!uri) {
+  throw new Error('Falta la variable de entorno "MONGODB_URI"');
+}
+
 const dbName = process.env.MONGODB_DB || "AVGCONNECTS";
 const options: MongoClientOptions = {};
 

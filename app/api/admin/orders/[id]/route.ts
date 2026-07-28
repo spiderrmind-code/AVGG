@@ -6,7 +6,7 @@ import { authOptions } from "@/auth";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || (session.user as any).role !== "admin") {
+  if (!session?.user?.email || session.user.role !== "admin") {
     return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
   }
   return null;
@@ -18,15 +18,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   try {
     const { id } = await context.params;
-    const body = await request.json();
+    const body: unknown = await request.json();
+    const candidate = body && typeof body === "object" ? body as Record<string, unknown> : null;
+    if (!candidate || "paymentStatus" in candidate || "paymentId" in candidate || "paidAt" in candidate) return NextResponse.json({ success: false, message: "El estado de pago sólo puede actualizarse mediante Mercado Pago" }, { status: 403 });
     const db = await getDb();
 
-    const rawStatus = String(body.status ?? "pending").toLowerCase();
+    const rawStatus = typeof candidate.status === "string" ? candidate.status.toLowerCase() : "";
     const statusMap: Record<string, string> = {
       pending: "pending",
       pendiente: "pending",
-      paid: "paid",
-      pagado: "paid",
       processing: "processing",
       procesando: "processing",
       waiting_supplier: "waiting_supplier",
@@ -41,18 +41,13 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       cancelled: "cancelled",
       cancelado: "cancelled",
     };
-    const status = statusMap[rawStatus] ?? "pending";
+    if (!(rawStatus in statusMap)) return NextResponse.json({ success: false, message: "Estado operativo inválido" }, { status: 400 });
+    const status = statusMap[rawStatus];
 
     const update: Record<string, unknown> = {
       status,
       updatedAt: new Date(),
     };
-
-    if (status === "paid") {
-      update.paymentStatus = "approved";
-    } else if (status === "cancelled") {
-      update.paymentStatus = "rejected";
-    }
 
     await db.collection("orders").updateOne(
       { _id: new ObjectId(id) },

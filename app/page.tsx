@@ -5,9 +5,12 @@ import CategoriesSection from "./components/CategoriesSection";
 import PromotionsSection from "./components/PromotionsSection";
 import Link from "next/link";
 import { getDb } from "@/lib/mongo";
+import { normalizePublicProduct } from "@/lib/catalog";
 import type { Product } from "./components/ProductCard";
 
-async function getProducts(): Promise<Product[]> {
+export const dynamic = "force-dynamic";
+
+async function getProducts(): Promise<{ products: Product[]; unavailable: boolean }> {
   try {
     const db = await getDb();
     const products = await db
@@ -20,31 +23,21 @@ async function getProducts(): Promise<Product[]> {
       .limit(100)
       .toArray();
 
-    return (products as unknown as any[]).map((product) => ({
-      _id: String(product._id),
-      title: product.title ?? product.name,
-      name: product.name,
-      description: product.description,
-      price: Number(product.price ?? 0),
-      comparePrice: product.comparePrice ? Number(product.comparePrice) : undefined,
-      image: product.image ?? product.images?.[0] ?? undefined,
-      category: product.category,
-      slug: product.slug,
-      featured: Boolean(product.featured),
-      stock: product.stock,
-    })) as Product[];
+    return { products: products.map((product) => normalizePublicProduct(product)).filter((product): product is NonNullable<typeof product> => product !== null && product.inStock), unavailable: false };
   } catch (error) {
     console.error("ERROR GET PRODUCTS:", error);
-    return [];
+    return { products: [], unavailable: true };
   }
 }
 
 export default async function Home() {
-  const products = await getProducts();
+  const { products, unavailable } = await getProducts();
 
   return (
     <main className="min-h-screen bg-transparent">
       <Hero product={products?.[0]} />
+
+      {unavailable ? <section className="mx-auto max-w-7xl px-6 pt-8 lg:px-8"><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">El catálogo no está disponible temporalmente. Intentá nuevamente en unos minutos.</div></section> : null}
 
       <CategoriesSection />
 

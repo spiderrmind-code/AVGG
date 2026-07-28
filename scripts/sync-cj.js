@@ -66,7 +66,10 @@ async function syncCJ() {
 
 
   // Mongo usando tu variable real
-  const client = new MongoClient(process.env.MONGO_URI);
+  const mongoUri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
+  if (!mongoUri) throw new Error("Falta MONGODB_URI");
+  if (!process.env.MONGODB_URI && process.env.MONGO_URI) console.warn("Usando MONGO_URI heredada; migrar a MONGODB_URI.");
+  const client = new MongoClient(mongoUri);
 
   await client.connect();
 

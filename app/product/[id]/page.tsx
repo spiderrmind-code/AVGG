@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import AddToCartButton from "@/app/components/AddToCartButton";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
+import { resolveAppBaseUrl } from "@/lib/app-url";
 
 
 interface Product {
@@ -24,14 +27,15 @@ interface Product {
 
   shippingDays?: string;
 
-  stock?: number | boolean;
+  inStock: boolean;
+  stockQuantity?: number;
 
 }
 
 
 
 
-async function getProduct(id: string) {
+async function getProduct(id: string): Promise<{ product: Product | null; unavailable: boolean }> {
   try {
     const envOrigin = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
     const baseUrl = envOrigin || "http://localhost:3000";
@@ -41,11 +45,7 @@ async function getProduct(id: string) {
 
 
 
-    if (!res.ok) {
-
-      return null;
-
-    }
+    if (!res.ok) return { product: null, unavailable: res.status >= 500 };
 
 
 
@@ -53,7 +53,7 @@ async function getProduct(id: string) {
 
 
 
-    return data.product ?? null;
+    return { product: data.product ?? null, unavailable: false };
 
 
   } catch (error) {
@@ -63,7 +63,7 @@ async function getProduct(id: string) {
       error
     );
 
-    return null;
+    return { product: null, unavailable: true };
 
   }
 
@@ -74,6 +74,16 @@ async function getProduct(id: string) {
 
 
 
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const { product } = await getProduct(id);
+  if (!product) return { title: "Producto no encontrado", robots: { index: false, follow: false } };
+  const title = product.name || "Producto";
+  const description = product.description?.trim() || `Conocé ${title} en AVG Connects.`;
+  const image = product.image ?? product.images?.[0];
+  return { title, description, alternates: { canonical: `/product/${encodeURIComponent(id)}` }, openGraph: { title, description, type: "website", images: image ? [{ url: image, alt: title }] : undefined } };
+}
 
 export default async function ProductPage({
 
@@ -95,8 +105,7 @@ export default async function ProductPage({
 
 
 
-  const product =
-    await getProduct(id);
+  const { product, unavailable } = await getProduct(id);
 
 
 
@@ -104,29 +113,8 @@ export default async function ProductPage({
 
 
   if (!product) {
-
-
-    return (
-
-      <main className="min-h-screen p-10">
-
-        <h1 className="text-3xl font-bold">
-          Producto no encontrado
-        </h1>
-
-
-        <Link
-          href="/"
-          className="mt-5 inline-block underline"
-        >
-          Volver a la tienda
-        </Link>
-
-
-      </main>
-
-    );
-
+    if (!unavailable) notFound();
+    return <main className="min-h-screen p-10"><h1 className="text-3xl font-bold">No pudimos cargar este producto</h1><p className="mt-3 text-neutral-600">Intentá nuevamente en unos minutos.</p><Link href="/" className="mt-5 inline-block underline">Volver a la tienda</Link></main>;
   }
 
 
@@ -191,6 +179,10 @@ export default async function ProductPage({
 
 
 
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": [
+          { "@type": "Product", name: product.name, description: product.description, image: [image], offers: { "@type": "Offer", price: product.price, priceCurrency: "ARS", availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${resolveAppBaseUrl()}/product/${encodeURIComponent(id)}` } },
+          { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: resolveAppBaseUrl() }, { "@type": "ListItem", position: 2, name: product.name }] },
+        ] }).replace(/</g, "\\u003c") }} />
         <Link
 
           href="/"
@@ -427,6 +419,7 @@ export default async function ProductPage({
                 price: product.price,
 
                 image,
+                inStock: product.inStock,
 
               }}
 

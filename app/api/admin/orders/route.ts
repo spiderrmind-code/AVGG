@@ -6,7 +6,7 @@ import { getDb } from "@/lib/mongo";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || (session.user as any).role !== "admin") {
+  if (!session?.user?.email || session.user.role !== "admin") {
     return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
   }
   return null;
@@ -31,16 +31,18 @@ export async function PATCH(request: Request) {
   if (unauthorized) return unauthorized;
 
   try {
-    const body = await request.json();
+    const body: unknown = await request.json();
+    const candidate = body && typeof body === "object" ? body as Record<string, unknown> : null;
+    const id = typeof candidate?.id === "string" ? candidate.id : "";
+    if (!ObjectId.isValid(id)) return NextResponse.json({ success: false, message: "Pedido inválido" }, { status: 400 });
+    if ("paymentStatus" in (candidate ?? {}) || "paymentId" in (candidate ?? {}) || "paidAt" in (candidate ?? {})) return NextResponse.json({ success: false, message: "El estado de pago sólo puede actualizarse mediante Mercado Pago" }, { status: 403 });
     const db = await getDb();
-    const rawStatus = String(body.status ?? "pending").toLowerCase();
+    const rawStatus = typeof candidate?.status === "string" ? candidate.status.toLowerCase() : "";
 
     // Normalize spanish/english status values to canonical internal values
     const statusMap: Record<string, string> = {
       pending: "pending",
       pendiente: "pending",
-      paid: "paid",
-      pagado: "paid",
       processing: "processing",
       procesando: "processing",
       preparing: "processing",
@@ -53,21 +55,15 @@ export async function PATCH(request: Request) {
       cancelado: "cancelled",
     };
 
-    const status = statusMap[rawStatus] ?? "pending";
+    if (!(rawStatus in statusMap)) return NextResponse.json({ success: false, message: "Estado operativo inválido" }, { status: 400 });
+    const status = statusMap[rawStatus];
 
     const update: Record<string, unknown> = {
       status,
       updatedAt: new Date(),
     };
 
-    // Only change paymentStatus for clear payment lifecycle transitions
-    if (status === "paid") {
-      update.paymentStatus = "approved";
-    } else if (status === "cancelled") {
-      update.paymentStatus = "rejected";
-    }
-
-    await db.collection("orders").updateOne({ _id: new ObjectId(body.id) }, { $set: update });
+    await db.collection("orders").updateOne({ _id: new ObjectId(id) }, { $set: update });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("ERROR UPDATE ORDER:", error);

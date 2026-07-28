@@ -31,8 +31,9 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
         _id: String(product._id),
         name: title,
         price: product.price,
-        comparePrice: product.comparePrice ?? (product as any).oldPrice,
+        comparePrice: product.comparePrice,
         image: product.image ?? PLACEHOLDER_IMAGE,
+        inStock: product.stock === true,
       },
       1
     );

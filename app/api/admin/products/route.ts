@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { getDb } from "@/lib/mongo";
 import { authOptions } from "@/auth";
+import { validateProductInput } from "@/lib/product-validation";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || (session.user as any).role !== "admin") {
+  if (!session?.user?.email || session.user.role !== "admin") {
     return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
   }
   return null;
@@ -30,41 +31,21 @@ export async function POST(request: Request) {
   if (unauthorized) return unauthorized;
 
   try {
-    const body = await request.json();
+    const body: unknown = await request.json();
+    const candidate = body && typeof body === "object" ? body as Record<string, unknown> : null;
+    const product = candidate ? validateProductInput(candidate, { generatedSku: `SKU-${Date.now()}` }) : null;
+    if (!product) return NextResponse.json({ success: false, message: "Producto inválido" }, { status: 400 });
     const db = await getDb();
     const result = await db.collection("products").insertOne({
-      ...body,
-      title: body.title ?? body.name,
-      shortDescription: body.shortDescription ?? body.description,
-      benefits: body.benefits ?? [],
-      features: body.features ?? [],
-      faq: body.faq ?? [],
-      slug: body.slug ?? body.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+      ...product,
       createdAt: new Date(),
       updatedAt: new Date(),
-      stock: body.stock ?? true,
-      active: body.active ?? true,
-      featured: body.featured ?? false,
-      supplier: body.supplier ?? body.supplierName ?? "Local",
-      supplierId: body.supplierId ?? null,
-      supplierName: body.supplierName ?? body.supplier ?? "Local",
-      supplierSku: body.supplierSku ?? null,
-      supplierProductId: body.supplierProductId ?? null,
-      supplierCost: body.supplierCost ?? body.costPrice ?? body.price,
-      supplierStock: body.supplierStock ?? body.stock ?? 0,
-      supplierShippingTime: body.supplierShippingTime ?? body.shippingDays ?? "24-48 hs",
-      supplierLink: body.supplierLink ?? "",
-      costPrice: body.costPrice ?? body.price,
-      margin: body.margin ?? 0,
-      sku: body.sku ?? `SKU-${Date.now()}`,
-      shippingDays: body.shippingDays ?? "24-48 hs",
-      shippingInfo: body.shippingInfo ?? "Envío coordinado con seguimiento.",
-      offer: body.offer ?? null,
     });
 
     return NextResponse.json({ success: true, insertedId: result.insertedId });
   } catch (error) {
-    console.error("ERROR CREATE PRODUCT:", error);
+    if (error && typeof error === "object" && "code" in error && error.code === 11000) return NextResponse.json({ success: false, message: "SKU o slug ya existente" }, { status: 409 });
+    console.error("Product creation failed", { errorType: error instanceof Error ? error.name : "unknown" });
     return NextResponse.json({ success: false, message: "Error creando producto" }, { status: 500 });
   }
 }

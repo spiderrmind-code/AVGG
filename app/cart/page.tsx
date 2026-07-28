@@ -9,6 +9,7 @@ export default function CartPage() {
 
   const {
     cart,
+    hydrated,
     updateQuantity,
     removeFromCart
   } = useCart();
@@ -20,6 +21,10 @@ export default function CartPage() {
     0
   );
 
+
+  if (!hydrated) {
+    return <main className="min-h-screen px-4 py-16"><div className="mx-auto max-w-5xl rounded-[2rem] bg-white p-8 text-center shadow-sm">Cargando carrito...</div></main>;
+  }
 
   if (cart.length === 0) {
 
@@ -88,6 +93,7 @@ export default function CartPage() {
                 <div className="flex items-center gap-2">
 
                   <button
+                    aria-label={`Reducir cantidad de ${item.name}`}
                     className="min-h-[40px] rounded-full border border-black/10 bg-white/80 px-3 py-1 text-sm font-semibold text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
                     onClick={() =>
                       updateQuantity(
@@ -106,6 +112,8 @@ export default function CartPage() {
 
 
                   <button
+                    aria-label={`Aumentar cantidad de ${item.name}`}
+                    disabled={item.stockQuantity !== undefined && item.quantity >= item.stockQuantity}
                     className="min-h-[40px] rounded-full border border-black/10 bg-white/80 px-3 py-1 text-sm font-semibold text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
                     onClick={() =>
                       updateQuantity(
