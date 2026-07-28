@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
@@ -14,6 +14,13 @@ const initialValues = {
   province: "",
   postalCode: "",
 };
+const CHECKOUT_ATTEMPT_KEY = "avgconnects_checkout_attempt";
+
+type CheckoutAttempt = { idempotencyKey: string; guestAccessToken: string };
+
+function createCheckoutAttempt(): CheckoutAttempt {
+  return { idempotencyKey: crypto.randomUUID().replace(/-/g, ""), guestAccessToken: crypto.randomUUID().replace(/-/g, "") };
+}
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
@@ -22,12 +29,29 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const checkoutAttempt = useRef<CheckoutAttempt | null>(null);
 
   const subtotal = useMemo(() => cart.reduce((acc, item) => acc + item.price * item.quantity, 0), [cart]);
   const total = subtotal;
 
   function updateField(field: keyof typeof initialValues, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function getCheckoutAttempt() {
+    if (checkoutAttempt.current) return checkoutAttempt.current;
+    try {
+      const stored = sessionStorage.getItem(CHECKOUT_ATTEMPT_KEY);
+      const parsed = stored ? JSON.parse(stored) as CheckoutAttempt : null;
+      if (parsed && /^[A-Za-z0-9_-]{24,128}$/.test(parsed.idempotencyKey) && /^[A-Za-z0-9_-]{32,128}$/.test(parsed.guestAccessToken)) {
+        checkoutAttempt.current = parsed;
+        return parsed;
+      }
+    } catch { /* create a new attempt below */ }
+    const attempt = createCheckoutAttempt();
+    checkoutAttempt.current = attempt;
+    try { sessionStorage.setItem(CHECKOUT_ATTEMPT_KEY, JSON.stringify(attempt)); } catch { /* retry remains available in memory */ }
+    return attempt;
   }
 
   function validate() {
@@ -55,18 +79,19 @@ export default function CheckoutPage() {
     try {
       setIsSubmitting(true);
       setMessage("");
+      const attempt = getCheckoutAttempt();
 
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer: form, items: cart.map((item) => ({ _id: item._id, quantity: item.quantity })) }),
+        headers: { "Content-Type": "application/json", "Idempotency-Key": attempt.idempotencyKey },
+        body: JSON.stringify({ customer: form, items: cart.map((item) => ({ _id: item._id, quantity: item.quantity })), guestAccessToken: attempt.guestAccessToken }),
       });
 
       if (!orderResponse.ok) throw new Error("No se pudo crear la orden");
 
       const orderData = await orderResponse.json();
       const orderId = orderData.orderId;
-      const guestAccessToken = typeof orderData.guestAccessToken === "string" ? orderData.guestAccessToken : undefined;
+      const guestAccessToken = typeof orderData.guestAccessToken === "string" ? orderData.guestAccessToken : attempt.guestAccessToken;
 
       if (!orderId) {
         throw new Error("No se pudo crear la orden");
@@ -87,8 +112,11 @@ export default function CheckoutPage() {
         throw new Error("Mercado Pago no devolvió una URL de pago válida");
       }
 
+      try { sessionStorage.setItem(`avgconnects_order_access_${orderId}`, guestAccessToken); } catch { /* authenticated users do not need guest recovery */ }
+      window.location.assign(paymentData.initPoint);
       clearCart();
-      window.location.href = paymentData.initPoint;
+      try { sessionStorage.removeItem(CHECKOUT_ATTEMPT_KEY); } catch { /* no-op */ }
+      checkoutAttempt.current = null;
     } catch (error) {
       console.error(error);
       setMessage("No se pudo iniciar el pago. Intentá nuevamente.");
@@ -98,9 +126,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.14),_transparent_35%),linear-gradient(180deg,_#f8f5ef_0%,_#f3eee7_100%)] px-4 py-10 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
+    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-3 rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:flex-row sm:items-end sm:justify-between dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)]">
+        <div className="ui-surface mb-8 flex flex-col gap-3 p-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">Checkout</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Finalizar compra</h1>
@@ -110,7 +138,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="mt-2 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
+          <form onSubmit={handleSubmit} className="ui-surface space-y-6 p-6">
             <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Datos personales</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu información queda protegida y se usa solo para gestionar el pedido.</p>
@@ -151,12 +179,12 @@ export default function CheckoutPage() {
 
             {message && <p role="alert" className="text-red-500">{message}</p>}
 
-            <button disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 py-4 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-50 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">
+            <button disabled={isSubmitting} className="ui-button-primary w-full py-4">
               {isSubmitting ? "Procesando..." : "Pagar con Mercado Pago / Tarjeta"}
             </button>
           </form>
 
-          <aside className="h-fit rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_80px_rgba(0,0,0,0.3)]">
+          <aside className="ui-surface h-fit p-6">
             <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Resumen</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu pedido se ve claro desde el primer vistazo.</p>

@@ -69,23 +69,23 @@ export default function OperationsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-4 py-10 sm:px-6 lg:px-8">
+    <main className="ui-admin-main">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="ui-surface ui-admin-header">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.3em] text-neutral-500">Centro operativo</p>
             <h1 className="mt-2 text-3xl font-semibold text-neutral-950">Gestión de pedidos</h1>
             <p className="mt-2 text-sm text-neutral-600">Controla el estado de los pedidos, el proveedor y el tracking desde un solo lugar.</p>
           </div>
-          <Link href="/admin" className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-900">Volver al panel</Link>
+          <Link href="/admin" className="ui-button-secondary">Volver al panel</Link>
         </div>
 
-        {message ? <div className="mb-6 rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-700">{message}</div> : null}
+        {message ? <div className="ui-card mb-6 p-4 text-sm text-neutral-700">{message}</div> : null}
 
-        <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
+        <div className="ui-surface overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-neutral-200">
-              <thead className="bg-neutral-50">
+            <table className="ui-admin-table">
+              <thead>
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Pedido</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Cliente</th>
@@ -94,7 +94,7 @@ export default function OperationsPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200 bg-white">
+              <tbody>
                 {orders.map((order) => (
                   <tr key={order._id} className="align-top">
                     <td className="px-4 py-4 text-sm text-neutral-900">
@@ -106,7 +106,7 @@ export default function OperationsPage() {
                       <div className="mt-1 text-xs text-neutral-500">{order.customer?.email ?? "Sin email"}</div>
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-700">
-                      <select value={order.status ?? order.paymentStatus ?? "pending"} onChange={(event) => updateStatus(String(order._id), event.target.value)} className="rounded-xl border border-neutral-300 px-3 py-2 text-sm">
+                      <select value={order.status ?? order.paymentStatus ?? "pending"} onChange={(event) => updateStatus(String(order._id), event.target.value)} className="px-3 py-2 text-sm">
                         <option value="pending">Pendiente proveedor</option>
                         <option value="paid">Pago aprobado</option>
                         <option value="processing">Preparando</option>
@@ -116,10 +116,10 @@ export default function OperationsPage() {
                       </select>
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-700">
-                      <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" value={trackingMap[order._id] ?? order.tracking ?? ""} onChange={(event) => setTrackingMap((prev) => ({ ...prev, [order._id]: event.target.value }))} placeholder="Tracking" />
+                      <input className="w-full px-3 py-2" value={trackingMap[order._id] ?? order.tracking ?? ""} onChange={(event) => setTrackingMap((prev) => ({ ...prev, [order._id]: event.target.value }))} placeholder="Tracking" />
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-700">
-                      <button type="button" onClick={() => saveTracking(order._id)} className="rounded-xl bg-black px-3 py-2 font-semibold text-white">Guardar</button>
+                      <button type="button" onClick={() => saveTracking(order._id)} className="ui-button-primary min-h-0 px-3 py-2">Guardar</button>
                     </td>
                   </tr>
                 ))}

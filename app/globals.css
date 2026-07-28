@@ -3,18 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #f6f2eb;
-  --color-bg-strong: #efe7dd;
-  --color-surface: rgba(255, 255, 255, 0.72);
-  --color-surface-strong: rgba(255, 255, 255, 0.9);
-  --color-surface-muted: #f9f6ef;
-  --color-text: #090909;
-  --color-text-muted: #5f6368;
-  --color-accent: #ff2f92;
-  --color-accent-strong: #d91c75;
-  --color-border: rgba(9, 9, 9, 0.08);
-  --shadow-soft: 0 16px 50px rgba(17, 17, 17, 0.06);
-  --shadow-strong: 0 34px 120px rgba(10, 10, 10, 0.12);
+  --color-bg: #fafafa;
+  --color-bg-strong: #f2f2f1;
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-surface-strong: #ffffff;
+  --color-surface-muted: #f6f6f5;
+  --color-text: #171717;
+  --color-text-muted: #6b6b6b;
+  --color-text-subtle: #929292;
+  --color-accent: #171717;
+  --color-accent-strong: #000000;
+  --color-success: #137a52;
+  --color-warning: #a15c00;
+  --color-danger: #c63b3b;
+  --color-border: rgba(23, 23, 23, 0.1);
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --space-section: clamp(3.5rem, 7vw, 7rem);
+  --shadow-soft: 0 10px 30px rgba(17, 17, 17, 0.06);
+  --shadow-strong: 0 24px 70px rgba(17, 17, 17, 0.1);
 }
 
 html {
@@ -38,14 +47,13 @@ html.dark {
 
 body {
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(255, 47, 146, 0.12), transparent 24%),
-    linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-strong) 100%);
+  background: var(--color-bg);
   color: var(--color-text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 250ms ease, color 250ms ease;
+  letter-spacing: -0.011em;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 button,
@@ -53,7 +61,7 @@ a,
 input,
 select,
 textarea {
-  transition: all 200ms ease-out;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 button:focus-visible,
@@ -62,7 +70,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 47, 146, 0.18);
+  box-shadow: 0 0 0 3px rgba(23, 23, 23, 0.16);
 }
 
 button:disabled,
@@ -72,8 +80,8 @@ a[aria-disabled="true"] {
 }
 
 ::selection {
-  background: var(--color-accent);
-  color: white;
+  background: #171717;
+  color: #fff;
 }
 
 * {
@@ -83,6 +91,56 @@ a[aria-disabled="true"] {
 img {
   max-width: 100%;
   display: block;
+}
+
+@layer components {
+  .ui-shell { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .ui-section { padding-block: var(--space-section); }
+  .ui-eyebrow { @apply text-[0.6875rem] font-semibold uppercase tracking-[0.18em]; color: var(--color-text-subtle); }
+  .ui-title { @apply mt-3 font-semibold tracking-[-0.035em]; color: var(--color-text); font-size: clamp(1.75rem, 3vw, 2.65rem); line-height: 1.08; }
+  .ui-copy { @apply mt-3 max-w-2xl text-sm leading-6 sm:text-base; color: var(--color-text-muted); }
+  .ui-surface { border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); }
+  .ui-card { border: 1px solid var(--color-border); background: var(--color-surface-strong); border-radius: var(--radius-lg); box-shadow: 0 1px 2px rgba(0,0,0,.02); }
+  .ui-card-hover { transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
+  .ui-card-hover:hover { transform: translateY(-3px); border-color: rgba(23,23,23,.2); box-shadow: var(--shadow-soft); }
+  .ui-button { @apply inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold; border-radius: var(--radius-md); }
+  .ui-button-primary { @apply ui-button text-white; background: var(--color-accent); }
+  .ui-button-primary:hover { background: var(--color-accent-strong); }
+  .ui-button-secondary { @apply ui-button; color: var(--color-text); border: 1px solid var(--color-border); background: var(--color-surface-strong); }
+  .ui-button-secondary:hover { background: var(--color-surface-muted); }
+  .ui-input { @apply w-full min-h-11 px-3.5 text-sm outline-none; color: var(--color-text); border: 1px solid var(--color-border); background: var(--color-surface-strong); border-radius: var(--radius-md); }
+  .ui-input::placeholder { color: var(--color-text-subtle); }
+  .ui-input:focus { border-color: rgba(23,23,23,.42); box-shadow: 0 0 0 3px rgba(23,23,23,.1); }
+  .ui-badge { @apply inline-flex items-center px-2.5 py-1 text-[0.6875rem] font-semibold; border: 1px solid var(--color-border); color: var(--color-text-muted); background: var(--color-surface-muted); border-radius: 999px; }
+  .ui-icon-button { @apply inline-flex min-h-10 min-w-10 items-center justify-center; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-text-muted); background: var(--color-surface-strong); }
+  .ui-icon-button:hover { color: var(--color-text); background: var(--color-surface-muted); }
+  .ui-popover { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-strong); box-shadow: var(--shadow-strong); }
+  .ui-admin-main { min-height: 100vh; background: var(--color-bg); padding: 2rem 1rem 3rem; }
+  .ui-admin-header { @apply mb-6 flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between sm:p-6; }
+  .ui-admin-table { min-width: 100%; border-collapse: collapse; }
+  .ui-admin-table thead { background: var(--color-surface-muted); }
+  .ui-admin-table th { @apply px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-[0.14em]; color: var(--color-text-subtle); }
+  .ui-admin-table td { @apply px-4 py-4 text-sm; color: var(--color-text-muted); }
+  .ui-admin-table tbody tr + tr { border-top: 1px solid var(--color-border); }
+  .ui-admin-table tbody tr:hover { background: var(--color-surface-muted); }
+}
+
+.admin-scope input:not([type="checkbox"]):not([type="radio"]),
+.admin-scope select,
+.admin-scope textarea {
+  min-height: 2.75rem;
+  border-color: var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+}
+
+.admin-scope input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-scope select:focus,
+.admin-scope textarea:focus {
+  border-color: rgba(23, 23, 23, .42);
+  box-shadow: 0 0 0 3px rgba(23, 23, 23, .1);
+  outline: none;
 }
 
 .premium-panel,

@@ -35,7 +35,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-transparent">
-      <Hero product={products?.[0]} />
+      <Hero products={products} />
 
       {unavailable ? <section className="mx-auto max-w-7xl px-6 pt-8 lg:px-8"><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">El catálogo no está disponible temporalmente. Intentá nuevamente en unos minutos.</div></section> : null}
 

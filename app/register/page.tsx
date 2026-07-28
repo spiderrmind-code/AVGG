@@ -37,8 +37,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_35%),linear-gradient(180deg,_#f7f2ea_0%,_#efe7dd_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
-      <div className="mx-auto max-w-3xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:p-10 dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)]">
+    <main className="min-h-screen px-4 py-16 sm:px-6 lg:px-8">
+      <div className="ui-surface mx-auto max-w-3xl p-8 sm:p-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Registro</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Crear tu cuenta en AVG Connects</h1>
         <p className="mt-3 text-neutral-600 dark:text-zinc-300">Guardá tus datos, seguí tus pedidos y disfrutá una experiencia más fluida desde el primer acceso.</p>
@@ -68,7 +68,7 @@ export default function RegisterPage() {
             <input type="password" className="premium-input" placeholder="Confirmar contraseña" value={form.confirmPassword} onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })} required />
           </div>
           <div className="md:col-span-2">
-            <button type="submit" disabled={isSubmitting} className="w-full rounded-full bg-neutral-950 px-4 py-3 text-sm font-semibold text-white shadow-[0_16px_45px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-60 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">{isSubmitting ? "Creando cuenta..." : "Crear cuenta"}</button>
+            <button type="submit" disabled={isSubmitting} className="ui-button-primary w-full py-3">{isSubmitting ? "Creando cuenta..." : "Crear cuenta"}</button>
             {message ? <p className="mt-3 rounded-[1rem] border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700">{message}</p> : null}
             <p className="mt-3 text-sm text-neutral-600">
               ¿Ya tenés cuenta? <Link href="/login" className="font-semibold text-neutral-950 dark:text-white">Iniciar sesión</Link>

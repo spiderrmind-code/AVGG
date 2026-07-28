@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import MegaMenu from './MegaMenu';
 import { LogoSVG } from './Logo';
 import {
@@ -39,7 +40,8 @@ export type Category = {
 };
 
 export default function Header() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { cart, removeFromCart } = useCart();
 
   const [megaOpen, setMegaOpen] = useState(false);
@@ -68,6 +70,20 @@ export default function Header() {
   const suggestionRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const debounceRef = useRef<number | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
+  const previousSessionStatus = useRef(status);
+
+  useEffect(() => {
+    const previousStatus = previousSessionStatus.current;
+    previousSessionStatus.current = status;
+    if (previousStatus !== status && (status === "authenticated" || status === "unauthenticated")) {
+      router.refresh();
+    }
+  }, [router, status]);
+
+  async function handleSignOut() {
+    await signOut({ redirect: false });
+    router.refresh();
+  }
 
  useEffect(() => {
   async function loadFeatured() {
@@ -276,12 +292,14 @@ export default function Header() {
   }
 
   const headerBg = scrolled
-    ? 'border-white/70 bg-white/70 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/70'
-    : 'border-white/60 bg-white/70 shadow-[0_10px_32px_rgba(0,0,0,0.04)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/60';
+    ? 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_10px_30px_rgba(17,17,17,0.08)] backdrop-blur-2xl'
+    : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_2px_14px_rgba(17,17,17,0.04)] backdrop-blur-xl';
   const headerText = 'text-neutral-900 dark:text-zinc-100';
   const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-12 h-12';
   const logoTextSize = scrolled ? 'text-sm' : 'text-base';
-  const navLinkClass = 'relative text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-gradient-to-r after:from-pink-500 after:to-fuchsia-500 after:transition-transform after:duration-300 hover:after:scale-x-100';
+  const navLinkClass = 'relative text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-neutral-950 after:transition-transform after:duration-200 hover:after:scale-x-100 dark:after:bg-white';
+  const isSessionLoading = status === "loading";
+  const isAuthenticated = status === "authenticated";
 
   function setSuggestionRef(index: number) {
     return (el: HTMLAnchorElement | null) => {
@@ -297,7 +315,7 @@ export default function Header() {
             {/* LEFT: logo + nav */}
             <div className="flex items-center gap-5">
               <Link href="/" className="flex items-center gap-3" aria-label="Ir al inicio">
-                <div className={`${logoBoxSize} flex items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-300 dark:border-white/10 dark:bg-zinc-900/80`}>
+                <div className={`${logoBoxSize} flex items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all duration-300 dark:border-white/10 dark:bg-zinc-900/80`}>
                   <LogoSVG />
                 </div>
                 <div className="hidden flex-col leading-none sm:flex">
@@ -320,7 +338,7 @@ export default function Header() {
                     onBlur={() => scheduleClose(180)}
                     aria-expanded={megaOpen}
                     aria-controls="mega-menu"
-                    className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-white/70 hover:text-neutral-950 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
+                    className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
                   >
                     Colecciones <ChevronDown className={`h-4 w-4 text-neutral-500 transition ${megaOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -345,7 +363,7 @@ export default function Header() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar productos"
-                    className="w-full rounded-full border border-black/10 bg-white/90 py-2.5 pl-10 pr-12 text-sm text-neutral-900 shadow-[0_10px_30px_rgba(0,0,0,0.05)] outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-100 dark:focus:border-pink-400/50 dark:focus:ring-pink-500/20"
+                    className="ui-input w-full rounded-full py-2.5 pl-10 pr-12"
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"
@@ -374,7 +392,7 @@ export default function Header() {
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                      className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-neutral-200 bg-white/95 shadow-[0_20px_60px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+                      className="ui-popover absolute z-50 mt-2 w-full overflow-hidden backdrop-blur-xl"
                       role="listbox"
                     >
                       {suggestions.map((s, i) => {
@@ -399,11 +417,11 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <button aria-label="Favoritos" className="hidden rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
+              <button aria-label="Favoritos" className="ui-icon-button hidden md:inline-flex">
                 <Heart className="h-4 w-4" />
               </button>
 
-              <button aria-label="Notificaciones" className="hidden rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
+              <button aria-label="Notificaciones" className="ui-icon-button hidden md:inline-flex">
                 <Bell className="h-4 w-4" />
               </button>
 
@@ -415,7 +433,7 @@ export default function Header() {
                   onClick={() => setCartOpen((prev) => !prev)}
                   aria-haspopup="dialog"
                   aria-expanded={cartOpen}
-                  className="relative rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="ui-icon-button relative"
                 >
                   <ShoppingCart className="h-4 w-4" />
                   {cartCount > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-neutral-950 px-1.5 py-0.5 text-[10px] font-semibold text-white">{cartCount}</span>}
@@ -466,19 +484,21 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={session ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
+              <Link href={isAuthenticated ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <User className="h-4 w-4" />
                 <span>Mi cuenta</span>
               </Link>
 
-              {(session as any)?.user?.role === "admin" ? (
+              {isAuthenticated && (session as any)?.user?.role === "admin" ? (
                 <Link href="/admin" className="hidden rounded-full border border-neutral-200 bg-neutral-950 px-3 py-2 text-sm font-semibold text-white md:inline-flex">
                   Admin
                 </Link>
               ) : null}
 
               <div className="hidden lg:block">
-                {!session ? (
+                {isSessionLoading ? (
+                  <span className="text-sm text-neutral-500" aria-live="polite">Verificando sesión…</span>
+                ) : !isAuthenticated ? (
                   <button
                     onClick={() => signIn('google')}
                     className="hidden rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition hover:bg-neutral-800 lg:inline-flex"
@@ -487,7 +507,7 @@ export default function Header() {
                     Continuar con Google
                   </button>
                 ) : (
-                  <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 rounded-md border border-[#ff007f]/20">
+                  <div className="ui-card hidden items-center gap-2 rounded-md px-3 py-1 lg:inline-flex">
                     {session.user?.image ? (
                       <img src={session.user.image as string} alt={session.user?.name ?? 'Usuario'} className="w-7 h-7 rounded-full object-cover" />
                     ) : (
@@ -495,7 +515,7 @@ export default function Header() {
                     )}
                     <span className="text-sm text-neutral-800">{session.user?.name ?? session.user?.email}</span>
                     <button
-                      onClick={() => signOut()}
+                      onClick={handleSignOut}
                       className="ml-1 rounded-full bg-neutral-950 px-2 py-1 text-xs font-semibold text-white"
                     >
                       Cerrar
@@ -508,7 +528,7 @@ export default function Header() {
                 <ThemeToggle />
               </div>
 
-              <button onClick={() => setMobileOpen(true)} className="rounded-full border border-black/10 bg-white/80 p-2.5 text-neutral-700 transition hover:bg-white md:hidden dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800" aria-label="Abrir menú">
+              <button onClick={() => setMobileOpen(true)} className="ui-icon-button md:hidden" aria-label="Abrir menú">
                 <Menu className="h-5 w-5" />
               </button>
             </div>
@@ -555,15 +575,15 @@ export default function Header() {
                   </div>
                 </details>
 
-                <Link href={session ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Mi cuenta</Link>
-                {(session as any)?.user?.role === "admin" ? (
+                <Link href={isAuthenticated ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Mi cuenta</Link>
+                {isAuthenticated && (session as any)?.user?.role === "admin" ? (
                   <Link href="/admin" className="rounded-[1rem] border border-black/10 bg-neutral-950 px-3 py-3 text-sm font-semibold text-white">Panel admin</Link>
                 ) : null}
                 <Link href="/cart" className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Carrito ({cartCount})</Link>
               </nav>
 
               <div className="mt-6 border-t border-neutral-200 pt-6">
-                {!session ? (
+                {!isSessionLoading && !isAuthenticated ? (
                   <button
                     onClick={() => signIn('google')}
                     className="w-full rounded-full bg-neutral-950 py-2.5 text-center text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] dark:bg-white dark:text-neutral-950"

@@ -196,22 +196,22 @@ export default function AdminPage() {
   }, [costPriceInput, shippingCostInput, commissionInput, otherCostsInput, marginInput]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_35%),linear-gradient(180deg,_#f7f2ea_0%,_#efe7dd_100%)] px-4 py-10 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
+    <main className="ui-admin-main">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-4 rounded-[2.2rem] border border-white/70 bg-white/80 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between lg:p-8 dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)]">
+        <div className="ui-surface ui-admin-header">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">AVG CONNECTS</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Panel de operaciones</h1>
             <p className="mt-2 text-sm text-neutral-600 dark:text-zinc-300">Centro de control para ventas, proveedores, productos y fulfillment.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/admin/suppliers" className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">🏭 Proveedores</Link>
-            <Link href="/admin/inventory" className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">📦 Inventario</Link>
-            <Link href="/admin/pricing" className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">📈 Pricing</Link>
-            <Link href="/admin/offers" className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">🔥 Ofertas</Link>
-            <Link href="/admin/operations" className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">📋 Operaciones</Link>
-            <Link href="/admin/integrations" className="rounded-full border border-neutral-200 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-50 dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">🔌 Integraciones</Link>
-            <Link href="/" className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-zinc-100">Tienda</Link>
+            <Link href="/admin/suppliers" className="ui-button-secondary">🏭 Proveedores</Link>
+            <Link href="/admin/inventory" className="ui-button-secondary">📦 Inventario</Link>
+            <Link href="/admin/pricing" className="ui-button-secondary">📈 Pricing</Link>
+            <Link href="/admin/offers" className="ui-button-secondary">🔥 Ofertas</Link>
+            <Link href="/admin/operations" className="ui-button-secondary">📋 Operaciones</Link>
+            <Link href="/admin/integrations" className="ui-button-secondary">🔌 Integraciones</Link>
+            <Link href="/" className="ui-button-primary">Tienda</Link>
           </div>
         </div>
 
@@ -219,7 +219,7 @@ export default function AdminPage() {
 
         <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {statCards.map((card) => (
-            <div key={card.label} className="rounded-[1.6rem] border border-black/10 bg-white/80 p-5 shadow-[0_16px_50px_rgba(0,0,0,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_16px_50px_rgba(0,0,0,0.24)]">
+            <div key={card.label} className="ui-card p-5">
               <p className="text-sm text-neutral-600 dark:text-zinc-400">{card.label}</p>
               <p className="mt-3 text-2xl font-semibold text-neutral-950 dark:text-white">{card.value}</p>
             </div>
