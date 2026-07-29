@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const featured = searchParams.get("featured") === "true";
     const filter: Record<string, unknown> = { active: { $ne: false } };
 
-    const categoryTerms = category ? new Set(buildCategorySearchTerms(category).map(normalizeCatalogSlug)) : null;
+    const categoryTerms = category ? new Set([normalizeCatalogSlug(category), ...buildCategorySearchTerms(category).map(normalizeCatalogSlug)]) : null;
     if (category) {
       if (!isValidCatalogSlug(category)) {
         return NextResponse.json({ success: false, message: "Categoría inválida" }, { status: 400 });
