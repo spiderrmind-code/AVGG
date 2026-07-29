@@ -10,6 +10,11 @@ const configuredSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 if (!configuredSecret && process.env.NODE_ENV === "production") throw new Error("Missing authentication secret");
 const authSecret = configuredSecret ?? "local-development-secret";
 const google = getGoogleAuthConfig();
+const adminEmail = process.env.ADMIN_EMAIL ? normalizeEmail(process.env.ADMIN_EMAIL) : "";
+
+function roleForEmail(email: string | null | undefined, storedRole?: string) {
+  return adminEmail && email && normalizeEmail(email) === adminEmail ? "admin" : normalizeRole(storedRole);
+}
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -23,7 +28,7 @@ export const authOptions: AuthOptions = {
         const email = normalizeEmail(emailValue);
         const user = await (await getDb()).collection("users").findOne({ email });
         if (!user || typeof user.password !== "string" || !(await bcrypt.compare(password, user.password))) return null;
-        return { id: String(user._id), email, name: typeof user.name === "string" ? user.name : "", role: normalizeRole(typeof user.role === "string" ? user.role : undefined) };
+        return { id: String(user._id), email, name: typeof user.name === "string" ? user.name : "", role: roleForEmail(email, typeof user.role === "string" ? user.role : undefined) };
       },
     }),
     ...(google.googleEnabled ? [GoogleProvider({ clientId: google.googleClientId!, clientSecret: google.googleClientSecret! })] : []),
@@ -36,11 +41,14 @@ export const authOptions: AuthOptions = {
       const email = normalizeEmail(user.email);
       const users = (await getDb()).collection("users");
       const existing = await users.findOne({ email });
-      if (!existing) await users.insertOne({ email, name: user.name ?? "", image: user.image ?? null, password: null, role: "customer", provider: "google", createdAt: new Date(), updatedAt: new Date() });
+      const role = roleForEmail(email, typeof existing?.role === "string" ? existing.role : undefined);
+      if (!existing) await users.insertOne({ email, name: user.name ?? "", image: user.image ?? null, password: null, role, provider: "google", createdAt: new Date(), updatedAt: new Date() });
+      else if (existing.role !== role) await users.updateOne({ _id: existing._id }, { $set: { role, updatedAt: new Date() } });
       return true;
     },
     async jwt({ token, user }) {
-      if (user) { token.id = user.id; token.role = normalizeRole(user.role); }
+      if (user) { token.id = user.id; token.role = roleForEmail(user.email, user.role); }
+      else if (typeof token.email === "string" && adminEmail && normalizeEmail(token.email) === adminEmail) token.role = "admin";
       return token;
     },
     async session({ session, token }) {
