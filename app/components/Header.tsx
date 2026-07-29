@@ -146,7 +146,7 @@ export default function Header() {
             }))
         : [];
 
-      setCategories(normalized.length > 0 ? normalized : fallbackCategories);
+      setCategories(normalized);
     } catch (err) {
       console.error('Error loading categories:', err);
       setCategories(fallbackCategories);
