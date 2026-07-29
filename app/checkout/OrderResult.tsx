@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { formatARS } from "@/lib/currency";
 
 type Order = { _id: string; orderNumber?: string; items: Array<{ _id: string; name: string; price: number; quantity: number }>; total: number; currency: string; status: string; paymentStatus: string; customerEmail?: string };
 type ResultKind = "success" | "failure" | "pending";
@@ -35,7 +36,7 @@ export default function OrderResult({ kind }: { kind: ResultKind }) {
   return <main className="min-h-screen px-4 py-16 sm:px-6 lg:px-8"><div className="ui-surface mx-auto max-w-2xl p-8 text-center">
     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">{text.eyebrow}</p><h1 className="mt-4 text-3xl font-semibold">{text.title}</h1><p className="mt-4 text-neutral-600">{text.body}</p>
     {loading ? <p className="mt-6 text-sm text-neutral-500" aria-live="polite">Buscando tu pedido…</p> : null}
-    {order ? <section className="ui-card mt-6 p-5 text-left"><p className="font-semibold">Pedido {order.orderNumber ?? order._id}</p><p className="mt-1 text-sm text-neutral-600">Estado: {order.paymentStatus}</p>{order.customerEmail ? <p className="mt-1 text-sm text-neutral-600">{order.customerEmail}</p> : null}<div className="mt-4 space-y-2 text-sm">{order.items.map((item) => <div className="flex justify-between gap-4" key={item._id}><span>{item.name} × {item.quantity}</span><span>{order.currency} {(item.price * item.quantity).toLocaleString("es-AR")}</span></div>)}</div><p className="mt-4 border-t pt-4 text-lg font-semibold">Total: {order.currency} {order.total.toLocaleString("es-AR")}</p></section> : null}
+    {order ? <section className="ui-card mt-6 p-5 text-left"><p className="font-semibold">Pedido {order.orderNumber ?? order._id}</p><p className="mt-1 text-sm text-neutral-600">Estado: {order.paymentStatus}</p>{order.customerEmail ? <p className="mt-1 text-sm text-neutral-600">{order.customerEmail}</p> : null}<div className="mt-4 space-y-2 text-sm">{order.items.map((item) => <div className="flex justify-between gap-4" key={item._id}><span>{item.name} × {item.quantity}</span><span>{formatARS(item.price * item.quantity)}</span></div>)}</div><p className="mt-4 border-t pt-4 text-lg font-semibold">Total: {formatARS(order.total)}</p></section> : null}
     <div className="mt-8 flex flex-wrap justify-center gap-3"><Link href={text.href} className="ui-button-primary">{text.primary}</Link>{sessionStatus === "authenticated" ? <Link href="/account/orders" className="ui-button-secondary">Mi cuenta</Link> : null}</div>
   </div></main>;
 }

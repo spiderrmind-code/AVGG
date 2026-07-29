@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import AddToCartButton from "@/app/components/AddToCartButton";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { resolveAppBaseUrl } from "@/lib/app-url";
+import { formatARS } from "@/lib/currency";
 
 
 interface Product {
@@ -37,8 +38,7 @@ interface Product {
 
 async function getProduct(id: string): Promise<{ product: Product | null; unavailable: boolean }> {
   try {
-    const envOrigin = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
-    const baseUrl = envOrigin || "http://localhost:3000";
+    const baseUrl = resolveAppBaseUrl();
     const res = await fetch(`${baseUrl}/api/products/${id}`, {
       cache: "no-store",
     });
@@ -331,7 +331,7 @@ export default async function ProductPage({
 
                   >
 
-                    ${product.comparePrice.toLocaleString("es-US")}
+                  {formatARS(product.comparePrice)}
 
                   </p>
 
@@ -355,7 +355,7 @@ export default async function ProductPage({
 
                 >
 
-                  ${product.price.toLocaleString("es-US")}
+                  {formatARS(product.price)}
 
                 </p>
 

@@ -28,7 +28,7 @@ export async function processVerifiedMercadoPagoPayment(payment: VerifiedMercado
     const order = await db.collection("orders").findOne({ _id: orderId });
     if (!order) return { success: false, reason: "order_not_found" };
     if (money(order.total) !== money(payment.transactionAmount)) return { success: false, reason: "amount_mismatch" };
-    const currency = String(order.currency ?? process.env.MERCADOPAGO_CURRENCY ?? "ARS").toUpperCase();
+    const currency = String(order.currency ?? process.env.MERCADOPAGO_CURRENCY ?? "ARS").trim().toUpperCase();
     if (!payment.currencyId || payment.currencyId.toUpperCase() !== currency) return { success: false, reason: "currency_mismatch" };
     const otherOrder = await db.collection("orders").findOne({ paymentId: payment.id, _id: { $ne: orderId } });
     if (otherOrder) return { success: false, reason: "payment_conflict" };

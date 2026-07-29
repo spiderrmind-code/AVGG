@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
+import { formatARS } from "@/lib/currency";
 
 
 export interface Product {
@@ -169,7 +170,7 @@ export default function ProductCard({
 
         <div className="mt-4 flex items-center justify-between gap-3">
           <span className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">{product.category ?? "Producto"}</span>
-          {discount && product.comparePrice ? <span className="text-sm font-medium text-neutral-400 line-through dark:text-zinc-500">${product.comparePrice.toLocaleString("es-US")}</span> : null}
+          {discount && product.comparePrice ? <span className="text-sm font-medium text-neutral-400 line-through dark:text-zinc-500">{formatARS(product.comparePrice)}</span> : null}
         </div>
 
         <h3 className="mt-3 text-xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">{title}</h3>
@@ -203,7 +204,7 @@ export default function ProductCard({
               "
             >
 
-              ${product.comparePrice.toLocaleString("es-US")}
+               {formatARS(product.comparePrice)}
 
             </p>
 
@@ -214,7 +215,7 @@ export default function ProductCard({
 
 
 
-          <p className="text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">${product.price.toLocaleString("es-US")}</p>
+          <p className="text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">{formatARS(product.price)}</p>
 
 
         </div>

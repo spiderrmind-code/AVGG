@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { formatARS } from "@/lib/currency";
 
 const initialValues = {
   firstName: "",
@@ -193,7 +194,7 @@ export default function CheckoutPage() {
               {cart.map((item) => (
                 <div key={item._id} className="flex justify-between text-sm">
                   <span>{item.name} x{item.quantity}</span>
-                  <span>${(item.price * item.quantity).toLocaleString("es-AR")}</span>
+                  <span>{formatARS(item.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
@@ -201,11 +202,11 @@ export default function CheckoutPage() {
             <div className="mt-6 border-t border-black/10 pt-4">
               <div className="flex justify-between text-sm text-neutral-600">
                 <span>Subtotal</span>
-                <span>${subtotal.toLocaleString("es-AR")}</span>
+                <span>{formatARS(subtotal)}</span>
               </div>
               <div className="mt-3 flex justify-between text-xl font-semibold text-neutral-950 dark:text-white">
                 <span>Total</span>
-                <span>${total.toLocaleString("es-AR")}</span>
+                <span>{formatARS(total)}</span>
               </div>
             </div>
           </aside>

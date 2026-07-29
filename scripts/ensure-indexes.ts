@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getDb } from "../lib/mongo";
+import clientPromise, { getDb } from "../lib/mongo";
 import { findDuplicateGroups, regularIndexes, uniqueIndexCandidates } from "./database-integrity";
 
 type IndexContext = {
@@ -30,34 +30,38 @@ function reportIndexError(error: unknown, context?: IndexContext) {
 }
 
 async function main() {
-  const db = await getDb();
-  const duplicates = await findDuplicateGroups();
-  const blocked = new Set(duplicates.filter((report) => report.groups > 0).map((report) => `${report.collection}.${report.field}`));
-  for (const index of regularIndexes) {
-    const context: IndexContext = { collection: index.collection, indexName: index.name, keyPattern: index.key };
-    try {
-      await db.collection(index.collection).createIndex(index.key, { name: index.name });
-    } catch (error) {
-      reportIndexError(error, context);
-      process.exitCode = 1;
-      return;
+  try {
+    const db = await getDb();
+    const duplicates = await findDuplicateGroups();
+    const blocked = new Set(duplicates.filter((report) => report.groups > 0).map((report) => `${report.collection}.${report.field}`));
+    for (const index of regularIndexes) {
+      const context: IndexContext = { collection: index.collection, indexName: index.name, keyPattern: index.key };
+      try {
+        await db.collection(index.collection).createIndex(index.key, { name: index.name });
+      } catch (error) {
+        reportIndexError(error, context);
+        process.exitCode = 1;
+        return;
+      }
+      console.log(`✓ ${index.name}`);
     }
-    console.log(`✓ ${index.name}`);
-  }
-  for (const index of uniqueIndexCandidates) {
-    if (blocked.has(`${index.collection}.${index.field}`)) {
-      console.log(`✗ ${index.name} omitido por duplicados`);
-      continue;
+    for (const index of uniqueIndexCandidates) {
+      if (blocked.has(`${index.collection}.${index.field}`)) {
+        console.log(`✗ ${index.name} omitido por duplicados`);
+        continue;
+      }
+      const context: IndexContext = { collection: index.collection, indexName: index.name, keyPattern: "key" in index ? index.key : { [index.field]: 1 } };
+      try {
+        await db.collection(index.collection).createIndex(context.keyPattern, { name: index.name, unique: true, partialFilterExpression: index.partialFilterExpression });
+      } catch (error) {
+        reportIndexError(error, context);
+        process.exitCode = 1;
+        return;
+      }
+      console.log(`✓ ${index.name}`);
     }
-    const context: IndexContext = { collection: index.collection, indexName: index.name, keyPattern: { [index.field]: 1 } };
-    try {
-      await db.collection(index.collection).createIndex(context.keyPattern, { name: index.name, unique: true, partialFilterExpression: index.partialFilterExpression });
-    } catch (error) {
-      reportIndexError(error, context);
-      process.exitCode = 1;
-      return;
-    }
-    console.log(`✓ ${index.name}`);
+  } finally {
+    await (await clientPromise).close();
   }
 }
 

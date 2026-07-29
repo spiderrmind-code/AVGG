@@ -25,6 +25,7 @@ import { signIn, useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/app/context/CartContext';
 import ThemeToggle from './ThemeToggle';
 import { catalogCategories } from '@/data/catalog-categories';
+import { formatARS } from '@/lib/currency';
 
 const MotionDiv = motion.div as React.ComponentType<any>;
 const MotionUL = motion.ul as React.ComponentType<any>;
@@ -109,10 +110,7 @@ export default function Header() {
           image: p.image ?? p.images?.[0] ?? "",
           price:
             typeof p.price === "number"
-              ? new Intl.NumberFormat("es-US", {
-                  style: "currency",
-                  currency: "USD",
-                }).format(p.price)
+              ? formatARS(p.price)
               : p.price,
         }));
 
@@ -463,7 +461,7 @@ export default function Header() {
                                 <div className="flex-1">
                                   <div className={`text-sm font-medium text-neutral-900`}>{it.name}</div>
                                   <div className={`text-sm text-neutral-600`}>
-                                    {new Intl.NumberFormat('es-US', { style: 'currency', currency: 'USD' }).format(it.price)}
+                                    {formatARS(it.price)}
                                     {it.quantity > 1 && ` × ${it.quantity}`}
                                   </div>
                                 </div>

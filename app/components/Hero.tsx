@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
+import { formatARS } from "@/lib/currency";
 import type { Product } from "./ProductCard";
 
 type Props = { products: Product[] };
@@ -82,8 +83,8 @@ export default function Hero({ products }: Props) {
             </p>
 
             <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2">
-              <span className="text-3xl font-semibold tracking-[-0.04em] text-[color:var(--color-text)]">${Number(product.price ?? 0).toLocaleString("es-AR")}</span>
-              {product.comparePrice && product.comparePrice > product.price ? <span className="pb-1 text-sm text-[color:var(--color-text-subtle)] line-through">${Number(product.comparePrice).toLocaleString("es-AR")}</span> : null}
+              <span className="text-3xl font-semibold tracking-[-0.04em] text-[color:var(--color-text)]">{formatARS(Number(product.price ?? 0))}</span>
+              {product.comparePrice && product.comparePrice > product.price ? <span className="pb-1 text-sm text-[color:var(--color-text-subtle)] line-through">{formatARS(Number(product.comparePrice))}</span> : null}
             </div>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">

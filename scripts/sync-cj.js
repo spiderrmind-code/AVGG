@@ -24,7 +24,7 @@ async function syncCJ() {
   const cj = await response.json();
 
   if (!cj.success) {
-    console.log(cj);
+    console.log("Autenticaci\u00f3n CJ completada");
     throw new Error("❌ Error con CJ API");
   }
 

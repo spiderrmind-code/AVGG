@@ -8,6 +8,7 @@ const required = [
   "NEXTAUTH_URL",
   "NEXTAUTH_SECRET",
   "MERCADOPAGO_ACCESS_TOKEN",
+  "MERCADOPAGO_MODE",
   "MERCADOPAGO_WEBHOOK_SECRET",
   "NEXT_PUBLIC_APP_URL",
 ] as const;
@@ -15,6 +16,10 @@ const required = [
 function isConfigured(key: (typeof required)[number]): boolean {
   if (key === "MONGODB_URI") return Boolean(process.env.MONGODB_URI ?? process.env.MONGO_URI);
   return Boolean(process.env[key]?.trim());
+}
+
+function isValidMercadoPagoMode(value: string | undefined): boolean {
+  return value === "sandbox" || value === "production";
 }
 
 function isValidProductionUrl(value: string): boolean {
@@ -32,6 +37,11 @@ for (const key of required) {
   const configured = isConfigured(key);
   console.log(`${configured ? "✓" : "✗"} ${key} ${configured ? "configurada" : "ausente"}`);
   valid &&= configured;
+}
+
+if (!isValidMercadoPagoMode(process.env.MERCADOPAGO_MODE?.trim().toLowerCase())) {
+  console.log("ERROR MERCADOPAGO_MODE debe ser sandbox o production");
+  valid = false;
 }
 
 const publicUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();

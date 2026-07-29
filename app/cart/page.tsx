@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import CartSummary from "@/components/CartSummary";
+import { formatARS } from "@/lib/currency";
 
 export default function CartPage() {
 
@@ -83,7 +84,7 @@ export default function CartPage() {
                   </h2>
 
                   <p className="mt-1 text-sm text-neutral-600">
-                    ${item.price.toLocaleString("es-AR")} c/u
+                    {formatARS(item.price)} c/u
                   </p>
 
                 </div>
@@ -132,7 +133,7 @@ export default function CartPage() {
                 <div className="text-right">
 
                   <p className="font-semibold">
-                    ${(item.price * item.quantity).toLocaleString("es-AR")}
+                    {formatARS(item.price * item.quantity)}
                   </p>
 
 
@@ -169,7 +170,7 @@ export default function CartPage() {
 
 
               <p className="mt-2 text-2xl font-semibold">
-                ${subtotal.toLocaleString("es-AR")}
+                {formatARS(subtotal)}
               </p>
 
 

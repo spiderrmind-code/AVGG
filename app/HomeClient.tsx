@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { formatARS } from '@/lib/currency';
 
 export type ProductDTO = {
   _id: string;
@@ -61,13 +62,7 @@ type Props = {
 
 const brands = ['Samsung', 'Apple', 'Xiaomi', 'Sony', 'Nike', 'Adidas', 'Logitech', 'HyperX'];
 
-function currency(value: number) {
-  return new Intl.NumberFormat('es-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+const currency = formatARS;
 
 function getImage(src?: string) {
   if (!src || src.trim().length === 0) {

@@ -38,6 +38,13 @@ export function getStockStatus(product: ProductRecord) {
   return { inStock: false };
 }
 
+function publicDescription(value: unknown) {
+  if (typeof value !== "string") return "";
+  // Algunos registros históricos importados conservan este marcador operativo.
+  // Nunca debe alcanzar el catálogo ni los metadatos públicos.
+  return value.replace(/\s*producto\s+importado\s+desde\s+cj\s+dropshipping\.?\s*/gi, " ").replace(/\s{2,}/g, " ").trim();
+}
+
 export function normalizePublicProduct(product: ProductRecord): PublicProduct | null {
   const id = product._id ?? product.id;
   const rawName = product.name ?? product.title;
@@ -55,7 +62,7 @@ export function normalizePublicProduct(product: ProductRecord): PublicProduct | 
   return {
     _id: String(id), slug, name: rawName.trim(),
     title: typeof product.title === "string" && product.title.trim() ? product.title.trim() : rawName.trim(),
-    description: typeof product.description === "string" ? product.description : "", price,
+    description: publicDescription(product.description), price,
     ...(Number.isFinite(comparePrice) && comparePrice > price ? { comparePrice } : {}),
     ...(image ? { image } : {}), images, category,
     categorySlug: category ? normalizeCatalogSlug(category) : null,

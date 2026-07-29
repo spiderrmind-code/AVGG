@@ -1,4 +1,5 @@
 import MercadoPagoConfig, { Payment } from "mercadopago";
+import { requireMercadoPagoAccessToken } from "@/lib/mercadopago-config";
 
 export type VerifiedMercadoPagoPayment = {
   id: string;
@@ -16,8 +17,7 @@ export class MercadoPagoProviderError extends Error {
 }
 
 export async function getMercadoPagoPayment(paymentId: string): Promise<VerifiedMercadoPagoPayment> {
-  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!accessToken) throw new Error("Mercado Pago access token is not configured");
+  const accessToken = requireMercadoPagoAccessToken();
   try {
     const payment = await new Payment(new MercadoPagoConfig({ accessToken })).get({ id: paymentId });
     return {
