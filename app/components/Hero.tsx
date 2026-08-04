@@ -123,7 +123,7 @@ export default function Hero({ products }: Props) {
           <div className="marketplace-hero-grid" aria-hidden="true" />
           <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] border-l border-white/15 bg-white/10 lg:block" />
 
-          <div key={`hero-copy-${slideKey}`} className="hero-slide-content relative z-10 max-w-xl">
+          <div key={`hero-copy-${slideKey}`} className="marketplace-hero-copy hero-slide-content relative z-10 max-w-xl">
             <p className="ui-eyebrow">{category?.name ?? product.category ?? "Selección AVG"}</p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className={isOffer ? "ui-offer-badge" : "ui-badge"}>{category ? "Categoría" : isOffer ? "Oferta disponible" : "Selección destacada"}</span>

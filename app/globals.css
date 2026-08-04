@@ -511,6 +511,15 @@ html.dark .premium-input, html.dark .theme-input { background:var(--color-input)
 .marketplace-hero::before { content:"AVG / DISCOVER"; position:absolute; right:-1.2rem; top:2.25rem; color:rgba(255,255,255,.09); font-size:clamp(4rem,10vw,10rem); font-weight:900; letter-spacing:-.09em; line-height:.78; writing-mode:vertical-rl; pointer-events:none; }
 .marketplace-hero-sun { position:absolute; width:17rem; height:17rem; right:26%; bottom:-12rem; border:1px solid rgba(255,255,255,.3); border-radius:50%; box-shadow:0 0 0 1.5rem rgba(255,255,255,.05),0 0 0 4rem rgba(255,255,255,.035); pointer-events:none; }
 .marketplace-hero-grid { position:absolute; inset:auto -8% -42% 32%; height:60%; transform:perspective(460px) rotateX(62deg); background-image:linear-gradient(rgba(255,255,255,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.16) 1px,transparent 1px); background-size:2rem 2rem; mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent); pointer-events:none; }
+html:not(.dark) .marketplace-hero-copy { padding:1.25rem; border:1px solid rgba(255,255,255,.26); border-radius:1.25rem; background:linear-gradient(112deg,rgba(1,34,96,.84),rgba(5,61,162,.68) 68%,rgba(5,61,162,.18)); box-shadow:0 16px 36px rgba(0,23,79,.2); backdrop-filter:blur(10px); }
+html:not(.dark) .marketplace-hero-copy h1 { text-shadow:0 2px 12px rgba(0,15,50,.42); }
+html:not(.dark) .marketplace-hero-copy .ui-eyebrow { color:#dceaff; }
+html:not(.dark) .marketplace-hero-copy .ui-trust-list { color:#fff; }
+html:not(.dark) .marketplace-hero-copy .ui-trust-list span::before { background:#82e3b0; box-shadow:0 0 0 4px rgba(130,227,176,.16); }
+html:not(.dark) .marketplace-hero .ui-icon-button { border-color:rgba(255,255,255,.5); color:#062e79; background:#fff; }
+html:not(.dark) .marketplace-hero .ui-icon-button:hover { background:#eef5ff; color:#062e79; }
+html:not(.dark) .marketplace-hero [aria-current="true"] { background:#ff8a00; }
+html:not(.dark) .marketplace-hero [aria-current="false"] { background:rgba(255,255,255,.7); }
 .marketplace-category-grid > a::after { content:"EXPLORE"; position:absolute; right:.75rem; bottom:.65rem; z-index:2; color:rgba(255,255,255,.86); font-size:.58rem; font-weight:900; letter-spacing:.16em; opacity:0; transform:translateY(4px); transition:opacity .18s ease,transform .18s ease; }
 .marketplace-category-grid > a:hover::after { opacity:1; transform:translateY(0); }
 .marketplace-categories .section-title { max-width:11ch; font-size:clamp(2rem,4vw,3.3rem); line-height:.94; }
@@ -526,5 +535,6 @@ html.dark .marketplace-product-card:hover h3 { color:#8db7ff; }
   .marketplace-hero::before { right:-.3rem; top:1rem; font-size:3.5rem; }
   .marketplace-hero-sun { width:11rem; height:11rem; right:-3rem; bottom:-8rem; }
   .marketplace-hero-grid { inset:auto -55% -33% 5%; }
+  html:not(.dark) .marketplace-hero-copy { padding:1rem; background:linear-gradient(130deg,rgba(1,34,96,.88),rgba(5,61,162,.62)); }
   .marketplace-categories .section-title { font-size:2rem; }
 }
