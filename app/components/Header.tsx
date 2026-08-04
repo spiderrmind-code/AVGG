@@ -357,6 +357,11 @@ export default function Header() {
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
+        <div className="marketplace-topline border-b border-white/15 bg-[linear-gradient(90deg,#0756e8,#1677ff_54%,#ff5a1f)] text-white">
+          <div className="mx-auto flex h-7 max-w-7xl items-center justify-center gap-3 overflow-hidden px-4 text-[10px] font-bold uppercase tracking-[0.12em] sm:justify-between sm:text-[11px]">
+            <span>Compra protegida</span><span className="hidden sm:inline">Pago seguro</span><span>Envios con seguimiento</span>
+          </div>
+        </div>
         <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 md:h-[82px] lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6">
             {/* LEFT: logo + nav */}
@@ -408,7 +413,7 @@ export default function Header() {
                     value={search}
                     onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder="Buscar productos"
-                    className="ui-input h-11 w-full rounded-full py-2.5 pl-10 pr-12 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+                    className="marketplace-search ui-input h-11 w-full rounded-full py-2.5 pl-10 pr-12 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"

@@ -24,7 +24,7 @@ export default function PromotionsSection({ products }: { products: Product[] })
   const maxDiscount = Math.max(...promos.map(p => p.comparePrice && p.comparePrice > p.price ? Math.round(((p.comparePrice - p.price) / p.comparePrice) * 100) : 0));
 
   return (
-    <section id="ofertas" className="ui-shell ui-section pt-4">
+    <section id="ofertas" className="marketplace-promotions ui-shell ui-section pt-5">
       <div className="ui-commerce-panel mb-8 p-6 sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -36,7 +36,7 @@ export default function PromotionsSection({ products }: { products: Product[] })
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="marketplace-offer-grid grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:gap-5">
         {promos.map((p) => (
           <ProductCard key={p._id} product={p} />
         ))}

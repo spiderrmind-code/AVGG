@@ -41,6 +41,14 @@ export default async function Home() {
 
       <CategoriesSection />
 
+      <section className="ui-shell py-3 sm:py-5">
+        <div className="marketplace-discovery-strip">
+          <span className="marketplace-strip-dot" aria-hidden="true" />
+          <p><strong>Descubri mas por menos.</strong> Productos seleccionados, precios claros y compra protegida.</p>
+          <Link href="/#destacados">Explorar ahora</Link>
+        </div>
+      </section>
+
       <PromotionsSection products={products} />
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -54,6 +62,14 @@ export default async function Home() {
               Ver más
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="ui-shell pb-7">
+        <div className="marketplace-discovery-strip marketplace-discovery-strip-alt">
+          <span className="marketplace-strip-dot" aria-hidden="true" />
+          <p><strong>Mas variedad para descubrir.</strong> Segui explorando productos disponibles.</p>
+          <Link href="/#destacados">Ver catalogo</Link>
         </div>
       </section>
 

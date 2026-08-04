@@ -146,7 +146,7 @@ export default function ProductCard({
 
   return (
 
-    <article className="ui-card ui-card-hover ui-product-card group flex h-full flex-col">
+    <article className="marketplace-product-card ui-card ui-card-hover ui-product-card group flex h-full flex-col">
 
 
 

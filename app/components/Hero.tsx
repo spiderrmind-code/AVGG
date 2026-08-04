@@ -106,10 +106,10 @@ export default function Hero({ products }: Props) {
   const productHref = `/product/${product._id}`;
 
   return (
-    <section className="border-b border-[color:var(--color-border)] bg-[color:var(--color-bg)]" aria-label="Destacados">
-      <div className="ui-shell py-6 sm:py-8 lg:py-10">
+    <section className="marketplace-hero-wrap border-b border-[color:var(--color-border)]" aria-label="Destacados">
+      <div className="ui-shell py-3 sm:py-5 lg:py-7">
         <div
-          className="hero-offer-grid hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-5 py-7 shadow-[var(--shadow-strong)] sm:px-8 sm:py-10 lg:grid lg:min-h-[520px] lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:gap-12 lg:px-12"
+          className="marketplace-hero hero-offer-grid hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-5 py-7 shadow-[var(--shadow-strong)] sm:px-8 sm:py-10 lg:grid lg:min-h-[500px] lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:gap-12 lg:px-12"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onFocusCapture={() => setIsPaused(true)}
@@ -119,7 +119,9 @@ export default function Hero({ products }: Props) {
           onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] border-l border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] lg:block" />
+          <div className="marketplace-hero-sun" aria-hidden="true" />
+          <div className="marketplace-hero-grid" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] border-l border-white/15 bg-white/10 lg:block" />
 
           <div key={`hero-copy-${slideKey}`} className="hero-slide-content relative z-10 max-w-xl">
             <p className="ui-eyebrow">{category?.name ?? product.category ?? "Selección AVG"}</p>
@@ -127,12 +129,12 @@ export default function Hero({ products }: Props) {
               <span className={isOffer ? "ui-offer-badge" : "ui-badge"}>{category ? "Categoría" : isOffer ? "Oferta disponible" : "Selección destacada"}</span>
               {discount !== null ? <span className="ui-offer-badge">{discount}% menos</span> : null}
             </div>
-            <h1 className="mt-6 text-4xl font-semibold leading-[0.96] tracking-[-0.055em] text-[color:var(--color-text)] sm:text-5xl lg:text-6xl">{title}</h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-[color:var(--color-text-muted)] sm:text-lg">{description}</p>
+            <h1 className="mt-5 text-4xl font-bold leading-[0.94] tracking-[-0.055em] text-white sm:text-5xl lg:text-6xl">{title}</h1>
+            <p className="mt-5 max-w-lg text-base leading-7 text-white/85 sm:text-lg">{description}</p>
 
             {!category ? (
               <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2">
-                <span className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--color-text)] sm:text-4xl">{formatARS(Number(product.price ?? 0))}</span>
+                <span className="marketplace-hero-price">{formatARS(Number(product.price ?? 0))}</span>
                 {product.comparePrice && product.comparePrice > product.price ? <span className="pb-1 text-sm text-[color:var(--color-text-subtle)] line-through">{formatARS(Number(product.comparePrice))}</span> : null}
                 {savings ? <span className="ui-offer-badge">Ahorrás {formatARS(savings)}</span> : null}
               </div>

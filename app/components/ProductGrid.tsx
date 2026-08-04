@@ -22,14 +22,14 @@ export default function ProductGrid({
   }
 
   return (
-    <section className="ui-shell pb-16 sm:pb-20">
+    <section className="marketplace-product-grid ui-shell pb-12 sm:pb-16">
       <div className="mb-6 flex items-end justify-between gap-3">
         <div>
           <p className="section-label">Colección</p>
           <h3 className="section-title dark:text-white">Productos seleccionados</h3>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:gap-5 xl:gap-6">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}
