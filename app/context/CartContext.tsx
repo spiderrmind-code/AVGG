@@ -31,6 +31,10 @@ function readCart(raw: string | null) {
   }
 }
 
+function persistCart(cart: CartItem[]) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: STORAGE_VERSION, items: cart })); } catch { /* storage can be unavailable */ }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -39,8 +43,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const raw = localStorage.getItem(STORAGE_KEY);
     const nextCart = readCart(raw);
     if (raw && nextCart.length === 0) localStorage.removeItem(STORAGE_KEY);
-    setCart(nextCart);
-    setHydrated(true);
+    queueMicrotask(() => {
+      setCart(nextCart);
+      setHydrated(true);
+    });
     const onStorage = (event: StorageEvent) => { if (event.key === STORAGE_KEY) setCart(readCart(event.newValue)); };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -48,7 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: STORAGE_VERSION, items: cart })); } catch { /* storage can be unavailable */ }
+    persistCart(cart);
   }, [cart, hydrated]);
 
   function addToCart(input: CartInput, requestedQuantity = 1) {
@@ -57,9 +63,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!item || quantity === null) return;
     setCart((current) => {
       const existing = current.find((product) => product._id === item._id);
-      if (!existing) return current.length >= MAX_CART_ITEMS ? current : [...current, { ...item, quantity }];
+      const next = !existing
+        ? current.length >= MAX_CART_ITEMS ? current : [...current, { ...item, quantity }]
+        : (() => {
       const nextQuantity = normalizeQuantity(existing.quantity + quantity, item.stockQuantity ?? existing.stockQuantity);
       return nextQuantity === null ? current : current.map((product) => product._id === item._id ? { ...item, quantity: nextQuantity } : product);
+        })();
+      if (next !== current) persistCart(next);
+      return next;
     });
   }
 

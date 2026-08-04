@@ -1,7 +1,11 @@
 import { normalizePublicProduct } from "@/lib/catalog";
 
 type ProductLike = Record<string, unknown>;
-type OrderLike = Record<string, any>;
+type OrderLike = Record<string, unknown>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
 
 const INTERNAL_FIELDS = [
   "supplierCost",
@@ -27,13 +31,14 @@ export function sanitizeOrderForClient(order: OrderLike, isAdmin = false) {
 
   if (!isAdmin) {
     if (Array.isArray(safe.items)) {
-      safe.items = safe.items.map((item: any) => {
+      safe.items = safe.items.map((item) => {
+        const source = isRecord(item) ? item : {};
         const sanitizedItem: Record<string, unknown> = {
-          _id: item._id,
-          name: item.name,
-          price: Number(item.price ?? 0),
-          quantity: Number(item.quantity ?? 1),
-          image: item.image,
+          _id: source._id,
+          name: source.name,
+          price: Number(source.price ?? 0),
+          quantity: Number(source.quantity ?? 1),
+          image: source.image,
         };
 
         for (const field of INTERNAL_FIELDS) {

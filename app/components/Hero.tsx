@@ -2,15 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { formatARS } from "@/lib/currency";
+import { catalogCategories, type CatalogCategory } from "@/data/catalog-categories";
 import type { Product } from "./ProductCard";
 
 type Props = { products: Product[] };
+type ProductSlide = { kind: "product"; product: Product };
+type CategorySlide = { kind: "category"; category: CatalogCategory };
+type HeroSlide = ProductSlide | CategorySlide;
 
 function getTitle(product: Product) {
   return product.name ?? product.title ?? "Producto destacado";
@@ -28,105 +32,150 @@ function getDiscount(product: Product) {
 export default function Hero({ products }: Props) {
   const router = useRouter();
   const { addToCart } = useCart();
-  const offers = products.filter((product) => product.featured || getDiscount(product) !== null).slice(0, 5);
-  const slides = offers.length > 0 ? offers : products.slice(0, 1);
-  const hasOffer = offers.length > 0;
+  const discountedProducts = products.filter((product) => getDiscount(product) !== null);
+  const featuredProducts = products.filter((product) => product.featured && getDiscount(product) === null);
+  const prioritizedProducts = new Set([...discountedProducts, ...featuredProducts]);
+  const orderedProducts = [...discountedProducts, ...featuredProducts, ...products.filter((product) => !prioritizedProducts.has(product))];
+  const productSlides: ProductSlide[] = orderedProducts.slice(0, 5).map((product) => ({ kind: "product", product }));
+  const slides: HeroSlide[] = productSlides.length === 1 && catalogCategories[0]
+    ? [...productSlides, { kind: "category", category: catalogCategories[0] }]
+    : productSlides;
   const [activeIndex, setActiveIndex] = useState(0);
-  const product = slides[activeIndex] ?? products[0];
+  const [isPaused, setIsPaused] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const touchStartX = useRef<number | null>(null);
+  const activeSlide = slides[activeIndex] ?? slides[0];
+  const product = activeSlide?.kind === "product" ? activeSlide.product : products[0];
+  const isCategorySlide = activeSlide?.kind === "category";
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (slides.length < 2 || isPaused || prefersReducedMotion) return;
+
+    const timer = window.setInterval(() => {
+      setActiveIndex((index) => (index + 1) % slides.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [isPaused, prefersReducedMotion, slides.length]);
 
   function selectSlide(index: number) {
     setActiveIndex((index + slides.length) % slides.length);
   }
 
+  function handleTouchEnd(event: React.TouchEvent<HTMLElement>) {
+    const startX = touchStartX.current;
+    touchStartX.current = null;
+    if (startX === null) return;
+
+    const distance = event.changedTouches[0].clientX - startX;
+    if (Math.abs(distance) < 42) return;
+    selectSlide(activeIndex + (distance < 0 ? 1 : -1));
+  }
+
   function handleBuyNow() {
-    if (product?._id) {
-      addToCart({
-        _id: String(product._id),
-        name: getTitle(product),
-        price: Number(product.price ?? 0),
-        comparePrice: Number(product.comparePrice ?? 0) || undefined,
-        image: getImage(product),
-        inStock: product.inStock === true,
-        stockQuantity: product.stockQuantity,
-      }, 1);
-      router.push("/checkout");
-      return;
-    }
-    router.push("/search?q=ofertas");
+    if (!product?._id) return;
+    addToCart({
+      _id: String(product._id),
+      name: getTitle(product),
+      price: Number(product.price ?? 0),
+      comparePrice: Number(product.comparePrice ?? 0) || undefined,
+      image: getImage(product),
+      inStock: product.inStock === true,
+      stockQuantity: product.stockQuantity,
+    }, 1);
+    router.push("/checkout");
   }
 
-  if (!product) {
-    return null;
-  }
+  if (!activeSlide || !product) return null;
 
-  const title = getTitle(product);
-  const discount = getDiscount(product);
-  const category = product.category ?? "Selección AVG";
+  const category = isCategorySlide ? activeSlide.category : undefined;
+  const title = category ? category.name : getTitle(product);
+  const description = category?.description ?? product.description?.trim() ?? "Una selección cuidada para comprar con claridad, seguridad y una experiencia simple.";
+  const image = category?.image ?? getImage(product);
+  const discount = category ? null : getDiscount(product);
+  const savings = discount !== null && product.comparePrice ? product.comparePrice - product.price : null;
+  const isOffer = !category && discount !== null;
+  const slideKey = category ? `category-${category.slug}` : `product-${product._id}`;
+  const productHref = `/product/${product._id}`;
 
   return (
-    <section className="border-b border-[color:var(--color-border)] bg-[color:var(--color-bg)]" aria-label="Ofertas destacadas">
+    <section className="border-b border-[color:var(--color-border)] bg-[color:var(--color-bg)]" aria-label="Destacados">
       <div className="ui-shell py-6 sm:py-8 lg:py-10">
-        <div className="hero-offer-grid relative isolate overflow-hidden rounded-[1.75rem] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-5 py-7 shadow-[var(--shadow-soft)] sm:px-8 sm:py-10 lg:grid lg:min-h-[500px] lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:gap-12 lg:px-12">
+        <div
+          className="hero-offer-grid hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-5 py-7 shadow-[var(--shadow-strong)] sm:px-8 sm:py-10 lg:grid lg:min-h-[520px] lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:gap-12 lg:px-12"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onFocusCapture={() => setIsPaused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsPaused(false);
+          }}
+          onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] border-l border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] lg:block" />
 
-          <div className="relative z-10 max-w-xl">
-            <p className="ui-eyebrow">{category}</p>
+          <div key={`hero-copy-${slideKey}`} className="hero-slide-content relative z-10 max-w-xl">
+            <p className="ui-eyebrow">{category?.name ?? product.category ?? "Selección AVG"}</p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="ui-badge">{hasOffer ? "Oferta imperdible" : "Selección destacada"}</span>
-              {discount !== null ? <span className="ui-badge">{discount}% menos</span> : null}
+              <span className={isOffer ? "ui-offer-badge" : "ui-badge"}>{category ? "Categoría" : isOffer ? "Oferta disponible" : "Selección destacada"}</span>
+              {discount !== null ? <span className="ui-offer-badge">{discount}% menos</span> : null}
             </div>
-            <h1 className="mt-6 text-4xl font-semibold leading-[0.98] tracking-[-0.045em] text-[color:var(--color-text)] sm:text-5xl lg:text-6xl">
-              Tecnología que se siente bien elegir.
-            </h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-[color:var(--color-text-muted)] sm:text-lg">
-              {product.description?.trim() || "Una selección cuidada de productos para comprar con claridad, seguridad y una experiencia simple."}
-            </p>
+            <h1 className="mt-6 text-4xl font-semibold leading-[0.96] tracking-[-0.055em] text-[color:var(--color-text)] sm:text-5xl lg:text-6xl">{title}</h1>
+            <p className="mt-5 max-w-lg text-base leading-7 text-[color:var(--color-text-muted)] sm:text-lg">{description}</p>
 
-            <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2">
-              <span className="text-3xl font-semibold tracking-[-0.04em] text-[color:var(--color-text)]">{formatARS(Number(product.price ?? 0))}</span>
-              {product.comparePrice && product.comparePrice > product.price ? <span className="pb-1 text-sm text-[color:var(--color-text-subtle)] line-through">{formatARS(Number(product.comparePrice))}</span> : null}
-            </div>
+            {!category ? (
+              <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2">
+                <span className="text-3xl font-semibold tracking-[-0.05em] text-[color:var(--color-text)] sm:text-4xl">{formatARS(Number(product.price ?? 0))}</span>
+                {product.comparePrice && product.comparePrice > product.price ? <span className="pb-1 text-sm text-[color:var(--color-text-subtle)] line-through">{formatARS(Number(product.comparePrice))}</span> : null}
+                {savings ? <span className="ui-offer-badge">Ahorrás {formatARS(savings)}</span> : null}
+              </div>
+            ) : null}
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button onClick={handleBuyNow} className="ui-button-primary w-full sm:w-auto">Comprar ahora</button>
+              {category ? <Link href={`/category/${category.slug}`} className="ui-button-primary w-full sm:w-auto">Explorar categoría</Link> : isOffer ? <Link href={productHref} className="ui-button-primary w-full sm:w-auto">Ver oferta</Link> : <button type="button" onClick={handleBuyNow} className="ui-button-primary w-full sm:w-auto">Comprar ahora</button>}
               <Link href="/#destacados" className="ui-button-secondary w-full sm:w-auto">Explorar productos</Link>
             </div>
 
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm text-[color:var(--color-text-muted)]">
+            <div className="ui-trust-list mt-7">
               <span>Compra segura</span>
-              <span>•</span>
               <span>Envío con seguimiento</span>
-              <span>•</span>
               <span>Soporte real</span>
             </div>
           </div>
 
-          <div className="relative z-10 mt-9 lg:mt-0">
-            <div className="relative mx-auto aspect-[4/3] max-w-[510px] overflow-hidden rounded-[1.35rem] bg-[color:var(--color-surface-muted)]">
-              <Image src={getImage(product)} alt={title} fill priority sizes="(max-width: 1024px) 100vw, 42vw" className="object-contain p-6 sm:p-8" />
-              <div className="absolute left-4 top-4 rounded-full bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text)] shadow-sm">
-                {discount !== null ? `${discount}% OFF` : "Destacado"}
-              </div>
+          <div key={`hero-media-${slideKey}`} className="hero-slide-content relative z-10 mt-9 lg:mt-0">
+            <div className="hero-product-stage ui-product-image relative mx-auto aspect-[4/3] max-w-[510px] overflow-hidden">
+              <Image src={image} alt={title} fill priority sizes="(max-width: 1024px) 100vw, 42vw" unoptimized={Boolean(category)} className="hero-product-image object-contain p-6 sm:p-8" />
+              <div className="absolute left-4 top-4 rounded-full bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text)] shadow-sm">{discount !== null ? `${discount}% OFF` : category ? "Explorar" : "Destacado"}</div>
             </div>
             <div className="mt-4 flex items-center justify-between gap-4">
               <div>
-                <p className="ui-eyebrow">Producto seleccionado</p>
+                <p className="ui-eyebrow">{category ? "Categoría seleccionada" : "Producto seleccionado"}</p>
                 <h2 className="mt-1 text-lg font-semibold text-[color:var(--color-text)]">{title}</h2>
               </div>
               {slides.length > 1 ? (
                 <div className="flex items-center gap-2" aria-label="Controles del carrusel">
-                  <button type="button" onClick={() => selectSlide(activeIndex - 1)} className="ui-icon-button" aria-label="Oferta anterior"><ChevronLeft className="h-4 w-4" /></button>
-                  <button type="button" onClick={() => selectSlide(activeIndex + 1)} className="ui-icon-button" aria-label="Oferta siguiente"><ChevronRight className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => selectSlide(activeIndex - 1)} className="ui-icon-button" aria-label="Anterior"><ChevronLeft className="h-4 w-4" /></button>
+                  <button type="button" onClick={() => selectSlide(activeIndex + 1)} className="ui-icon-button" aria-label="Siguiente"><ChevronRight className="h-4 w-4" /></button>
                 </div>
               ) : null}
             </div>
           </div>
 
           {slides.length > 1 ? (
-            <div className="relative z-10 mt-7 flex items-center gap-2 lg:absolute lg:bottom-8 lg:left-12 lg:mt-0" aria-label="Seleccionar oferta">
-              {slides.map((slide, index) => (
-                <button key={slide._id} type="button" onClick={() => selectSlide(index)} aria-label={`Ver oferta ${index + 1}: ${getTitle(slide)}`} aria-current={activeIndex === index} className={`h-2 rounded-full transition-all ${activeIndex === index ? "w-7 bg-[color:var(--color-text)]" : "w-2 bg-[color:var(--color-border)] hover:bg-[color:var(--color-text-subtle)]"}`} />
-              ))}
+            <div className="relative z-10 mt-7 flex items-center gap-2 lg:absolute lg:bottom-8 lg:left-12 lg:mt-0" aria-label="Seleccionar destacado">
+              {slides.map((slide, index) => {
+                const label = slide.kind === "category" ? slide.category.name : getTitle(slide.product);
+                const key = slide.kind === "category" ? `category-${slide.category.slug}` : `product-${slide.product._id}`;
+                return <button key={key} type="button" onClick={() => selectSlide(index)} aria-label={`Ver destacado ${index + 1}: ${label}`} aria-current={activeIndex === index} className={`h-2 rounded-full transition-all ${activeIndex === index ? "w-7 bg-[color:var(--color-accent)]" : "w-2 bg-[color:var(--color-border)] hover:bg-[color:var(--color-text-subtle)]"}`} />;
+              })}
             </div>
           ) : null}
         </div>

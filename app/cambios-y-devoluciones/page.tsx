@@ -1,0 +1,3 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Cambios y devoluciones", description: "Información inicial sobre cambios, devoluciones y reembolsos." };
+export default function ReturnsPage() { return <main className="mx-auto max-w-4xl px-4 py-16"><h1 className="text-3xl font-semibold">Cambios y devoluciones</h1><p className="mt-6">Si el producto es incorrecto, defectuoso o ejercés el derecho de arrepentimiento, contactanos en [EMAIL DE SOPORTE]. Evaluaremos plazo, condición del producto, costos de devolución y reembolso conforme a la normativa aplicable.</p><p className="mt-4">Esta política requiere revisión legal profesional antes de la operación comercial.</p></main>; }

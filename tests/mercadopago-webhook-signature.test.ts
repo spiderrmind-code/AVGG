@@ -17,6 +17,8 @@ test("accepts an official Mercado Pago HMAC-SHA256 signature", () => {
 test("rejects invalid or missing webhook signatures", () => {
   assert.deepEqual(verifyMercadoPagoWebhookSignature({ paymentId, requestId, secret, signature: `ts=${timestamp},v1=${"0".repeat(64)}` }), { valid: false, reason: "invalid_signature" });
   assert.deepEqual(verifyMercadoPagoWebhookSignature({ paymentId, requestId, secret, signature: null }), { valid: false, reason: "missing_signature" });
+  assert.deepEqual(verifyMercadoPagoWebhookSignature({ paymentId, requestId: null, secret, signature: `ts=${timestamp},v1=${signature}` }), { valid: false, reason: "missing_signature" });
+  assert.deepEqual(verifyMercadoPagoWebhookSignature({ paymentId, requestId, secret, signature: `ts=not-a-timestamp,v1=${signature}` }), { valid: false, reason: "invalid_signature" });
 });
 
 test("rejects a missing webhook secret", () => {

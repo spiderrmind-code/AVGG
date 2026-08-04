@@ -27,7 +27,7 @@ export function verifyMercadoPagoWebhookSignature(input: {
 
   const timestamp = readSignaturePart(input.signature, "ts");
   const receivedSignature = readSignaturePart(input.signature, "v1");
-  if (!timestamp || !receivedSignature || !/^[a-fA-F0-9]{64}$/.test(receivedSignature)) {
+  if (!timestamp || !/^\d+$/.test(timestamp) || !receivedSignature || !/^[a-fA-F0-9]{64}$/.test(receivedSignature)) {
     return { valid: false, reason: "invalid_signature" };
   }
 

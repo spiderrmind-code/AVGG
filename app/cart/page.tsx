@@ -24,13 +24,13 @@ export default function CartPage() {
 
 
   if (!hydrated) {
-    return <main className="min-h-screen px-4 py-16"><div className="ui-surface mx-auto max-w-5xl p-8 text-center">Cargando carrito...</div></main>;
+    return <main className="ui-page"><div className="ui-surface mx-auto max-w-5xl p-8 text-center">Cargando carrito...</div></main>;
   }
 
   if (cart.length === 0) {
 
     return (
-      <main className="min-h-screen px-4 py-16 sm:px-6 lg:px-8">
+      <main className="ui-page flex items-center">
         <div className="ui-surface mx-auto max-w-5xl p-8 text-center">
           <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Tu carrito está vacío</h1>
           <p className="mt-3 text-neutral-600 dark:text-zinc-300">Agrega productos para empezar tu compra.</p>
@@ -44,11 +44,12 @@ export default function CartPage() {
 
   return (
 
-    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <main className="ui-page">
 
       <div className="mx-auto max-w-7xl">
 
-        <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950">
+        <p className="ui-eyebrow">Carrito</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-neutral-950 sm:text-4xl">
           Tu carrito está listo para cerrar la compra
         </h1>
 
@@ -62,7 +63,7 @@ export default function CartPage() {
 
               <div
                 key={item._id}
-                className="ui-card flex flex-col gap-4 p-4 sm:flex-row sm:items-center"
+                className="ui-card flex flex-col gap-5 p-4 sm:flex-row sm:items-center sm:p-5"
               >
 
                 <div className="relative h-24 w-full sm:w-24">
@@ -71,7 +72,7 @@ export default function CartPage() {
                     src={item.image}
                     alt={item.name}
                     fill
-                    className="rounded-xl object-cover"
+                    className="rounded-[var(--radius-md)] object-cover"
                   />
 
                 </div>
@@ -94,8 +95,9 @@ export default function CartPage() {
                 <div className="flex items-center gap-2">
 
                   <button
+                    type="button"
                     aria-label={`Reducir cantidad de ${item.name}`}
-                    className="ui-button-secondary min-h-10 px-3"
+                    className="ui-button-secondary min-h-11 min-w-11 px-3"
                     onClick={() =>
                       updateQuantity(
                         item._id,
@@ -107,15 +109,16 @@ export default function CartPage() {
                   </button>
 
 
-                  <span className="min-w-8 text-center text-sm font-semibold text-neutral-900 dark:text-white">
+                  <span aria-live="polite" aria-atomic="true" className="min-w-8 text-center text-sm font-semibold text-neutral-900 dark:text-white">
                     {item.quantity}
                   </span>
 
 
                   <button
+                    type="button"
                     aria-label={`Aumentar cantidad de ${item.name}`}
                     disabled={item.stockQuantity !== undefined && item.quantity >= item.stockQuantity}
-                    className="ui-button-secondary min-h-10 px-3"
+                    className="ui-button-secondary min-h-11 min-w-11 px-3"
                     onClick={() =>
                       updateQuantity(
                         item._id,
@@ -138,6 +141,7 @@ export default function CartPage() {
 
 
                   <button
+                    type="button"
                     className="mt-2 text-sm font-medium text-rose-600 transition hover:text-rose-700"
                     onClick={() =>
                       removeFromCart(item._id)
@@ -162,7 +166,7 @@ export default function CartPage() {
             <CartSummary />
 
 
-            <div className="ui-card p-6">
+            <div className="ui-card p-6 shadow-[var(--shadow-soft)]">
 
               <h2 className="text-lg font-semibold">
                 Subtotal

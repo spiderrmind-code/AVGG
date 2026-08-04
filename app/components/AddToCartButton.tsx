@@ -6,10 +6,12 @@ import { WISHLIST_STORAGE_KEY, readWishlist } from "@/lib/wishlist";
 
 interface Product {
   _id: string;
+  slug?: string;
   name: string;
   price: number;
   image: string;
   inStock?: boolean;
+  stockQuantity?: number;
 }
 
 
@@ -32,10 +34,12 @@ export default function AddToCartButton({
 
     addToCart({
       _id: product._id,
+      slug: product.slug,
       name: product.name,
       price: product.price,
       image: product.image,
       inStock: product.inStock === true,
+      stockQuantity: product.stockQuantity,
     });
 
   }
@@ -56,11 +60,11 @@ export default function AddToCartButton({
     <button
       onClick={handleAdd}
       disabled={product.inStock === false}
-      className="w-full rounded-full bg-neutral-950 px-8 py-4 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:bg-neutral-800"
+      className="ui-button-primary min-h-[3.25rem] w-full px-8"
     >
       {product.inStock === false ? "Sin stock" : "Agregar al carrito"}
     </button>
-    <button type="button" onClick={handleWishlist} className="rounded-full border border-black/10 px-5 py-4 text-sm font-semibold">Favorito</button>
+    <button type="button" onClick={handleWishlist} className="ui-button-secondary min-h-[3.25rem] px-5">Favorito</button>
     </div>
   );
 

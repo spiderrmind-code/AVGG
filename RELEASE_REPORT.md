@@ -122,13 +122,13 @@ Configurar en Vercel Project Settings → Environment Variables:
 MONGO_URI=<tu_mongodb_uri>
 MONGODB_DB=AVGCONNECTS
 
-NEXTAUTH_SECRET=<generar-clave-aleatoria-de-64-caracteres>
+NEXTAUTH_SECRET=[REDACTED]
 
 NEXTAUTH_URL=https://<tu-dominio-vercel>.com
 
 GOOGLE_CLIENT_ID=199476887686-nlm087f3urjhofr35fqrgnpk33tlht73.apps.googleusercontent.com
 
-GOOGLE_CLIENT_SECRET=<tu_google_client_secret>
+GOOGLE_CLIENT_SECRET=[REDACTED]
 ```
 
 ### ⚠️ IMPORTANTE:

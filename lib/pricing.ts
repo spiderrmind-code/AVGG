@@ -26,7 +26,6 @@ export function calculateRecommendedPrice(input: PriceCalculationInput): PriceCa
   const desiredMargin = Number(input.desiredMargin ?? 0);
 
   const totalCosts = costPrice + shippingCost + paymentCommissionFixed + otherCosts;
-  const marginFactor = desiredMargin > 0 ? 1 + desiredMargin / 100 : 1;
   const recommendedPrice = totalCosts / (1 - desiredMargin / 100);
 
   return {

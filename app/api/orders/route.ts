@@ -8,9 +8,10 @@ import { hashGuestAccessToken } from "@/lib/payment";
 import { getDb } from "@/lib/mongo";
 import { checkRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
+import { maskOrderEmail } from "@/lib/order-presentation";
 
-type Customer = { firstName: string; lastName: string; email: string; phone: string; address: string; city: string; province: string; postalCode: string };
-type OrderItem = { _id: string; name: string; price: number; quantity: number; image?: string; _internal: { supplier: unknown; supplierId: unknown; costPrice: unknown; sku: unknown; shippingDays: unknown; margin: unknown } };
+type Customer = { firstName: string; lastName: string; email: string; phone: string; address: string; city: string; province: string; postalCode: string; countryCode: string };
+type OrderItem = { _id: string; name: string; price: number; quantity: number; image?: string; _internal: { supplier: unknown; supplierId: unknown; costPrice: unknown; sku: unknown; shippingDays: unknown; margin: unknown; cjId: unknown; cjVariantId: unknown; cjSku: unknown } };
 type CheckoutOrder = Record<string, unknown>;
 
 function object(value: unknown): Record<string, unknown> | null { return value && typeof value === "object" ? value as Record<string, unknown> : null; }
@@ -22,9 +23,10 @@ function parseCustomer(value: unknown): Customer | null {
   const body = object(value);
   const firstName = text(body?.firstName, 80); const lastName = text(body?.lastName, 80); const phone = text(body?.phone, 40);
   const address = text(body?.address, 200); const city = text(body?.city, 100); const province = text(body?.province, 100); const postalCode = text(body?.postalCode, 20);
+  const countryCode = typeof body?.countryCode === "string" ? body.countryCode.trim().toUpperCase() : "";
   const email = typeof body?.email === "string" ? normalizeEmail(body.email) : "";
-  if (!firstName || !lastName || !phone || !address || !city || !province || !postalCode || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return null;
-  return { firstName, lastName, email, phone, address, city, province, postalCode };
+  if (!firstName || !lastName || !phone || !address || !city || !province || !postalCode || !/^[A-Z]{2}$/.test(countryCode) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return null;
+  return { firstName, lastName, email, phone, address, city, province, postalCode, countryCode };
 }
 
 function readIdempotencyKey(request: Request) {
@@ -41,7 +43,7 @@ function publicOrder(order: CheckoutOrder) {
     const value = object(item);
     return { _id: value?._id, name: value?.name, price: value?.price, quantity: value?.quantity, image: value?.image };
   }) : [];
-  return { _id: order._id, orderNumber: order.orderNumber, items, subtotal: order.subtotal, shippingAmount: order.shippingAmount ?? 0, discountAmount: order.discountAmount ?? 0, total: order.total, currency: order.currency ?? "ARS", status: order.status, paymentStatus: order.paymentStatus, customerEmail: order.customerEmail, createdAt: order.createdAt, updatedAt: order.updatedAt };
+  return { _id: order._id, orderNumber: order.orderNumber, items, subtotal: order.subtotal, shippingAmount: order.shippingAmount ?? 0, discountAmount: order.discountAmount ?? 0, total: order.total, currency: order.currency ?? "ARS", status: order.status, paymentStatus: order.paymentStatus, customerEmailMasked: maskOrderEmail(order.customerEmail), createdAt: order.createdAt, updatedAt: order.updatedAt };
 }
 
 export async function GET(request: Request) {
@@ -108,7 +110,7 @@ export async function POST(request: Request) {
       const price = product && typeof product.price === "number" ? product.price : NaN;
       const stock = product && typeof product.stockQuantity === "number" ? product.stockQuantity : typeof product?.stock === "number" ? product.stock : product?.stock === false ? 0 : undefined;
       if (!product || !Number.isFinite(price) || price <= 0 || (typeof stock === "number" && (stock <= 0 || quantity > stock))) return NextResponse.json({ success: false, message: "Producto no disponible" }, { status: 400 });
-      items.push({ _id: String(product._id), name: String(product.name ?? product.title ?? "Producto"), price, quantity, image: typeof product.image === "string" ? product.image : undefined, _internal: { supplier: product.supplier ?? null, supplierId: product.supplierId ?? null, costPrice: product.costPrice ?? null, sku: product.sku ?? null, shippingDays: product.shippingDays ?? null, margin: product.margin ?? null } });
+      items.push({ _id: String(product._id), name: String(product.name ?? product.title ?? "Producto"), price, quantity, image: typeof product.image === "string" ? product.image : undefined, _internal: { supplier: product.supplier ?? null, supplierId: product.supplierId ?? null, costPrice: product.costPrice ?? null, sku: product.sku ?? null, shippingDays: product.shippingDays ?? null, margin: product.margin ?? null, cjId: product.cjId ?? null, cjVariantId: product.cjVariantId ?? null, cjSku: product.cjSku ?? null } });
     }
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingAmount = 0; const discountAmount = 0; const currency = String(process.env.MERCADOPAGO_CURRENCY ?? "ARS").trim().toUpperCase();

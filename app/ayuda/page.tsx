@@ -1,0 +1,4 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Ayuda", description: "Ayuda para compras, pagos, envíos, cambios y cuenta.", alternates: { canonical: "/ayuda" } };
+export default function HelpPage() { const links = [["Cómo comprar", "/faq"], ["Pagos", "/faq"], ["Seguimiento y envíos", "/envios"], ["Cambios y devoluciones", "/cambios-y-devoluciones"], ["Cuenta", "/account"], ["Contacto", "/contacto"]]; return <main className="mx-auto max-w-4xl px-4 py-16"><h1 className="text-3xl font-semibold">Ayuda</h1><p className="mt-4 text-neutral-600">Encontrá información para cada etapa de tu compra.</p><ul className="mt-8 grid gap-3 sm:grid-cols-2">{links.map(([label, href]) => <li key={href}><Link className="block rounded-xl border p-4 hover:bg-neutral-50" href={href}>{label}</Link></li>)}</ul></main>; }

@@ -298,12 +298,14 @@ export default function HomeClient({
   const [notice, setNotice] = useState<string>('');
 
   useEffect(() => {
+    let initialWishlist: string[] = [];
     try {
       const stored = localStorage.getItem('avgconnects:wishlist');
-      if (stored) setWishlist(JSON.parse(stored));
+      if (stored) initialWishlist = JSON.parse(stored);
     } catch {
-      setWishlist([]);
+      initialWishlist = [];
     }
+    queueMicrotask(() => setWishlist(initialWishlist));
   }, []);
 
   useEffect(() => {

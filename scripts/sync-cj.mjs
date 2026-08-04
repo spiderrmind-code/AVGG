@@ -1,14 +1,15 @@
-require("dotenv").config({ path: ".env.local" });
+import dotenv from "dotenv";
+import { MongoClient } from "mongodb";
 
-const { MongoClient } = require("mongodb");
+dotenv.config({ path: ".env.local" });
 
 async function syncCJ() {
-  console.log("🚀 Iniciando sincronización CJ...");
+  console.log("ðŸš€ Iniciando sincronizaciÃ³n CJ...");
 
   const token = process.env.CJ_ACCESS_TOKEN;
 
   if (!token) {
-    throw new Error("❌ Falta CJ_ACCESS_TOKEN en .env.local");
+    throw new Error("âŒ Falta CJ_ACCESS_TOKEN en .env.local");
   }
 
   // Obtener productos de CJ
@@ -24,11 +25,11 @@ async function syncCJ() {
   const cj = await response.json();
 
   if (!cj.success) {
-    console.log("Autenticaci\u00f3n CJ completada");
-    throw new Error("❌ Error con CJ API");
+    console.log("Autenticación CJ completada");
+    throw new Error("âŒ Error con CJ API");
   }
 
-  console.log(`📦 Productos encontrados: ${cj.data.list.length}`);
+  console.log(`ðŸ“¦ Productos encontrados: ${cj.data.list.length}`);
 
 
   const products = cj.data.list.map((p) => ({
@@ -73,7 +74,7 @@ async function syncCJ() {
 
   await client.connect();
 
-  console.log("✅ Mongo conectado");
+  console.log("âœ… Mongo conectado");
 
 
   const db = client.db(
@@ -102,7 +103,7 @@ async function syncCJ() {
 
 
   console.log(
-    `✅ ${products.length} productos sincronizados`
+    `âœ… ${products.length} productos sincronizados`
   );
 
 
@@ -112,6 +113,6 @@ async function syncCJ() {
 
 syncCJ()
 .catch((error)=>{
-  console.error("❌ ERROR:", error.message);
+  console.error("âŒ ERROR:", error.message);
   process.exit(1);
 });

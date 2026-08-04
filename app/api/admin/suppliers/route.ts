@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
+import type { SupplierDocument } from "@/types/ecommerce";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || (session.user as any).role !== "admin") {
+  if (!session?.user?.email || session.user.role !== "admin") {
     return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
   }
   return null;
@@ -17,7 +18,7 @@ export async function GET() {
 
   try {
     const db = await getDb();
-    const suppliers = await db.collection("suppliers").find({}).sort({ name: 1 }).toArray();
+    const suppliers = await db.collection<SupplierDocument>("suppliers").find({}).sort({ name: 1 }).toArray();
     return NextResponse.json({ success: true, suppliers });
   } catch (error) {
     console.error("ERROR GET SUPPLIERS:", error);
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const db = await getDb();
-    const result = await db.collection("suppliers").insertOne({
+    const result = await db.collection<SupplierDocument>("suppliers").insertOne({
       ...body,
       status: body.status ?? "active",
       type: body.type ?? "manual",

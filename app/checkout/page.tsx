@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { formatARS } from "@/lib/currency";
 
@@ -14,6 +13,7 @@ const initialValues = {
   city: "",
   province: "",
   postalCode: "",
+  countryCode: "AR",
 };
 const CHECKOUT_ATTEMPT_KEY = "avgconnects_checkout_attempt";
 
@@ -65,6 +65,7 @@ export default function CheckoutPage() {
     if (!form.city.trim()) nextErrors.city = "La ciudad es obligatoria";
     if (!form.province.trim()) nextErrors.province = "La provincia es obligatoria";
     if (!form.postalCode.trim()) nextErrors.postalCode = "El código postal es obligatorio";
+    if (!/^[A-Za-z]{2}$/.test(form.countryCode.trim())) nextErrors.countryCode = "País inválido";
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
@@ -127,9 +128,9 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
+    <main className="ui-page">
       <div className="mx-auto max-w-7xl">
-        <div className="ui-surface mb-8 flex flex-col gap-3 p-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="ui-page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">Checkout</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Finalizar compra</h1>
@@ -139,7 +140,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="mt-2 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <form onSubmit={handleSubmit} className="ui-surface space-y-6 p-6">
+          <form onSubmit={handleSubmit} className="ui-surface space-y-6 p-6 sm:p-8">
             <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Datos personales</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu información queda protegida y se usa solo para gestionar el pedido.</p>
@@ -166,6 +167,7 @@ export default function CheckoutPage() {
             </div>
 
             {[
+              ["countryCode", "País (ISO)"],
               ["address", "Dirección"],
               ["city", "Ciudad"],
               ["province", "Provincia"],
@@ -173,7 +175,7 @@ export default function CheckoutPage() {
             ].map(([field, label]) => (
               <div key={field}>
                 <label htmlFor={field} className="text-sm font-medium text-neutral-700">{label}</label>
-                <input id={field} autoComplete={field === "address" ? "street-address" : field === "city" ? "address-level2" : field === "province" ? "address-level1" : "postal-code"} aria-invalid={Boolean(errors[field])} aria-describedby={errors[field] ? `${field}-error` : undefined} className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                <input id={field} maxLength={field === "countryCode" ? 2 : undefined} autoComplete={field === "countryCode" ? "country" : field === "address" ? "street-address" : field === "city" ? "address-level2" : field === "province" ? "address-level1" : "postal-code"} aria-invalid={Boolean(errors[field])} aria-describedby={errors[field] ? `${field}-error` : undefined} className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, field === "countryCode" ? e.target.value.toUpperCase() : e.target.value)} />
                 {errors[field] && <p id={`${field}-error`} role="alert" className="mt-1 text-sm text-red-500">{errors[field]}</p>}
               </div>
             ))}
@@ -185,7 +187,7 @@ export default function CheckoutPage() {
             </button>
           </form>
 
-          <aside className="ui-surface h-fit p-6">
+          <aside className="ui-surface h-fit p-6 sm:p-7">
             <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Resumen</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu pedido se ve claro desde el primer vistazo.</p>

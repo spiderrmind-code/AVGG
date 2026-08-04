@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import CjFulfillmentPanel from "../components/CjFulfillmentPanel";
 
 interface OrderRow {
   _id: string;
@@ -18,6 +19,7 @@ export default function OperationsPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [trackingMap, setTrackingMap] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
+  const [cjOrderId, setCjOrderId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     try {
@@ -30,7 +32,7 @@ export default function OperationsPage() {
   };
 
   useEffect(() => {
-    loadOrders();
+    queueMicrotask(() => { void loadOrders(); });
   }, []);
 
   const updateStatus = async (orderId: string, status: string) => {
@@ -120,6 +122,8 @@ export default function OperationsPage() {
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-700">
                       <button type="button" onClick={() => saveTracking(order._id)} className="ui-button-primary min-h-0 px-3 py-2">Guardar</button>
+                      <button type="button" onClick={() => setCjOrderId((current) => current === order._id ? null : order._id)} className="ui-button-secondary ml-2 min-h-0 px-3 py-2">CJ</button>
+                      {cjOrderId === order._id ? <CjFulfillmentPanel orderId={order._id} /> : null}
                     </td>
                   </tr>
                 ))}

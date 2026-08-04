@@ -74,5 +74,5 @@ export function normalizePublicProduct(product: ProductRecord): PublicProduct | 
 }
 
 export function isValidCatalogSlug(value: string) {
-  return value.length > 0 && value.length <= 80 && normalizeCatalogSlug(value).length > 0;
+  return value.length > 0 && value.length <= 120 && normalizeCatalogSlug(value).length > 0;
 }

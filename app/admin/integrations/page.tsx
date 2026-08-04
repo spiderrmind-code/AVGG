@@ -11,6 +11,18 @@ interface IntegrationItem {
   lastSync?: string;
 }
 
+interface SupplierIntegrationResponse {
+  _id: string;
+  apiUrl?: string;
+  syncStatus?: string;
+  lastSync?: string;
+}
+
+function isSupplierIntegration(value: unknown): value is SupplierIntegrationResponse {
+  if (!value || typeof value !== "object" || !("_id" in value)) return false;
+  return typeof value._id === "string";
+}
+
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<IntegrationItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,8 +32,9 @@ export default function IntegrationsPage() {
     const load = async () => {
       try {
         const response = await fetch("/api/admin/suppliers");
-        const data = await response.json();
-        setIntegrations((data.suppliers ?? []).map((supplier: any) => ({
+        const data: { suppliers?: unknown } = await response.json();
+        const suppliers = Array.isArray(data.suppliers) ? data.suppliers.filter(isSupplierIntegration) : [];
+        setIntegrations(suppliers.map((supplier) => ({
           _id: supplier._id,
           supplierId: supplier._id,
           apiUrl: supplier.apiUrl,

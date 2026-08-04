@@ -1,9 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { catalogCategories } from "@/data/catalog-categories";
-import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
+import ProductCard from "@/app/components/ProductCard";
 import { buildCategorySearchTerms } from "@/lib/category-routing";
 import { isValidCatalogSlug, normalizeCatalogSlug, normalizePublicProduct, type PublicProduct } from "@/lib/catalog";
 import { getDb } from "@/lib/mongo";
@@ -13,10 +10,9 @@ export const dynamic = "force-dynamic";
 async function getCategory(slug: string): Promise<{ name: string; products: PublicProduct[] } | null> {
   if (!isValidCatalogSlug(slug)) return null;
   const normalizedSlug = normalizeCatalogSlug(slug);
-  const knownCategory = catalogCategories.find((category) => category.slug === normalizedSlug);
   const db = await getDb();
   const [storedCategory, documents] = await Promise.all([
-    db.collection("categorias").findOne({ $or: [{ slug: normalizedSlug }, { name: { $regex: `^${normalizedSlug}$`, $options: "i" } }] }),
+    db.collection("categorias").findOne({ slug: { $regex: `^${normalizedSlug}$`, $options: "i" }, active: { $ne: false } }),
     db.collection("products").find({ active: { $ne: false } }).sort({ featured: -1, createdAt: -1 }).limit(250).toArray(),
   ]);
   const terms = new Set(buildCategorySearchTerms(normalizedSlug).map(normalizeCatalogSlug));
@@ -25,8 +21,10 @@ async function getCategory(slug: string): Promise<{ name: string; products: Publ
     .filter((product): product is PublicProduct => product !== null && product.inStock)
     .filter((product) => product.categorySlug === normalizedSlug || (product.categorySlug !== null && terms.has(product.categorySlug)));
   const storedName = storedCategory && typeof storedCategory.name === "string" ? storedCategory.name : undefined;
-  if (!knownCategory && !storedName && products.length === 0) return null;
-  return { name: storedName ?? knownCategory?.name ?? slug, products };
+  const productCategoryName = products[0]?.category ?? undefined;
+  const name = storedName ?? productCategoryName;
+  if (!name) return null;
+  return { name, products };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -51,5 +49,5 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   }
   if (!category) notFound();
 
-  return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-7xl"><div className="rounded-[2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl"><p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Categoría</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">{category.name}</h1><p className="mt-4 text-sm font-medium text-neutral-500">{category.products.length} productos disponibles</p></div>{category.products.length === 0 ? <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl"><h2 className="text-xl font-semibold text-neutral-950">No hay productos disponibles</h2><p className="mt-2 text-neutral-600">Esta categoría existe, pero no tiene productos con stock actualmente.</p></div> : <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{category.products.map((product) => { const image = product.image ?? PLACEHOLDER_IMAGE; return <Link key={product._id} href={`/product/${product.slug ?? product._id}`} className="rounded-[1.6rem] border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition hover:-translate-y-1"><div className="relative aspect-square overflow-hidden rounded-[1.2rem] bg-neutral-100"><Image src={image} alt={product.name} fill className="object-cover" /></div><h3 className="mt-4 font-semibold text-neutral-950">{product.title}</h3><p className="mt-4 font-semibold text-neutral-950">${product.price}</p></Link>; })}</div>}</div></main>;
+  return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(0,0,0,0.03),_transparent_45%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-7xl"><div className="rounded-[2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.08)] backdrop-blur-xl"><p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Categoría</p><h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950">{category.name}</h1><p className="mt-4 text-sm font-medium text-neutral-500">{category.products.length} productos disponibles</p></div>{category.products.length === 0 ? <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/80 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl"><h2 className="text-xl font-semibold text-neutral-950">No hay productos disponibles</h2><p className="mt-2 text-neutral-600">Esta categoría existe, pero no tiene productos con stock actualmente.</p></div> : <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{category.products.map((product) => <ProductCard key={product._id} product={product} />)}</div>}</div></main>;
 }

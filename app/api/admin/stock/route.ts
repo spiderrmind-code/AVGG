@@ -1,0 +1,15 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
+import { getDb } from "@/lib/mongo";
+
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions); if (!session?.user?.email) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 }); if (session.user.role !== "admin") return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 403 });
+  const params = new URL(request.url).searchParams; const page = Math.max(1, Math.min(10_000, Number(params.get("page")) || 1)); const limit = Math.min(100, Math.max(1, Number(params.get("limit")) || 25));
+  const filter: Record<string, unknown> = {}; const category = params.get("category"); const supplier = params.get("supplier"); const active = params.get("active"); const statusFilter = params.get("status"); const query = params.get("q")?.trim(); if (category) filter.category = category; if (supplier) filter.supplier = supplier; if (active === "true" || active === "false") filter.active = active === "true";
+  if (query) filter.$or = [{ name: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } }, { title: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } }, { sku: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } }];
+  if (statusFilter === "out_of_stock") filter.$or = [{ stock: false }, { stockQuantity: { $lte: 0 } }, { supplierStock: { $lte: 0 } }];
+  if (statusFilter === "low_stock") filter.$or = [{ stockQuantity: { $gt: 0, $lte: 3 } }, { supplierStock: { $gt: 0, $lte: 3 } }];
+  if (statusFilter === "unknown") filter.$and = [{ stockQuantity: { $exists: false } }, { supplierStock: { $exists: false } }];
+  try { const db = await getDb(); const [products, total] = await Promise.all([db.collection("products").find(filter).sort({ updatedAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(), db.collection("products").countDocuments(filter)]); return NextResponse.json({ items: products.map((product) => { const quantity = typeof product.stockQuantity === "number" ? product.stockQuantity : typeof product.supplierStock === "number" ? product.supplierStock : null; const updatedAt = product.updatedAt instanceof Date ? product.updatedAt : null; const stale = updatedAt && Date.now() - updatedAt.getTime() > 7 * 24 * 60 * 60 * 1000; const status = product.active === false ? "unknown" : stale ? "stale" : quantity === null ? "unknown" : quantity <= 0 ? "out_of_stock" : quantity <= 3 ? "low_stock" : "available"; return { id: String(product._id), name: product.name ?? product.title, sku: product.sku ?? "Sin información", category: product.category ?? "Sin información", supplier: product.supplier ?? "Sin información", stock: product.stock, stockQuantity: quantity, active: product.active !== false, status, updatedAt }; }), pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) } }); } catch { return NextResponse.json({ error: "STOCK_UNAVAILABLE" }, { status: 500 }); }
+}

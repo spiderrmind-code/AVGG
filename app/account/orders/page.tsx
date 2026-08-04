@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
+interface AccountOrder {
+  _id: string;
+  orderNumber?: string;
+  paymentStatus?: string;
+  status?: string;
+  total?: number;
+  createdAt?: string | Date;
+}
+
 export default function AccountOrdersPage() {
   const { data: session, status } = useSession();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<AccountOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,7 +34,7 @@ export default function AccountOrdersPage() {
     return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Debes iniciar sesión para ver tus pedidos.</div></main>;
   }
 
-  function friendlyStatus(order: any) {
+  function friendlyStatus(order: AccountOrder) {
     const ps = order.paymentStatus ?? order.status ?? "pending";
     const map: Record<string, string> = {
       approved: "Pagado",

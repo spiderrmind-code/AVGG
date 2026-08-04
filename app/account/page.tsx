@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
+interface AccountProfile {
+  name?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+}
+
 export default function AccountPage() {
   const { data: session, status } = useSession();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<AccountProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", province: "", postalCode: "" });
   const [message, setMessage] = useState("");

@@ -7,7 +7,11 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = resolveAppBaseUrl();
   const now = new Date();
-  const staticPaths = ["", "/nosotros", "/envios", "/cambios", "/contacto", "/faq"];
+  const staticPaths = [
+    "", "/nosotros", "/envios", "/cambios", "/contacto", "/faq",
+    "/terminos-y-condiciones", "/politica-de-privacidad", "/politica-de-cookies",
+    "/cambios-y-devoluciones", "/preguntas-frecuentes", "/ayuda",
+  ];
   let dynamicEntries: MetadataRoute.Sitemap = [];
 
   try {

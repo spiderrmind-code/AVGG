@@ -38,7 +38,11 @@ export async function upsertCjProducts(collection: Collection, products: CjProdu
       if (!existing && (!options.salePrice || options.salePrice <= 0)) { result.skipped++; result.errors.push(`${product.cjId}: falta precio de venta explícito`); continue; }
       const stockConfirmed = product.stockQuantity !== undefined;
       const syncFields = { name: product.name, ...(product.description ? { description: product.description } : {}), ...(product.image ? { image: product.image } : {}), images: product.images, ...(product.costPrice !== undefined ? { costPrice: product.costPrice, cjCost: product.costPrice } : {}), category: existing?.category ?? product.category, supplier: "CJ Dropshipping", supplierId: "cj", cjId: product.cjId, ...(product.variantId ? { cjVariantId: product.variantId } : {}), ...(product.sku ? { cjSku: product.sku } : {}), ...(product.rawCategory ? { cjRawCategory: product.rawCategory } : {}), cjVariants: product.variants, ...(stockConfirmed ? { stockQuantity: product.stockQuantity, stock: product.stockQuantity! > 0, cjStock: product.stockQuantity, syncStatus: "synced" } : { stock: false, syncStatus: "stock_unconfirmed" }), source: "cj", cjLastSyncAt: new Date(), updatedAt: new Date() };
-      if (options.dryRun) { existing ? result.updated++ : result.created++; continue; }
+      if (options.dryRun) {
+        if (existing) result.updated++;
+        else result.created++;
+        continue;
+      }
       if (existing) { await collection.updateOne({ _id: existing._id }, { $set: syncFields }); result.updated++; }
       else { await collection.insertOne({ ...syncFields, price: options.salePrice!, comparePrice: undefined, featured: false, active: stockConfirmed && product.stockQuantity! > 0, createdAt: new Date() }); result.created++; }
     } catch { result.failed++; result.errors.push(`${product.cjId}: no se pudo sincronizar`); }

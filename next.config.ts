@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
     const production = process.env.NODE_ENV === "production";
@@ -11,7 +12,7 @@ const nextConfig = {
       "form-action 'self'",
       "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://accounts.google.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https://cf.cjdropshipping.com https://oss-cf.cjdropshipping.com https://images.unsplash.com",
+      "img-src 'self' data: https://cf.cjdropshipping.com https://oss-cf.cjdropshipping.com https://images.unsplash.com https://lh3.googleusercontent.com",
       "font-src 'self' data:",
       "connect-src 'self' https://api.mercadopago.com https://developers.cjdropshipping.com https://accounts.google.com",
       "frame-src https://www.mercadopago.com https://www.mercadopago.com.ar",
@@ -39,6 +40,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { calculateRecommendedPrice, estimateProfit } from "@/lib/pricing";
+import { formatARS } from "@/lib/currency";
 
 interface ProductItem {
   _id: string;
@@ -51,7 +52,7 @@ export default function AdminPage() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({});
-  const [stats, setStats] = useState({ totalSales: 0, orderCount: 0, estimatedProfit: 0, activeProducts: 0, activeSuppliers: 0, stockAlerts: 0 });
+  const [stats, setStats] = useState({ totalSales: 0, salesToday: 0, salesLast7Days: 0, averageTicket: 0, orderCount: 0, pendingOrders: 0, paidOrders: 0, fulfillmentOrders: 0, shippedOrders: 0, deliveredOrders: 0, errorOrders: 0, activeProducts: 0, outOfStockProducts: 0, lowStockProducts: 0, activeSuppliers: 0, customerCount: 0 });
   const [costPriceInput, setCostPriceInput] = useState("20000");
   const [shippingCostInput, setShippingCostInput] = useState("2000");
   const [commissionInput, setCommissionInput] = useState("3000");
@@ -84,7 +85,7 @@ export default function AdminPage() {
       const dashboardData = await dashboardRes.json();
       setProducts(productsData.products ?? []);
       setOrders(ordersData.orders ?? []);
-      setStats(dashboardData.stats ?? { totalSales: 0, orderCount: 0, estimatedProfit: 0, activeProducts: 0, activeSuppliers: 0, stockAlerts: 0 });
+      setStats(dashboardData.stats ?? { totalSales: 0, salesToday: 0, salesLast7Days: 0, averageTicket: 0, orderCount: 0, pendingOrders: 0, paidOrders: 0, fulfillmentOrders: 0, shippedOrders: 0, deliveredOrders: 0, errorOrders: 0, activeProducts: 0, outOfStockProducts: 0, lowStockProducts: 0, activeSuppliers: 0, customerCount: 0 });
       setOrderStatuses(Object.fromEntries((ordersData.orders ?? []).map((order: OrderItem) => [String(order._id), order.status ?? order.paymentStatus ?? "pending"])));
     } catch {
       setMessage("No se pudo cargar la administración");
@@ -92,7 +93,7 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    loadData();
+    queueMicrotask(() => { void loadData(); });
   }, []);
 
   const saveProduct = async (event: React.FormEvent) => {
@@ -167,12 +168,22 @@ export default function AdminPage() {
   };
 
   const statCards = useMemo(() => [
-    { label: "Ventas totales", value: `$${stats.totalSales.toLocaleString("es-AR")}` },
+    { label: "Ventas totales", value: formatARS(stats.totalSales) },
+    { label: "Ventas de hoy", value: formatARS(stats.salesToday) },
+    { label: "Ventas últimos 7 días", value: formatARS(stats.salesLast7Days) },
+    { label: "Ticket promedio", value: formatARS(stats.averageTicket) },
     { label: "Pedidos", value: stats.orderCount.toString() },
-    { label: "Ganancias estimadas", value: `$${stats.estimatedProfit.toLocaleString("es-AR")}` },
+    { label: "Pendientes de pago", value: stats.pendingOrders.toString() },
+    { label: "Pagados", value: stats.paidOrders.toString() },
+    { label: "En fulfillment", value: stats.fulfillmentOrders.toString() },
+    { label: "Enviados", value: stats.shippedOrders.toString() },
+    { label: "Entregados", value: stats.deliveredOrders.toString() },
+    { label: "Con error", value: stats.errorOrders.toString() },
     { label: "Productos activos", value: stats.activeProducts.toString() },
+    { label: "Sin stock", value: stats.outOfStockProducts.toString() },
+    { label: "Stock bajo", value: stats.lowStockProducts.toString() },
     { label: "Proveedores activos", value: stats.activeSuppliers.toString() },
-    { label: "Alertas de stock", value: stats.stockAlerts.toString() },
+    { label: "Clientes", value: stats.customerCount.toString() },
   ], [stats]);
 
   const pricingSummary = useMemo(() => {

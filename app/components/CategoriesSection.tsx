@@ -1,9 +1,21 @@
 import Link from "next/link";
+import Image from "next/image";
 import { catalogCategories } from "@/data/catalog-categories";
 
 export default function CategoriesSection() {
+  const seenSlugs = new Set<string>();
+  const categories = catalogCategories.filter((category) => {
+    const name = category.name.trim();
+    const slug = category.slug.trim();
+    if (!name || !slug || seenSlugs.has(slug)) return false;
+    seenSlugs.add(slug);
+    return true;
+  });
+
+  if (categories.length === 0) return null;
+
   return (
-    <section className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+    <section className="ui-shell ui-section">
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="section-label">Exploración</p>
@@ -12,13 +24,15 @@ export default function CategoriesSection() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {catalogCategories.map((cat) => (
-          <Link key={cat.slug} href={`/category/${cat.slug}`} className="group overflow-hidden rounded-[1.8rem] border border-black/5 bg-white/85 p-4 shadow-[0_20px_70px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-zinc-900/70">
-            <div className="relative h-36 w-full overflow-hidden rounded-[1.3rem] bg-neutral-100">
-              <img src={cat.image} alt={cat.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {categories.map((cat) => (
+          <Link key={cat.slug} href={`/category/${cat.slug}`} aria-label={`Explorar categoría ${cat.name}`} className="ui-card ui-card-hover group overflow-hidden p-3.5">
+            <div className="ui-product-image relative flex h-40 w-full items-end overflow-hidden bg-[color:var(--color-accent-soft)]">
+              {cat.image.trim() ? <Image src={cat.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" unoptimized className="object-cover transition duration-500 group-hover:scale-105" /> : null}
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_25%,rgba(15,23,42,.66))]" />
+              <span className="relative z-10 m-3 inline-flex min-h-9 items-center rounded-full bg-white/95 px-3 text-sm font-semibold text-neutral-950 shadow-sm">{cat.name}</span>
             </div>
-            <div className="mt-4">
-              <div className="text-lg font-semibold text-neutral-950 dark:text-white">{cat.name}</div>
+            <div className="mt-4 px-1 pb-1">
+              <div className="flex items-center justify-between gap-3 text-lg font-semibold tracking-[-0.025em] text-neutral-950 dark:text-white"><span>{cat.name}</span><span aria-hidden="true" className="text-[color:var(--color-accent)] transition group-hover:translate-x-0.5">→</span></div>
               <div className="mt-1 text-sm leading-6 text-neutral-600 dark:text-zinc-300">{cat.description}</div>
             </div>
           </Link>

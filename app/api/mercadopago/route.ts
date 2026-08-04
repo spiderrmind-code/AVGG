@@ -8,6 +8,7 @@ import { authorizeOrderAccess, canInitializePayment, resolvePaymentOrigin } from
 import { checkRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { isMercadoPagoSandbox, requireMercadoPagoAccessToken, requireMercadoPagoMode, sanitizeMercadoPagoPreferenceError, selectMercadoPagoCheckoutUrl } from "@/lib/mercadopago-config";
+import { logServerError, logServerEvent } from "@/lib/logger";
 
 interface MercadoPagoRequest { orderId?: unknown; guestAccessToken?: unknown; }
 interface PreferenceItem { id: string; title: string; quantity: number; unit_price: number; currency_id: string; picture_url?: string; }
@@ -76,11 +77,12 @@ export async function POST(request: Request) {
     try {
       const response = await fetch("https://api.mercadopago.com/checkout/preferences", { method: "POST", headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json", "X-Idempotency-Key": preferenceRequestKey }, body: JSON.stringify(preference), signal: controller.signal });
       const data: unknown = await response.json(); const preferenceResponse = object(data);
-      if (!response.ok) { const providerError = sanitizeMercadoPagoPreferenceError(preferenceResponse); console.error("Mercado Pago preference creation failed", { providerStatus: response.status, ...providerError, orderId }); return NextResponse.json({ success: false, error: "Mercado Pago rechazó la preferencia", providerStatus: response.status, ...providerError }, { status: [400, 401, 403].includes(response.status) ? response.status : 502 }); }
+      if (!response.ok) { const providerError = sanitizeMercadoPagoPreferenceError(preferenceResponse); logServerError("payment.preference.failed", { providerStatus: response.status, ...providerError, orderId }); return NextResponse.json({ success: false, error: "Mercado Pago rechazó la preferencia", providerStatus: response.status, ...providerError }, { status: [400, 401, 403].includes(response.status) ? response.status : 502 }); }
       const preferenceId = typeof preferenceResponse?.id === "string" ? preferenceResponse.id : null;
       const initPoint = preferenceResponse ? selectMercadoPagoCheckoutUrl(preferenceResponse, sandbox) : null;
       if (!preferenceId || !initPoint) return NextResponse.json({ success: false, message: "Respuesta inválida de Mercado Pago" }, { status: 502 });
       await db.collection("orders").updateOne({ _id: id, preferenceProcessing: true }, { $set: { preferenceId, initPoint, preferenceCreatedAt: new Date(), preferenceProcessing: false, updatedAt: new Date() } });
+      logServerEvent("payment.preference.created", { orderId, sandbox });
       return NextResponse.json({ success: true, reused: false, preferenceId, initPoint });
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return NextResponse.json({ success: false, message: "Mercado Pago tardó demasiado en responder" }, { status: 504 });
@@ -90,7 +92,7 @@ export async function POST(request: Request) {
       await db.collection("orders").updateOne({ _id: id, preferenceProcessing: true }, { $set: { preferenceProcessing: false, updatedAt: new Date() } });
     }
   } catch (error) {
-    console.error("Mercado Pago preference initialization failed", { errorType: error instanceof Error ? error.name : "unknown", orderId });
+    logServerError("payment.preference.initialization_failed", { errorType: error instanceof Error ? error.name : "unknown", orderId });
     return NextResponse.json({ success: false, message: "Error interno procesando pago" }, { status: 500 });
   }
 }

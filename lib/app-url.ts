@@ -1,6 +1,8 @@
+import { getPublicUrlEnvironment } from "@/lib/env";
+
 function normalizeAppUrl(candidate: string, source: string): string {
   const value = candidate.trim();
-  const withProtocol = source === "VERCEL_URL" && !/^https?:\/\//i.test(value) ? `https://${value}` : value;
+  const withProtocol = source.startsWith("VERCEL_") && !/^https?:\/\//i.test(value) ? `https://${value}` : value;
   const url = new URL(withProtocol);
 
   if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
@@ -14,15 +16,8 @@ function normalizeAppUrl(candidate: string, source: string): string {
 }
 
 export function resolveAppBaseUrl(): string {
-  const candidates: Array<[string, string | undefined]> = [
-    ["NEXT_PUBLIC_APP_URL", process.env.NEXT_PUBLIC_APP_URL],
-    ["NEXTAUTH_URL", process.env.NEXTAUTH_URL],
-    ["VERCEL_URL", process.env.VERCEL_URL],
-  ];
-
-  for (const [source, value] of candidates) {
-    if (value?.trim()) return normalizeAppUrl(value, source);
-  }
+  const configured = getPublicUrlEnvironment();
+  if (configured) return normalizeAppUrl(configured.value, configured.source);
 
   if (process.env.NODE_ENV === "production") {
     throw new Error("Falta una URL pública de aplicación para producción");

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/mongo";
 import { normalizeEmail, normalizeRole } from "@/lib/auth-validation";
 import { getGoogleAuthConfig } from "@/lib/auth-config";
+import { resolveSafeAuthRedirect } from "@/lib/auth-redirect";
 
 const configuredSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
 if (!configuredSecret && process.env.NODE_ENV === "production") throw new Error("Missing authentication secret");
@@ -34,6 +35,7 @@ export const authOptions: AuthOptions = {
     ...(google.googleEnabled ? [GoogleProvider({ clientId: google.googleClientId!, clientSecret: google.googleClientSecret! })] : []),
   ],
   session: { strategy: "jwt" },
+  useSecureCookies: process.env.NODE_ENV === "production",
   pages: { signIn: "/login" },
   callbacks: {
     async signIn({ user, account }) {
@@ -55,10 +57,7 @@ export const authOptions: AuthOptions = {
       if (session.user && token.id) session.user = { ...session.user, id: token.id, role: normalizeRole(token.role) };
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      try { return new URL(url).origin === baseUrl ? url : baseUrl; } catch { return baseUrl; }
-    },
+    async redirect({ url, baseUrl }) { return resolveSafeAuthRedirect(url, baseUrl); },
   },
   secret: authSecret,
 };

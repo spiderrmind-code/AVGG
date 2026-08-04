@@ -16,9 +16,9 @@ export default function ContactoPage() {
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {[
-            ["Email", "hola@avgconnects.com"],
-            ["WhatsApp", "+54 9 11 0000-0000"],
-            ["Horario", "Lunes a viernes de 9 a 18 hs"],
+            ["Email", "[EMAIL DE SOPORTE]"],
+            ["Horario", "[HORARIO DE ATENCIÓN]"],
+            ["Información legal", "Información legal en actualización"],
           ].map(([title, text]) => (
             <div key={title} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
               <h2 className="font-semibold text-neutral-900">{title}</h2>

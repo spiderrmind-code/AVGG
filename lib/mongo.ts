@@ -1,4 +1,5 @@
 import { MongoClient, MongoClientOptions } from "mongodb";
+import { logServerError } from "@/lib/logger";
 
 const configuredUri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
 
@@ -22,7 +23,7 @@ const options: MongoClientOptions = {
 
 function connectionError(error: unknown) {
   const errorType = error instanceof Error ? error.name : "unknown";
-  console.error("MongoDB connection unavailable", { errorType });
+  logServerError("mongodb_connection_unavailable", { errorType });
   return new Error("MongoDB no esta disponible");
 }
 
@@ -53,7 +54,6 @@ function createClientPromise() {
 let clientPromise: Promise<MongoClient>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 

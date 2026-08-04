@@ -20,6 +20,10 @@ interface SupplierFormState {
   apiUrl: string;
 }
 
+interface SupplierRow extends Partial<SupplierFormState> {
+  _id: string;
+}
+
 const emptySupplier: SupplierFormState = {
   name: "",
   description: "",
@@ -38,7 +42,7 @@ const emptySupplier: SupplierFormState = {
 };
 
 export default function SuppliersAdminPage() {
-  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<SupplierRow[]>([]);
   const [form, setForm] = useState<SupplierFormState>(emptySupplier);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -54,7 +58,7 @@ export default function SuppliersAdminPage() {
   };
 
   useEffect(() => {
-    loadSuppliers();
+    queueMicrotask(() => { void loadSuppliers(); });
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -75,7 +79,7 @@ export default function SuppliersAdminPage() {
     }
   };
 
-  const editSupplier = (supplier: any) => {
+  const editSupplier = (supplier: SupplierRow) => {
     setEditingId(String(supplier._id));
     setForm({
       name: supplier.name ?? "",
@@ -95,7 +99,7 @@ export default function SuppliersAdminPage() {
     });
   };
 
-  const toggleStatus = async (supplier: any) => {
+  const toggleStatus = async (supplier: SupplierRow) => {
     const nextStatus = supplier.status === "active" ? "paused" : "active";
     try {
       await fetch(`/api/admin/suppliers/${supplier._id}`, {

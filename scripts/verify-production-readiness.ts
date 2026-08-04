@@ -1,4 +1,5 @@
 import { loadEnvConfig } from "@next/env";
+import { getPublicUrlEnvironment, productionEnvironmentIssues } from "../lib/env";
 
 loadEnvConfig(process.cwd());
 
@@ -10,7 +11,6 @@ const required = [
   "MERCADOPAGO_ACCESS_TOKEN",
   "MERCADOPAGO_MODE",
   "MERCADOPAGO_WEBHOOK_SECRET",
-  "NEXT_PUBLIC_APP_URL",
 ] as const;
 
 function isConfigured(key: (typeof required)[number]): boolean {
@@ -39,12 +39,21 @@ for (const key of required) {
   valid &&= configured;
 }
 
+const publicUrlEnvironment = getPublicUrlEnvironment();
+const missingProductionEnvironment = productionEnvironmentIssues();
+if (missingProductionEnvironment.includes("PUBLIC_APP_URL")) {
+  console.log("✗ URL pública ausente");
+  valid = false;
+} else {
+  console.log(`✓ URL pública configurada mediante ${publicUrlEnvironment!.source}`);
+}
+
 if (!isValidMercadoPagoMode(process.env.MERCADOPAGO_MODE?.trim().toLowerCase())) {
   console.log("ERROR MERCADOPAGO_MODE debe ser sandbox o production");
   valid = false;
 }
 
-const publicUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+const publicUrl = publicUrlEnvironment?.value;
 if (!publicUrl) {
   console.log("ℹ URL de desarrollo resuelta: http://localhost:3000");
   if (process.env.NODE_ENV === "production") valid = false;

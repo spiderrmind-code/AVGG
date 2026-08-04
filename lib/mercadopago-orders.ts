@@ -1,25 +1,13 @@
 import { ObjectId } from "mongodb";
 import clientPromise, { getDb } from "@/lib/mongo";
 import type { VerifiedMercadoPagoPayment } from "@/lib/mercadopago";
+import { canTransitionMercadoPagoPaymentStatus, getMercadoPagoOrderStatus, normalizeMercadoPagoPaymentStatus, type MercadoPagoPaymentStatus } from "@/lib/mercadopago-payment-status";
 
-type PaymentStatus = "pending" | "approved" | "rejected" | "cancelled" | "refunded" | "charged_back";
-type OrderStatus = "payment_pending" | "paid_pending_stock" | "payment_failed" | "cancelled";
 export type PaymentProcessingResult = { success: true; duplicate: boolean; orderId: string } | { success: false; reason: "missing_reference" | "order_not_found" | "amount_mismatch" | "currency_mismatch" | "payment_conflict" | "invalid_transition" | "database_error" };
 export type ApplyPaidOrderStockResult = { success: true; outcome: "applied" | "already_applied"; orderId: string } | { success: false; outcome: "order_not_found" | "payment_not_approved" | "invalid_items" | "product_not_found" | "insufficient_stock" | "processing_conflict" | "database_error"; orderId?: string };
 class StockIssueError extends Error { constructor(public readonly outcome: "invalid_items" | "product_not_found" | "insufficient_stock") { super(outcome); } }
 
 function money(value: unknown) { return typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.round(value * 100) : null; }
-function mapStatus(status: string): { paymentStatus: PaymentStatus; orderStatus: OrderStatus } {
-  switch (status.toLowerCase()) {
-    case "approved": return { paymentStatus: "approved", orderStatus: "paid_pending_stock" };
-    case "rejected": return { paymentStatus: "rejected", orderStatus: "payment_failed" };
-    case "cancelled": return { paymentStatus: "cancelled", orderStatus: "cancelled" };
-    case "refunded": return { paymentStatus: "refunded", orderStatus: "payment_failed" };
-    case "charged_back": return { paymentStatus: "charged_back", orderStatus: "payment_failed" };
-    default: return { paymentStatus: "pending", orderStatus: "payment_pending" };
-  }
-}
-
 export async function processVerifiedMercadoPagoPayment(payment: VerifiedMercadoPagoPayment): Promise<PaymentProcessingResult> {
   if (!payment.externalReference || !ObjectId.isValid(payment.externalReference)) return { success: false, reason: "missing_reference" };
   try {
@@ -32,10 +20,13 @@ export async function processVerifiedMercadoPagoPayment(payment: VerifiedMercado
     if (!payment.currencyId || payment.currencyId.toUpperCase() !== currency) return { success: false, reason: "currency_mismatch" };
     const otherOrder = await db.collection("orders").findOne({ paymentId: payment.id, _id: { $ne: orderId } });
     if (otherOrder) return { success: false, reason: "payment_conflict" };
-    const next = mapStatus(payment.status);
-    if (order.paymentStatus === "approved" && next.paymentStatus !== "approved") return { success: true, duplicate: true, orderId: String(orderId) };
-    if (order.paymentStatus === "approved" && order.paymentId === payment.id) return { success: true, duplicate: true, orderId: String(orderId) };
-    const update = await db.collection("orders").updateOne({ _id: orderId, paymentStatus: { $ne: "approved" } }, { $set: { paymentId: payment.id, paymentStatus: next.paymentStatus, status: next.orderStatus, paymentProcessedAt: new Date(), paymentStatusDetail: payment.statusDetail, updatedAt: new Date() } });
+    const paymentStatus = normalizeMercadoPagoPaymentStatus(payment.status);
+    if (!canTransitionMercadoPagoPaymentStatus(typeof order.paymentStatus === "string" ? order.paymentStatus : undefined, paymentStatus)) return { success: true, duplicate: true, orderId: String(orderId) };
+    const existingPaymentId = typeof order.paymentId === "string" ? order.paymentId : null;
+    const terminalStatus: MercadoPagoPaymentStatus[] = ["partially_refunded", "refunded", "charged_back"];
+    if (existingPaymentId && existingPaymentId !== payment.id && terminalStatus.includes(paymentStatus)) return { success: false, reason: "invalid_transition" };
+    const currentPaymentStatus = typeof order.paymentStatus === "string" ? order.paymentStatus : "pending";
+    const update = await db.collection("orders").updateOne({ _id: orderId, paymentStatus: currentPaymentStatus, ...(existingPaymentId ? { paymentId: existingPaymentId } : {}) }, { $set: { paymentId: payment.id, paymentStatus, status: getMercadoPagoOrderStatus(paymentStatus), paymentProcessedAt: new Date(), paymentStatusDetail: payment.statusDetail, updatedAt: new Date() } });
     return update.matchedCount ? { success: true, duplicate: false, orderId: String(orderId) } : { success: true, duplicate: true, orderId: String(orderId) };
   } catch { return { success: false, reason: "database_error" }; }
 }

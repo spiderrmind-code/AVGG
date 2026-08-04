@@ -6,11 +6,15 @@ import AddToCartButton from "@/app/components/AddToCartButton";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { resolveAppBaseUrl } from "@/lib/app-url";
 import { formatARS } from "@/lib/currency";
+import { ObjectId } from "mongodb";
+import { escapeRegex, isValidCatalogSlug, normalizePublicProduct } from "@/lib/catalog";
+import { getDb } from "@/lib/mongo";
 
 
 interface Product {
 
   _id: string;
+  slug?: string | null;
 
   name: string;
 
@@ -38,22 +42,14 @@ interface Product {
 
 async function getProduct(id: string): Promise<{ product: Product | null; unavailable: boolean }> {
   try {
-    const baseUrl = resolveAppBaseUrl();
-    const res = await fetch(`${baseUrl}/api/products/${id}`, {
-      cache: "no-store",
-    });
-
-
-
-    if (!res.ok) return { product: null, unavailable: res.status >= 500 };
-
-
-
-    const data = await res.json();
-
-
-
-    return { product: data.product ?? null, unavailable: false };
+    if (!id || id.length > 120) return { product: null, unavailable: false };
+    const db = await getDb();
+    const record = ObjectId.isValid(id)
+      ? await db.collection("products").findOne({ _id: new ObjectId(id), active: { $ne: false } })
+      : isValidCatalogSlug(id)
+        ? await db.collection("products").findOne({ slug: { $regex: `^${escapeRegex(id)}$`, $options: "i" }, active: { $ne: false } })
+        : null;
+    return { product: record ? normalizePublicProduct(record) : null, unavailable: false };
 
 
   } catch (error) {
@@ -323,7 +319,7 @@ export default async function ProductPage({
 
 
               {
-                product.comparePrice && (
+                product.comparePrice && product.comparePrice > product.price && (
 
                   <p
 
@@ -413,6 +409,7 @@ export default async function ProductPage({
               product={{
 
                 _id: product._id,
+                slug: product.slug ?? undefined,
 
                 name: product.name,
 
@@ -420,6 +417,7 @@ export default async function ProductPage({
 
                 image,
                 inStock: product.inStock,
+                stockQuantity: product.stockQuantity,
 
               }}
 

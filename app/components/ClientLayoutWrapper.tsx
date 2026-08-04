@@ -21,7 +21,8 @@ export default function ClientLayoutWrapper({
         <CartProvider>
           <Header />
 
-          <main className="flex-1">
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:p-3">Saltar al contenido</a>
+          <main id="main-content" className="flex-1">
             {children}
           </main>
 

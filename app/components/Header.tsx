@@ -1,11 +1,11 @@
 // components/Header.tsx
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import MegaMenu from './MegaMenu';
+import MegaMenu, { type MegaMenuProduct } from './MegaMenu';
 import { LogoSVG } from './Logo';
 import {
   Menu,
@@ -17,19 +17,14 @@ import {
   Heart,
   Bell,
   Trash2,
-  Sun,
-  Moon,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type MotionProps } from 'framer-motion';
 import { signIn, useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/app/context/CartContext';
 import ThemeToggle from './ThemeToggle';
 import { catalogCategories } from '@/data/catalog-categories';
+import { normalizeCatalogSlug } from '@/lib/catalog';
 import { formatARS } from '@/lib/currency';
-
-const MotionDiv = motion.div as React.ComponentType<any>;
-const MotionUL = motion.ul as React.ComponentType<any>;
-const MotionAside = motion.aside as React.ComponentType<any>;
 
 export type Product = { id: string; title: string; href: string; image: string; price?: string };
 export type Category = {
@@ -40,6 +35,76 @@ export type Category = {
   children?: { name: string; slug: string }[];
 };
 
+type MotionElementProps<Element extends HTMLElement> = React.PropsWithChildren<React.HTMLAttributes<Element> & MotionProps & React.RefAttributes<Element>>;
+const MotionDiv = motion.div as React.ComponentType<MotionElementProps<HTMLDivElement>>;
+const MotionUL = motion.ul as React.ComponentType<MotionElementProps<HTMLUListElement>>;
+const MotionAside = motion.aside as React.ComponentType<MotionElementProps<HTMLElement>>;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+type CategoryResponseItem = Record<string, unknown> & { name: string; slug: string };
+type CategoryChildResponseItem = Record<string, unknown> & { name: string; slug: string };
+
+type ProductResponseItem = Record<string, unknown> & { _id: string; name: string; category: string; categorySlug: string | null; featured: boolean; inStock: boolean; images: string[] };
+
+function isCategoryResponseItem(value: unknown): value is CategoryResponseItem {
+  return isRecord(value) && typeof value.name === "string" && typeof value.slug === "string";
+}
+
+function isCategoryChildResponseItem(value: unknown): value is CategoryChildResponseItem {
+  return isRecord(value) && typeof value.name === "string" && typeof value.slug === "string";
+}
+
+function isProductResponseItem(value: unknown): value is ProductResponseItem {
+  return isRecord(value)
+    && typeof value._id === "string"
+    && typeof value.name === "string"
+    && typeof value.category === "string"
+    && (typeof value.categorySlug === "string" || value.categorySlug === null)
+    && typeof value.featured === "boolean"
+    && typeof value.inStock === "boolean"
+    && Array.isArray(value.images)
+    && value.images.every((image) => typeof image === "string");
+}
+
+function hasProductImage(product: ProductResponseItem) {
+  return Boolean(stringValue(product.image)?.trim() || product.images.some((image) => image.trim()));
+}
+
+function toMegaMenuProducts(products: ProductResponseItem[], categories: Category[]): MegaMenuProduct[] {
+  const visibleSlugs = new Set(categories.map((category) => normalizeCatalogSlug(category.slug)));
+  const productsByCategory = new Map<string, ProductResponseItem[]>();
+
+  for (const product of products) {
+    if (!product.inStock || !hasProductImage(product)) continue;
+    const slug = product.categorySlug ?? normalizeCatalogSlug(product.category);
+    if (!visibleSlugs.has(slug)) continue;
+    const entries = productsByCategory.get(slug) ?? [];
+    entries.push(product);
+    productsByCategory.set(slug, entries);
+  }
+
+  return categories.flatMap((category) => (productsByCategory.get(normalizeCatalogSlug(category.slug)) ?? [])
+    .sort((left, right) => Number(right.featured) - Number(left.featured))
+    .slice(0, 2)
+    .map((product) => ({
+      _id: product._id,
+      name: product.name,
+      ...(stringValue(product.image) ? { image: stringValue(product.image) } : {}),
+      images: product.images,
+      category: product.category,
+      categorySlug: product.categorySlug,
+      featured: product.featured,
+      inStock: product.inStock,
+    }))).slice(0, 8);
+}
+
 export default function Header() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -48,20 +113,20 @@ export default function Header() {
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
-  const [featured, setFeatured] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [megaProducts, setMegaProducts] = useState<MegaMenuProduct[]>([]);
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const fallbackCategories: Category[] = catalogCategories.map((cat) => ({
+  const fallbackCategories = useMemo<Category[]>(() => catalogCategories.map((cat) => ({
     name: cat.name,
     slug: cat.slug,
     image: cat.image,
     children: (cat.children ?? []).map((child) => ({ name: child.name, slug: child.slug })),
-  }));
+  })), []);
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +137,12 @@ export default function Header() {
   const debounceRef = useRef<number | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const previousSessionStatus = useRef(status);
+  const megaProductsRequestKey = useRef<string | null>(null);
+
+  async function handleSignOut() {
+    await signOut({ redirect: false });
+    router.refresh();
+  }
 
   useEffect(() => {
     const previousStatus = previousSessionStatus.current;
@@ -81,65 +152,27 @@ export default function Header() {
     }
   }, [router, status]);
 
-  async function handleSignOut() {
-    await signOut({ redirect: false });
-    router.refresh();
-  }
-
  useEffect(() => {
-  async function loadFeatured() {
-    try {
-      const apiUrl = "/api/products";
-
-      const r = await fetch(apiUrl);
-
-      if (!r.ok) {
-        throw new Error("Error loading products");
-      }
-
-      const j = await r.json();
-      const arr = j.products ?? j.featured ?? j;
-
-      if (Array.isArray(arr)) {
-        const mapped: Product[] = arr.map((p: any) => ({
-          id: p._id ?? p.id,
-          title: p.title ?? p.name ?? "",
-          href: p.slug
-            ? `/product/${p._id ?? p.id}`
-            : `/product/${p._id ?? p.id}`,
-          image: p.image ?? p.images?.[0] ?? "",
-          price:
-            typeof p.price === "number"
-              ? formatARS(p.price)
-              : p.price,
-        }));
-
-        setFeatured(mapped);
-      }
-    } catch (error) {
-      console.error("Error loading featured products:", error);
-    }
-  }
-
-  loadFeatured();
-  
   // load categories from API
   async function loadCategories() {
     try {
       const res = await fetch('/api/categories');
       if (!res.ok) throw new Error('Failed to load categories');
-      const json = await res.json();
-      const cats = json.categories ?? json;
+      const response: unknown = await res.json();
+      const payload = isRecord(response) ? response : null;
+      const cats = payload?.categories ?? response;
       const normalized = Array.isArray(cats)
         ? cats
-            .filter((c: any) => c?.name && c?.slug)
-            .map((c: any) => ({
-              _id: c._id ?? c.id ?? undefined,
-              name: c.name,
-              slug: c.slug,
-              image: c.image,
-              children: Array.isArray(c.children)
-                ? c.children.map((ch: any) => ({ name: ch.name, slug: ch.slug }))
+            .filter(isCategoryResponseItem)
+            .map((category) => ({
+              _id: stringValue(category._id) ?? stringValue(category.id),
+              name: category.name,
+              slug: category.slug,
+              image: stringValue(category.image),
+              children: Array.isArray(category.children)
+                ? category.children
+                    .filter(isCategoryChildResponseItem)
+                    .map((child) => ({ name: child.name, slug: child.slug }))
                 : [],
             }))
         : [];
@@ -152,7 +185,29 @@ export default function Header() {
   }
 
   loadCategories();
-}, []);
+}, [fallbackCategories]);
+
+  useEffect(() => {
+    async function loadMegaProducts() {
+      const categoryKey = categories.map((category) => category.slug).join("|");
+      if (!categoryKey || megaProductsRequestKey.current === categoryKey) return;
+      megaProductsRequestKey.current = categoryKey;
+
+      try {
+        const response = await fetch("/api/products?limit=24");
+        if (!response.ok) return;
+        const data: unknown = await response.json();
+        const payload = isRecord(data) ? data : null;
+        const products = payload?.products ?? data;
+        if (!Array.isArray(products)) return;
+        setMegaProducts(toMegaMenuProducts(products.filter(isProductResponseItem), categories));
+      } catch {
+        setMegaProducts([]);
+      }
+    }
+
+    loadMegaProducts();
+  }, [categories]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 26);
@@ -162,16 +217,21 @@ export default function Header() {
 
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
-    if (!search.trim()) { setSuggestions([]); setSelectedSuggestion(null); return; }
+    if (!search.trim()) return;
     debounceRef.current = window.setTimeout(async () => {
       const q = search.trim();
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
         if (res.ok) {
-          const json = await res.json();
-          const results = json.results ?? json;
+          const response: unknown = await res.json();
+          const payload = isRecord(response) ? response : null;
+          const results = payload?.results ?? response;
           if (Array.isArray(results)) {
-            setSuggestions(results.slice(0, 6).map((r: any) => (typeof r === 'string' ? r : (r.name ?? r.title ?? ''))));
+            setSuggestions(results.slice(0, 6).map((result) => {
+              if (typeof result === "string") return result;
+              if (!isRecord(result)) return "";
+              return stringValue(result.name) ?? stringValue(result.title) ?? "";
+            }));
             setSelectedSuggestion(0);
             return;
           }
@@ -186,6 +246,14 @@ export default function Header() {
 
     return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
   }, [search]);
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    if (!value.trim()) {
+      setSuggestions([]);
+      setSelectedSuggestion(null);
+    }
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -271,31 +339,12 @@ export default function Header() {
     }, delay) as unknown as number;
   }
 
-  function handleCardMove(e: React.MouseEvent<HTMLDivElement>) {
-    const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
-    const rx = -(dy / (rect.height / 2)) * 6;
-    const ry = (dx / (rect.width / 2)) * 6;
-    (el.style as any).transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.03)`;
-    el.style.transition = 'transform 120ms ease-out';
-  }
-  function handleCardLeave(e: React.MouseEvent<HTMLDivElement>) {
-    const el = e.currentTarget;
-    (el.style as any).transform = 'none';
-    el.style.transition = 'transform 220ms cubic-bezier(.2,.9,.2,1)';
-  }
-
   const headerBg = scrolled
     ? 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_10px_30px_rgba(17,17,17,0.08)] backdrop-blur-2xl'
     : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_2px_14px_rgba(17,17,17,0.04)] backdrop-blur-xl';
   const headerText = 'text-neutral-900 dark:text-zinc-100';
   const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-12 h-12';
   const logoTextSize = scrolled ? 'text-sm' : 'text-base';
-  const navLinkClass = 'relative text-sm font-medium text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-neutral-950 after:transition-transform after:duration-200 hover:after:scale-x-100 dark:after:bg-white';
   const isSessionLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
 
@@ -308,8 +357,8 @@ export default function Header() {
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 sm:gap-5">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 md:h-[76px] lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-5">
             {/* LEFT: logo + nav */}
             <div className="flex items-center gap-5">
               <Link href="/" className="flex items-center gap-3" aria-label="Ir al inicio">
@@ -323,10 +372,7 @@ export default function Header() {
               </Link>
 
               <nav className="hidden items-center gap-6 md:flex lg:flex" aria-label="Navegación principal">
-                <Link href="/" className={navLinkClass}>Inicio</Link>
-                <Link href="/search?q=tecnologia" className={navLinkClass}>Ofertas</Link>
-                <Link href="/search?q=novedades" className={navLinkClass}>Novedades</Link>
-
+                <Link href="/#ofertas" className="hidden">Ofertas</Link>
                 <div className="relative">
                   <button
                     ref={triggerRef}
@@ -342,9 +388,10 @@ export default function Header() {
                   </button>
 
                   <MegaMenu
-                    ref={menuRef as any}
+                    ref={menuRef}
                     open={megaOpen}
                     categories={categories}
+                    products={megaProducts}
                     onMouseEnter={openMenuImmediate}
                     onMouseLeave={() => scheduleClose(180)}
                     onClose={() => setMegaOpen(false)}
@@ -353,13 +400,13 @@ export default function Header() {
               </nav>
             </div>
 
-            <div className="hidden flex-1 justify-center px-2 md:flex">
-              <div className="relative w-full max-w-xl">
+            <div className="hidden min-w-0 flex-1 justify-center px-2 md:flex">
+              <div className="relative w-full max-w-none">
                 <div className="relative">
                   <input
                     ref={searchRef}
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder="Buscar productos"
                     className="ui-input w-full rounded-full py-2.5 pl-10 pr-12"
                     aria-autocomplete="list"
@@ -414,16 +461,14 @@ export default function Header() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button aria-label="Favoritos" className="ui-icon-button hidden md:inline-flex">
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <button aria-label="Favoritos" className="hidden">
                 <Heart className="h-4 w-4" />
               </button>
-
-              <button aria-label="Notificaciones" className="ui-icon-button hidden md:inline-flex">
+              <button aria-label="Notificaciones" className="hidden">
                 <Bell className="h-4 w-4" />
               </button>
-
-              <div className="relative" onMouseLeave={() => setCartOpen(false)}>
+              <div className="relative order-4" onMouseLeave={() => setCartOpen(false)}>
                 <button
                   ref={cartTriggerRef}
                   onMouseEnter={() => setCartOpen(true)}
@@ -440,7 +485,7 @@ export default function Header() {
                 <AnimatePresence>
                   {cartOpen && (
                     <MotionDiv
-                      ref={cartMenuRef as any}
+                      ref={cartMenuRef}
                       initial={{ opacity: 0, y: -6 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
@@ -482,18 +527,18 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={isAuthenticated ? "/account" : "/login"} className="hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
+              <Link href={isAuthenticated ? "/account" : "/login"} className="order-3 hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <User className="h-4 w-4" />
-                <span>Mi cuenta</span>
+                <span>{isAuthenticated ? "Mi cuenta" : "Login"}</span>
               </Link>
 
-              {isAuthenticated && (session as any)?.user?.role === "admin" ? (
+              {isAuthenticated && session?.user?.role === "admin" ? (
                 <Link href="/admin" className="hidden rounded-full border border-neutral-200 bg-neutral-950 px-3 py-2 text-sm font-semibold text-white md:inline-flex">
                   Admin
                 </Link>
               ) : null}
 
-              <div className="hidden lg:block">
+              <div className="hidden">
                 {isSessionLoading ? (
                   <span className="text-sm text-neutral-500" aria-live="polite">Verificando sesión…</span>
                 ) : !isAuthenticated ? (
@@ -507,7 +552,7 @@ export default function Header() {
                 ) : (
                   <div className="ui-card hidden items-center gap-2 rounded-md px-3 py-1 lg:inline-flex">
                     {session.user?.image ? (
-                      <img src={session.user.image as string} alt={session.user?.name ?? 'Usuario'} className="w-7 h-7 rounded-full object-cover" />
+                      <Image src={session.user.image} alt={session.user?.name ?? 'Usuario'} width={28} height={28} unoptimized className="h-7 w-7 rounded-full object-cover" />
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center text-sm text-neutral-600">U</div>
                     )}
@@ -522,7 +567,7 @@ export default function Header() {
                 )}
               </div>
 
-              <div className="hidden md:block">
+              <div className="order-2 hidden md:block">
                 <ThemeToggle />
               </div>
 
@@ -548,7 +593,7 @@ export default function Header() {
               </div>
 
               <div className="mb-4 flex items-center justify-between gap-3">
-                <input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => {
+                <input placeholder="Buscar..." value={search} onChange={(e) => handleSearchChange(e.target.value)} onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     const q = search.trim();
                     if (!q) return;
@@ -568,19 +613,32 @@ export default function Header() {
                     {categories.length === 0 ? (
                       <span className="py-2 text-sm text-neutral-400">Sin categorías disponibles.</span>
                     ) : (
-                      categories.map(cat => <Link key={cat.slug} href={`/category/${cat.slug}`} className="rounded-xl px-2 py-2 text-sm text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 dark:text-zinc-300 dark:hover:bg-white/10">{cat.name}</Link>)
+                      categories.map((category) => (
+                        <details key={category.slug} className="rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-1.5">
+                          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[color:var(--color-text)]">
+                            {category.name}
+                            <ChevronDown className="h-4 w-4 text-[color:var(--color-text-subtle)]" />
+                          </summary>
+                          <div className="border-t border-[color:var(--color-border)] py-2">
+                            <Link href={`/category/${category.slug}`} className="block rounded-[var(--radius-sm)] px-2 py-2 text-sm font-medium text-[color:var(--color-accent-strong)] hover:bg-[color:var(--color-accent-soft)]">Ver categoría</Link>
+                            {category.children?.map((child) => (
+                              <Link key={child.slug} href={`/category/${child.slug}`} className="block rounded-[var(--radius-sm)] px-2 py-2 text-sm text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-muted)]">{child.name}</Link>
+                            ))}
+                          </div>
+                        </details>
+                      ))
                     )}
                   </div>
                 </details>
 
-                <Link href={isAuthenticated ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Mi cuenta</Link>
-                {isAuthenticated && (session as any)?.user?.role === "admin" ? (
-                  <Link href="/admin" className="rounded-[1rem] border border-black/10 bg-neutral-950 px-3 py-3 text-sm font-semibold text-white">Panel admin</Link>
+                <Link href={isAuthenticated ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">{isAuthenticated ? "Mi cuenta" : "Login"}</Link>
+                {isAuthenticated && session?.user?.role === "admin" ? (
+                  <Link href="/admin" className="hidden">Panel admin</Link>
                 ) : null}
                 <Link href="/cart" className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Carrito ({cartCount})</Link>
               </nav>
 
-              <div className="mt-6 border-t border-neutral-200 pt-6">
+              <div className="hidden">
                 {!isSessionLoading && !isAuthenticated ? (
                   <button
                     onClick={() => signIn('google')}

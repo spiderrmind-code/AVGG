@@ -5,7 +5,7 @@ import { getDb } from "@/lib/mongo";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || (session.user as any).role !== "admin") {
+  if (!session?.user?.email || session.user.role !== "admin") {
     return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
   }
   return null;

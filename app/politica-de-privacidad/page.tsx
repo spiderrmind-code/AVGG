@@ -1,0 +1,3 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Política de privacidad", description: "Información sobre el tratamiento de datos personales en AVG Connects." };
+export default function PrivacyPage() { return <main className="mx-auto max-w-4xl px-4 py-16"><h1 className="text-3xl font-semibold">Política de privacidad</h1><p className="mt-6">Recolectamos datos de cuenta, compra, dirección y contacto para operar pedidos y soporte. Google, Mercado Pago y proveedores pueden procesar datos bajo sus propias políticas.</p><p className="mt-4">Aplicamos medidas de seguridad, conservamos datos por el tiempo operativo necesario y atendemos consultas en [EMAIL DE CONTACTO]. Puede haber transferencias internacionales según proveedores.</p></main>; }

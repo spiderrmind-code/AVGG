@@ -2,14 +2,30 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
-import { getInventoryStatus } from "@/lib/inventory";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email || (session.user as any).role !== "admin") {
-    return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
-  }
+  if (!session?.user?.email) return NextResponse.json({ success: false, message: "No autorizado" }, { status: 401 });
+  if (session.user.role !== "admin") return NextResponse.json({ success: false, message: "No autorizado" }, { status: 403 });
   return null;
+}
+
+function startOfArgentinaDay(offsetDays = 0) {
+  const now = new Date();
+  const argentina = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+  argentina.setHours(0, 0, 0, 0);
+  argentina.setDate(argentina.getDate() - offsetDays);
+  const offset = -3 * 60 * 60 * 1000;
+  return new Date(argentina.getTime() - offset);
+}
+
+async function salesSince(db: Awaited<ReturnType<typeof getDb>>, from?: Date) {
+  const match = { paymentStatus: "approved", ...(from ? { createdAt: { $gte: from } } : {}) };
+  const rows = await db.collection("orders").aggregate<{ total: number; average: number }>([
+    { $match: match },
+    { $group: { _id: null, total: { $sum: { $ifNull: ["$total", 0] } }, average: { $avg: { $ifNull: ["$total", 0] } } } },
+  ]).toArray();
+  return rows[0] ?? { total: 0, average: 0 };
 }
 
 export async function GET() {
@@ -18,39 +34,31 @@ export async function GET() {
 
   try {
     const db = await getDb();
-    const [products, orders, suppliers] = await Promise.all([
-      db.collection("products").find({}).toArray(),
-      db.collection("orders").find({}).toArray(),
-      db.collection("suppliers").find({}).toArray(),
+    const orders = db.collection("orders");
+    const products = db.collection("products");
+    const suppliers = db.collection("suppliers");
+    const today = startOfArgentinaDay();
+    const lastSevenDays = startOfArgentinaDay(6);
+    const [allSales, todaySales, weekSales, orderCount, pendingOrders, paidOrders, fulfillmentOrders, shippedOrders, deliveredOrders, errorOrders, activeProducts, outOfStockProducts, lowStockProducts, activeSuppliers, customerCount] = await Promise.all([
+      salesSince(db), salesSince(db, today), salesSince(db, lastSevenDays),
+      orders.countDocuments(), orders.countDocuments({ paymentStatus: "pending" }), orders.countDocuments({ paymentStatus: "approved" }),
+      orders.countDocuments({ fulfillmentStatus: { $in: ["ready", "reserved", "creating", "created", "requesting", "submitted", "processing"] } }),
+      orders.countDocuments({ $or: [{ status: "shipped" }, { fulfillmentStatus: "shipped" }] }),
+      orders.countDocuments({ $or: [{ status: "delivered" }, { fulfillmentStatus: "delivered" }] }),
+      orders.countDocuments({ $or: [{ fulfillmentStatus: "unknown" }, { trackingStatus: "exception" }, { cjValidationStatus: "ineligible" }] }),
+      products.countDocuments({ active: { $ne: false } }),
+      products.countDocuments({ $or: [{ stock: false }, { stockQuantity: { $lte: 0 } }, { supplierStock: { $lte: 0 } }] }),
+      products.countDocuments({ $or: [{ stockQuantity: { $gt: 0, $lte: 3 } }, { supplierStock: { $gt: 0, $lte: 3 } }] }),
+      suppliers.countDocuments({ status: { $ne: "paused" } }),
+      db.collection("users").countDocuments(),
     ]);
 
-    const totalSales = orders.reduce((sum, order: any) => sum + Number(order.total ?? 0), 0);
-    const estimatedProfit = orders.reduce((sum, order: any) => {
-      const internalItems = Array.isArray(order.items) ? order.items : [];
-      const costSum = internalItems.reduce((costTotal: number, item: any) => {
-        const internal = item._internal ?? {};
-        return costTotal + Number(internal.costPrice ?? 0) * Number(item.quantity ?? 1);
-      }, 0);
-      return sum + Math.max(0, Number(order.total ?? 0) - costSum);
-    }, 0);
-
-    const activeProducts = products.filter((product: any) => product.active !== false).length;
-    const activeSuppliers = suppliers.filter((supplier: any) => String(supplier.status ?? "active").toLowerCase() === "active").length;
-    const stockAlerts = products.filter((product: any) => getInventoryStatus(product.supplierStock ?? product.stock) !== "available").length;
-
-    return NextResponse.json({
-      success: true,
-      stats: {
-        totalSales,
-        orderCount: orders.length,
-        estimatedProfit,
-        activeProducts,
-        activeSuppliers,
-        stockAlerts,
-      },
-    });
-  } catch (error) {
-    console.error("ERROR ADMIN DASHBOARD:", error);
+    return NextResponse.json({ success: true, stats: {
+      totalSales: allSales.total, salesToday: todaySales.total, salesLast7Days: weekSales.total, averageTicket: allSales.average,
+      orderCount, pendingOrders, paidOrders, fulfillmentOrders, shippedOrders, deliveredOrders, errorOrders,
+      activeProducts, outOfStockProducts, lowStockProducts, activeSuppliers, customerCount,
+    } });
+  } catch {
     return NextResponse.json({ success: false, message: "Error cargando dashboard" }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type Account = {
   id: string;
@@ -75,10 +76,13 @@ export default function MiCuentaPage() {
 
       <div className="flex items-center gap-4 mb-8">
         {account.image ? (
-          <img
+          <Image
             src={account.image}
             alt={account.name}
-            className="w-16 h-16 rounded-full object-cover"
+            width={64}
+            height={64}
+            unoptimized
+            className="h-16 w-16 rounded-full object-cover"
           />
         ) : (
           <div className="w-16 h-16 rounded-full bg-neutral-200 flex items-center justify-center text-xl font-semibold">

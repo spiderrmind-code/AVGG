@@ -1,5 +1,18 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Error({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  return <main className="min-h-screen px-4 py-16"><section className="mx-auto max-w-3xl rounded-3xl bg-white p-8 text-center shadow-sm"><h1 className="text-3xl font-semibold">No pudimos cargar esta página</h1><p className="mt-3 text-neutral-600">Intentá nuevamente en unos instantes.</p><button className="mt-6 rounded-full bg-neutral-950 px-5 py-3 font-semibold text-white" onClick={reset}>Reintentar</button></section></main>;
+  return (
+    <main className="ui-page flex items-center">
+      <section className="ui-surface mx-auto max-w-3xl p-8 text-center">
+        <h1 className="ui-title">No pudimos cargar esta página</h1>
+        <p className="ui-copy mx-auto">Intentá nuevamente en unos instantes.</p>
+        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <button type="button" className="ui-button-primary" onClick={reset}>Reintentar</button>
+          <Link className="ui-button-secondary" href="/">Volver al inicio</Link>
+        </div>
+      </section>
+    </main>
+  );
 }

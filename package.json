@@ -10,11 +10,23 @@
     "build": "next build",
     "lint": "eslint .",
     "start": "next start",
-    "seed": "node scripts/run-tsx.cjs scripts/seed-products.ts",
-    "test": "node scripts/run-tsx.cjs --test tests/*.test.ts",
-    "verify:production": "node scripts/run-tsx.cjs scripts/verify-production-readiness.ts",
-    "verify:database": "node scripts/run-tsx.cjs scripts/verify-database.ts",
-    "ensure:indexes": "node scripts/run-tsx.cjs scripts/ensure-indexes.ts"
+    "seed": "node scripts/run-tsx.mjs scripts/seed-products.ts",
+    "test": "node scripts/run-tsx.mjs --test tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "verify:production": "node scripts/run-tsx.mjs scripts/verify-production-readiness.ts",
+    "verify:database": "node scripts/run-tsx.mjs scripts/verify-database.ts",
+    "verify:mercadopago": "node scripts/run-tsx.mjs scripts/verify-mercadopago.ts",
+    "ensure:indexes": "node scripts/run-tsx.mjs scripts/ensure-indexes.ts",
+    "cj:dry-run": "node scripts/run-tsx.mjs scripts/sync-cj-dry-run.ts",
+    "verify:cj-fulfillment": "node scripts/run-tsx.mjs scripts/verify-cj-fulfillment.ts",
+    "verify:cj-live-read": "node scripts/run-tsx.mjs scripts/verify-cj-live-read.ts",
+    "verify:observability": "node scripts/run-tsx.mjs scripts/verify-observability.ts",
+    "db:backup:dry-run": "node scripts/run-tsx.mjs scripts/db-backup-dry-run.ts",
+    "db:restore:dry-run": "node scripts/run-tsx.mjs scripts/db-restore-dry-run.ts",
+    "verify:post-deploy": "node scripts/run-tsx.mjs scripts/verify-post-deploy.ts",
+    "verify:seo": "node scripts/run-tsx.mjs scripts/verify-seo.ts",
+    "verify:performance": "node scripts/run-tsx.mjs scripts/verify-performance.ts",
+    "verify:accessibility": "node scripts/run-tsx.mjs scripts/verify-accessibility.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -30,6 +42,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
     "@types/istanbul-reports": "^3.0.4",
     "@types/jest": "^30.0.0",
     "@types/node": "24.10.1",
