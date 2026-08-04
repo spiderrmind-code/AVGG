@@ -138,7 +138,7 @@ img {
   .ui-page { @apply min-h-screen px-4 py-10 sm:px-6 lg:px-8; }
   .ui-page-header { @apply ui-surface mb-8 p-6 sm:p-8; }
   .ui-subtle-panel { border: 1px solid var(--color-border); background: var(--color-surface-muted); border-radius: var(--radius-lg); }
-  .ui-product-card { overflow: hidden; padding: .875rem; }
+  .ui-product-card { overflow: hidden; padding: 1rem; }
   .ui-product-image { border-radius: calc(var(--radius-lg) - .35rem); background: var(--color-surface-muted); }
   .ui-price { @apply font-semibold tracking-[-0.04em]; color: var(--color-text); }
 }
@@ -375,6 +375,9 @@ header details[open] > summary svg { transform: rotate(180deg); }
 }
 
 .ui-product-card .ui-price { font-size: 1.5rem; }
+.ui-product-card > div:last-child { margin-top: auto; border-top: 1px solid var(--color-border); padding-top: 1rem; }
+.ui-product-card > div:last-child > div:last-child { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin-top: 1rem; }
+.ui-product-card > div:last-child > div:last-child > button { width: 100%; padding-inline: .625rem; font-size: .8125rem; }
 .ui-product-card .ui-product-image::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 58%, rgba(15,23,42,.08)); }
 .ui-product-card:hover .ui-product-image img { transform: scale(1.045); }
 .ui-product-card:hover h3 { color: var(--color-accent-strong); }
@@ -389,6 +392,17 @@ header .ui-popover { background: color-mix(in srgb, var(--color-surface-strong) 
   .ui-product-card .ui-price { font-size: 1.3rem; }
   .ui-commerce-panel { border-radius: var(--radius-lg); }
   .hero-offer-grid { min-height: 0; }
+  .ui-surface { border-radius: var(--radius-lg); }
+  .ui-card { border-radius: var(--radius-md); }
+  .ui-product-card > div:last-child > div:last-child > button { min-height: 2.75rem; font-size: .75rem; }
+}
+
+@media (max-width: 390px) {
+  .ui-shell { padding-inline: .875rem; }
+  .ui-page { padding-inline: .875rem; }
+  .ui-product-card { padding: .75rem; }
+  .ui-product-card .ui-price { font-size: 1.2rem; }
+  .ui-trust-list { gap: .5rem 1rem; font-size: .8125rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }

@@ -20,8 +20,8 @@ const footerLinks = [
 export default function Footer() {
   return (
     <footer className="mt-auto border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-bg-strong)" }}>
-      <div className="ui-shell py-14 sm:py-16">
-        <div className="ui-surface grid gap-10 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.72fr_0.72fr] lg:p-10">
+      <div className="ui-shell py-12 sm:py-16">
+        <div className="ui-surface grid gap-10 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.72fr_0.72fr] lg:gap-12 lg:p-10">
           <div>
             <Link href="/" className="inline-flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] dark:border-white/10 dark:bg-zinc-800/80">
@@ -32,7 +32,7 @@ export default function Footer() {
                 <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Tecnología premium</p>
               </div>
             </Link>
-            <p className="mt-5 max-w-sm text-sm leading-7 text-neutral-600 dark:text-zinc-300">
+            <p className="mt-5 max-w-sm text-sm leading-7 text-[color:var(--color-text-muted)]">
               Diseñamos una experiencia de compra elegante, confiable y pensada para personas que valoran tecnología, claridad y detalle.
             </p>
             <div className="mt-6 flex flex-wrap gap-2 text-sm text-neutral-600">
@@ -44,7 +44,7 @@ export default function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Explorar</h3>
-            <ul className="mt-4 space-y-3 text-sm text-neutral-700 dark:text-zinc-300">
+            <ul className="mt-5 space-y-3 text-sm text-[color:var(--color-text-muted)]">
               {footerLinks.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="transition hover:text-[color:var(--color-accent)] dark:hover:text-white">
@@ -57,7 +57,7 @@ export default function Footer() {
 
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Soporte</h3>
-            <ul className="mt-4 space-y-3 text-sm text-neutral-700 dark:text-zinc-300">
+            <ul className="mt-5 space-y-3 text-sm text-[color:var(--color-text-muted)]">
               <li>Atención por email y WhatsApp</li>
               <li>Pagos seguros y seguimiento</li>
               <li>Garantía y devoluciones claras</li>
@@ -69,7 +69,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 border-t border-white/60 pt-6 text-sm text-neutral-500 dark:border-white/10 dark:text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-3 border-t border-[color:var(--color-border)] pt-6 text-sm text-[color:var(--color-text-subtle)] sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} AVG CONNECTS. Todos los derechos reservados.</p>
           <p className="text-neutral-600 dark:text-zinc-300">Diseñado para sentirse como una plataforma tecnológica sólida y premium.</p>
         </div>

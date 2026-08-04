@@ -15,15 +15,15 @@ export default function CategoriesSection() {
   if (categories.length === 0) return null;
 
   return (
-    <section className="ui-shell ui-section">
-      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <section className="ui-shell ui-section pt-12">
+      <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="section-label">Exploración</p>
           <h3 className="section-title dark:text-white">Categorías seleccionadas</h3>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
         {categories.map((cat) => (
           <Link key={cat.slug} href={`/category/${cat.slug}`} aria-label={`Explorar categoría ${cat.name}`} className="ui-card ui-card-hover group overflow-hidden p-3.5">
             <div className="ui-product-image relative flex h-40 w-full items-end overflow-hidden bg-[color:var(--color-accent-soft)]">

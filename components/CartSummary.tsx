@@ -19,15 +19,15 @@ export default function CartSummary() {
   }, 0);
 
   return (
-    <div className="ui-surface p-6 sm:p-7">
-      <h2 className="text-lg font-semibold text-neutral-950 dark:text-white">Resumen</h2>
+    <div className="ui-commerce-panel p-6 sm:p-7">
+      <h2 className="text-xl font-semibold tracking-[-0.025em] text-[color:var(--color-text)]">Resumen</h2>
       <div className="mt-4 space-y-3 text-sm text-neutral-600 dark:text-zinc-300">
         <div className="flex justify-between"><span>Subtotal</span><span>{formatARS(subtotal)}</span></div>
         {savings > 0 ? (
           <div className="flex justify-between text-[color:var(--color-offer)]"><span>Ahorro</span><span className="font-semibold">-{formatARS(savings)}</span></div>
         ) : null}
         <div className="flex justify-between"><span>Envío</span><span>{shipping === 0 ? "Gratis" : `$${shipping.toFixed(0)}`}</span></div>
-        <div className="flex justify-between text-base font-semibold text-neutral-900 dark:text-white"><span>Total</span><span>{formatARS(total)}</span></div>
+        <div className="flex justify-between border-t border-[color:var(--color-border)] pt-4 text-xl font-semibold tracking-[-0.03em] text-[color:var(--color-text)]"><span>Total</span><span>{formatARS(total)}</span></div>
       </div>
       <Link href="/checkout" className="ui-button-primary mt-6 min-h-[3.25rem] w-full px-4">
         Continuar compra

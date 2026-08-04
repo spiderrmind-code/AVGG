@@ -29,7 +29,7 @@ export default function ProductGrid({
           <h3 className="section-title dark:text-white">Productos seleccionados</h3>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
         {products.map((product) => (
           <ProductCard key={product._id} product={product} />
         ))}

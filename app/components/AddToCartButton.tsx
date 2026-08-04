@@ -56,15 +56,15 @@ export default function AddToCartButton({
 
 
   return (
-    <div className="mt-8 flex gap-3">
+    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
     <button
       onClick={handleAdd}
       disabled={product.inStock === false}
-      className="ui-button-primary min-h-[3.25rem] w-full px-8"
+      className="ui-button-primary min-h-[3.25rem] w-full px-8 sm:flex-1"
     >
       {product.inStock === false ? "Sin stock" : "Agregar al carrito"}
     </button>
-    <button type="button" onClick={handleWishlist} className="ui-button-secondary min-h-[3.25rem] px-5">Favorito</button>
+    <button type="button" onClick={handleWishlist} className="ui-button-secondary min-h-[3.25rem] px-6">Favorito</button>
     </div>
   );
 

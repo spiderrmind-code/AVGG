@@ -146,7 +146,7 @@ export default function ProductCard({
 
   return (
 
-    <article className="ui-card ui-card-hover ui-product-card group">
+    <article className="ui-card ui-card-hover ui-product-card group flex h-full flex-col">
 
 
 
@@ -156,7 +156,7 @@ export default function ProductCard({
       >
 
 
-        <div className="ui-product-image relative aspect-square w-full overflow-hidden">
+        <div className="ui-product-image relative aspect-[4/4.15] w-full overflow-hidden">
           <Image
             src={image}
             alt={title}
@@ -178,7 +178,7 @@ export default function ProductCard({
           <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 dark:text-zinc-400">{product.category ?? "Producto"}</span>
         </div>
 
-        <h3 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-neutral-950 dark:text-white sm:text-xl">{title}</h3>
+        <h3 className="mt-3 line-clamp-2 text-lg font-semibold leading-snug tracking-[-0.03em] text-neutral-950 dark:text-white sm:text-xl">{title}</h3>
         <p className="mt-2 line-clamp-2 text-sm leading-6 text-neutral-600 dark:text-zinc-300">{product.description ?? "Producto seleccionado para mejorar tu experiencia."}</p>
 
 

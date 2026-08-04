@@ -159,7 +159,7 @@ export default async function ProductPage({
     <main
       className="
       min-h-screen
-      bg-neutral-50
+      bg-transparent
       px-5
       py-10
       "
@@ -184,9 +184,8 @@ export default async function ProductPage({
           href="/"
 
           className="
-          text-sm
-          text-neutral-600
-          hover:text-black
+          ui-button-secondary
+          w-fit
           "
 
         >
@@ -207,10 +206,13 @@ export default async function ProductPage({
           mt-8
           grid
           gap-10
-          rounded-3xl
-          bg-white
-          p-6
-          shadow-sm
+          rounded-[var(--radius-xl)]
+          border
+          border-[color:var(--color-border)]
+          bg-[color:var(--color-surface-strong)]
+          p-4
+          shadow-[var(--shadow-soft)]
+          sm:p-6
           md:grid-cols-2
           "
 
@@ -220,7 +222,7 @@ export default async function ProductPage({
 
 
 
-          <div className="relative h-[520px] overflow-hidden rounded-[1.8rem] bg-neutral-100">
+          <div className="relative min-h-[360px] overflow-hidden rounded-[calc(var(--radius-xl)-0.35rem)] bg-[color:var(--color-surface-muted)] md:h-[520px]">
 
 
             <Image
@@ -236,7 +238,7 @@ export default async function ProductPage({
               50vw
               "
 
-              className="object-contain transition duration-500 hover:scale-[1.02]"
+            className="object-contain p-5 transition duration-500 hover:scale-[1.02] sm:p-8"
 
             />
 
@@ -268,7 +270,7 @@ export default async function ProductPage({
 
             <span
 
-              className="inline-flex w-fit rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-600 backdrop-blur"
+            className="ui-badge w-fit"
 
             >
 
@@ -283,7 +285,7 @@ export default async function ProductPage({
 
             <h1
 
-              className="mt-4 text-4xl font-semibold tracking-[-0.02em] text-neutral-950 sm:text-5xl"
+            className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-[color:var(--color-text)] sm:text-5xl"
 
             >
 
@@ -299,7 +301,7 @@ export default async function ProductPage({
 
             <p
 
-              className="mt-5 max-w-2xl text-base leading-8 text-neutral-600"
+            className="mt-5 max-w-2xl text-base leading-7 text-[color:var(--color-text-muted)]"
 
             >
 
@@ -315,7 +317,7 @@ export default async function ProductPage({
 
 
 
-            <div className="mt-8">
+            <div className="mt-8 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] p-5">
 
 
               {
@@ -323,7 +325,7 @@ export default async function ProductPage({
 
                   <p
 
-                    className="text-lg text-neutral-400 line-through"
+                  className="text-base text-[color:var(--color-text-subtle)] line-through"
 
                   >
 
@@ -347,7 +349,7 @@ export default async function ProductPage({
 
                 <p
 
-                  className="text-4xl font-semibold tracking-[-0.02em] text-neutral-950"
+                className="text-4xl font-semibold tracking-[-0.05em] text-[color:var(--color-text)]"
 
                 >
 
@@ -364,7 +366,7 @@ export default async function ProductPage({
 
                     <span
 
-                      className="rounded-full bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-600"
+                      className="ui-offer-badge"
 
                     >
 
@@ -390,7 +392,7 @@ export default async function ProductPage({
 
 
 
-            <div className="mt-6 grid gap-3 rounded-[1.4rem] border border-black/10 bg-white/80 p-4 text-sm text-neutral-700">
+            <div className="ui-subtle-panel mt-5 grid gap-3 p-5 text-sm text-[color:var(--color-text-muted)]">
               <div className="flex items-center justify-between"><span>Envío</span><span className="font-semibold text-neutral-950">{product.shippingDays ?? "24-48 hs"}</span></div>
               <div className="flex items-center justify-between"><span>Compra segura</span><span className="font-semibold text-neutral-950">Protegida</span></div>
               <div className="flex items-center justify-between"><span>Pago</span><span className="font-semibold text-neutral-950">Mercado Pago</span></div>

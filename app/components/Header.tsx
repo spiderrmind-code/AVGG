@@ -343,8 +343,8 @@ export default function Header() {
     ? 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_10px_30px_rgba(17,17,17,0.08)] backdrop-blur-2xl'
     : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_2px_14px_rgba(17,17,17,0.04)] backdrop-blur-xl';
   const headerText = 'text-neutral-900 dark:text-zinc-100';
-  const logoBoxSize = scrolled ? 'w-10 h-10' : 'w-12 h-12';
-  const logoTextSize = scrolled ? 'text-sm' : 'text-base';
+  const logoBoxSize = scrolled ? 'h-11 w-11' : 'h-[3.125rem] w-[3.125rem]';
+  const logoTextSize = scrolled ? 'text-sm' : 'text-[0.9375rem]';
   const isSessionLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
 
@@ -357,10 +357,10 @@ export default function Header() {
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 md:h-[76px] lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-5">
+        <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 md:h-[82px] lg:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6">
             {/* LEFT: logo + nav */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4 sm:gap-6">
               <Link href="/" className="flex items-center gap-3" aria-label="Ir al inicio">
                 <div className={`${logoBoxSize} flex items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all duration-300 dark:border-white/10 dark:bg-zinc-900/80`}>
                   <LogoSVG />
@@ -382,7 +382,7 @@ export default function Header() {
                     onBlur={() => scheduleClose(180)}
                     aria-expanded={megaOpen}
                     aria-controls="mega-menu"
-                    className="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-950 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
+                    className="flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold text-neutral-700 transition hover:bg-[color:var(--color-accent-soft)] hover:text-[color:var(--color-accent-strong)] dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
                   >
                     Colecciones <ChevronDown className={`h-4 w-4 text-neutral-500 transition ${megaOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -400,7 +400,7 @@ export default function Header() {
               </nav>
             </div>
 
-            <div className="hidden min-w-0 flex-1 justify-center px-2 md:flex">
+            <div className="hidden min-w-0 flex-1 justify-center px-3 md:flex">
               <div className="relative w-full max-w-none">
                 <div className="relative">
                   <input
@@ -408,7 +408,7 @@ export default function Header() {
                     value={search}
                     onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder="Buscar productos"
-                    className="ui-input w-full rounded-full py-2.5 pl-10 pr-12"
+                    className="ui-input h-11 w-full rounded-full py-2.5 pl-10 pr-12 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"
@@ -425,7 +425,7 @@ export default function Header() {
                       const q = search.trim();
                       if (!q) return;
                       window.location.href = `/search?q=${encodeURIComponent(q)}`;
-                    }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 transition hover:bg-neutral-100">
+                    }} className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full transition hover:bg-[color:var(--color-accent-soft)]">
                       <IconSearch className="h-4 w-4 text-neutral-600" />
                     </button>
                 </div>
@@ -527,7 +527,7 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={isAuthenticated ? "/account" : "/login"} className="order-3 hidden items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm font-medium text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:bg-white md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
+              <Link href={isAuthenticated ? "/account" : "/login"} className="order-3 hidden min-h-11 items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 text-sm font-semibold text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition hover:border-[color:var(--color-accent)] hover:bg-[color:var(--color-accent-soft)] hover:text-[color:var(--color-accent-strong)] md:inline-flex dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800">
                 <User className="h-4 w-4" />
                 <span>{isAuthenticated ? "Mi cuenta" : "Login"}</span>
               </Link>

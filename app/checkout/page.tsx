@@ -130,23 +130,23 @@ export default function CheckoutPage() {
   return (
     <main className="ui-page">
       <div className="mx-auto max-w-7xl">
-        <div className="ui-page-header flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">Checkout</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Finalizar compra</h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.045em] text-[color:var(--color-text)] sm:text-4xl">Finalizar compra</h1>
             <p className="mt-2 text-neutral-600 dark:text-zinc-300">Completá tus datos con una experiencia de pago limpia, rápida y confiable.</p>
           </div>
-          <div className="rounded-full border border-black/10 bg-white/80 px-3 py-2 text-sm text-neutral-700 dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">Pago protegido</div>
+          <div className="ui-badge w-fit px-3 py-2">Pago protegido</div>
         </div>
 
         <div className="mt-2 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <form onSubmit={handleSubmit} className="ui-surface space-y-6 p-6 sm:p-8">
-            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
+          <form onSubmit={handleSubmit} className="ui-surface space-y-7 p-6 sm:p-8">
+            <div className="ui-subtle-panel p-5">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Datos personales</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu información queda protegida y se usa solo para gestionar el pedido.</p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-5 md:grid-cols-2">
               {[
                 ["firstName", "Nombre"],
                 ["lastName", "Apellido"],
@@ -161,7 +161,7 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
+            <div className="ui-subtle-panel p-5">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Dirección de entrega</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Toda la información se presenta de forma clara para que el proceso se sienta seguro.</p>
             </div>
@@ -187,8 +187,8 @@ export default function CheckoutPage() {
             </button>
           </form>
 
-          <aside className="ui-surface h-fit p-6 sm:p-7">
-            <div className="rounded-[1.4rem] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/10">
+          <aside className="ui-commerce-panel h-fit p-6 sm:p-7 lg:sticky lg:top-28">
+            <div className="ui-subtle-panel p-5">
               <h2 className="text-xl font-semibold text-neutral-950 dark:text-white">Resumen</h2>
               <p className="mt-1 text-sm text-neutral-600 dark:text-zinc-300">Tu pedido se ve claro desde el primer vistazo.</p>
             </div>
@@ -201,12 +201,12 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            <div className="mt-6 border-t border-black/10 pt-4">
+            <div className="mt-6 border-t border-[color:var(--color-border)] pt-5">
               <div className="flex justify-between text-sm text-neutral-600">
                 <span>Subtotal</span>
                 <span>{formatARS(subtotal)}</span>
               </div>
-              <div className="mt-3 flex justify-between text-xl font-semibold text-neutral-950 dark:text-white">
+              <div className="mt-3 flex justify-between text-2xl font-semibold tracking-[-0.03em] text-[color:var(--color-text)]">
                 <span>Total</span>
                 <span>{formatARS(total)}</span>
               </div>
