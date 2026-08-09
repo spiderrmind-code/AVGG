@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { escapeRegex, normalizePublicProduct } from "@/lib/catalog";
 import { getDb } from "@/lib/mongo";
+import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 
 export async function GET(request: NextRequest) {
+  const limit = await checkRateLimitDistributed(`search:${requestIdentifier(request)}`, 60, 10 * 60 * 1000);
+  if (!limit.allowed) return NextResponse.json({ success: false, message: "Demasiadas solicitudes" }, { status: 429, headers: { "Retry-After": String(limit.retryAfter) } });
   try {
     const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
     if (!query) return NextResponse.json({ success: true, count: 0, results: [] });

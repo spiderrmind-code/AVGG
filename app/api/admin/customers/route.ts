@@ -15,21 +15,38 @@ export async function GET(request: Request) {
   if (!session?.user?.email) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   if (session.user.role !== "admin") return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 403 });
   const params = new URL(request.url).searchParams;
-  const rawPage = Number(params.get("page")); const page = Number.isInteger(rawPage) && rawPage > 0 ? Math.min(rawPage, 10_000) : 1;
+  const rawPage = Number(params.get("page"));
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? Math.min(rawPage, 10_000) : 1;
   const limit = Math.min(Math.max(Number(params.get("limit")) || 25, 1), 100);
   const query = params.get("q")?.trim();
   try {
     const db = await getDb();
-    const filter = query ? { $or: [{ email: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } }, { name: { $regex: query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } }] } : {};
-    const [users, total] = await Promise.all([db.collection("users").find(filter, { projection: { password: 0 } }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(), db.collection("users").countDocuments(filter)]);
-    const customers = await Promise.all(users.map(async (user) => {
-      const [orderCount, totals, last] = await Promise.all([
-        db.collection("orders").countDocuments({ $or: [{ userId: String(user._id) }, { "customer.email": user.email }] }),
-        db.collection("orders").aggregate<{ total: number }>([{ $match: { paymentStatus: "approved", $or: [{ userId: String(user._id) }, { "customer.email": user.email }] } }, { $group: { _id: null, total: { $sum: "$total" } } }]).toArray(),
-        db.collection("orders").find({ $or: [{ userId: String(user._id) }, { "customer.email": user.email }] }, { projection: { createdAt: 1 } }).sort({ createdAt: -1 }).limit(1).toArray(),
-      ]);
-      return { id: String(user._id), name: typeof user.name === "string" ? user.name : "Sin información", emailMasked: maskEmail(user.email), orderCount, totalPurchased: totals[0]?.total ?? 0, lastPurchaseAt: last[0]?.createdAt ?? null, createdAt: user.createdAt ?? null };
-    }));
+    const escaped = query?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const filter = escaped ? { $or: [{ email: { $regex: escaped, $options: "i" } }, { name: { $regex: escaped, $options: "i" } }] } : {};
+    const [users, total] = await Promise.all([
+      db.collection("users").find(filter, { projection: { password: 0 } }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(),
+      db.collection("users").countDocuments(filter),
+    ]);
+    const userIds = users.map((user) => String(user._id));
+    const emails = users.flatMap((user) => typeof user.email === "string" ? [user.email] : []);
+    const orders = userIds.length === 0 ? [] : await db.collection("orders").aggregate<{ userId?: string; customer?: { email?: string }; paymentStatus?: string; total?: number; createdAt?: Date }>([
+      { $match: { $or: [{ userId: { $in: userIds } }, { "customer.email": { $in: emails } }] } },
+      { $project: { userId: 1, "customer.email": 1, paymentStatus: 1, total: 1, createdAt: 1 } },
+    ]).toArray();
+    const summaries = new Map<string, { orderCount: number; totalPurchased: number; lastPurchaseAt: Date | null }>();
+    for (const order of orders) {
+      const key = typeof order.userId === "string" && userIds.includes(order.userId) ? `id:${order.userId}` : typeof order.customer?.email === "string" ? `email:${order.customer.email}` : null;
+      if (!key) continue;
+      const summary = summaries.get(key) ?? { orderCount: 0, totalPurchased: 0, lastPurchaseAt: null };
+      summary.orderCount += 1;
+      if (order.paymentStatus === "approved" && typeof order.total === "number") summary.totalPurchased += order.total;
+      if (order.createdAt instanceof Date && (!summary.lastPurchaseAt || order.createdAt > summary.lastPurchaseAt)) summary.lastPurchaseAt = order.createdAt;
+      summaries.set(key, summary);
+    }
+    const customers = users.map((user) => {
+      const summary = summaries.get(`id:${String(user._id)}`) ?? (typeof user.email === "string" ? summaries.get(`email:${user.email}`) : undefined) ?? { orderCount: 0, totalPurchased: 0, lastPurchaseAt: null };
+      return { id: String(user._id), name: typeof user.name === "string" ? user.name : "Sin información", emailMasked: maskEmail(user.email), ...summary, createdAt: user.createdAt ?? null };
+    });
     return NextResponse.json({ customers, pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) } });
   } catch { return NextResponse.json({ error: "CUSTOMERS_UNAVAILABLE" }, { status: 500 }); }
 }

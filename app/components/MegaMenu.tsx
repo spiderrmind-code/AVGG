@@ -1,153 +1,215 @@
-import React, { useState } from "react";
-import Link from "next/link";
+"use client";
+
 import Image from "next/image";
-import { normalizeCatalogSlug, type PublicProduct } from "@/lib/catalog";
+import Link from "next/link";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ChevronRight, Loader2 } from "lucide-react";
+import { formatARS } from "@/lib/currency";
 
 export interface Category {
   _id?: string;
   name: string;
   slug: string;
   image?: string;
-  children?: {
-    name: string;
-    slug: string;
-  }[];
+  children?: { name: string; slug: string }[];
 }
 
-export type MegaMenuProduct = Pick<PublicProduct, "_id" | "name" | "image" | "images" | "category" | "categorySlug" | "featured" | "inStock">;
+export type MegaMenuProduct = {
+  _id: string;
+  name: string;
+  image?: string;
+  images: string[];
+  price: number;
+  comparePrice?: number;
+  inStock: boolean;
+};
 
-interface MegaMenuProps {
-  categories: Category[];
+type CategoryPage = {
+  products: MegaMenuProduct[];
+  page: number;
+  hasMore: boolean;
+  loading: boolean;
+  error: "initial" | "more" | null;
+};
+
+type ProductResponse = {
   products?: MegaMenuProduct[];
+  hasMore?: boolean;
+};
+
+interface Props {
+  categories: Category[];
   open?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onClose?: () => void;
+  variant?: "desktop" | "mobile";
 }
 
-function getPreviewImage(category: Category) {
-  const categoryImage = category.image?.trim();
-  return categoryImage && !categoryImage.startsWith("data:image/svg+xml") ? categoryImage : undefined;
+const PAGE_SIZE = 12;
+
+function imageOf(product: MegaMenuProduct) {
+  return product.image?.trim() || product.images.find(Boolean);
 }
 
-function getProductImage(product: MegaMenuProduct) {
-  return product.image?.trim() || product.images.find((image) => image.trim());
+function isProduct(value: unknown): value is MegaMenuProduct {
+  if (!value || typeof value !== "object") return false;
+  const product = value as Partial<MegaMenuProduct>;
+  return typeof product._id === "string" && typeof product.name === "string" && typeof product.price === "number";
 }
 
-function getPreviewProduct(category: Category, products: MegaMenuProduct[]) {
-  const categorySlug = normalizeCatalogSlug(category.slug);
-  const categoryNameSlug = normalizeCatalogSlug(category.name);
-  return products
-    .filter((product) => product.inStock && Boolean(getProductImage(product)))
-    .filter((product) => product.categorySlug === categorySlug || normalizeCatalogSlug(product.category) === categoryNameSlug)
-    .sort((left, right) => Number(right.featured) - Number(left.featured))[0];
+export function dedupeMegaMenuProducts(products: MegaMenuProduct[]) {
+  return [...new Map(products.map((product) => [product._id, product])).values()];
 }
 
-const MegaMenu = React.forwardRef<HTMLDivElement, MegaMenuProps>(
-  ({ categories, products = [], open = false, onMouseEnter, onMouseLeave }, ref) => {
-    const [activeSlug, setActiveSlug] = useState<string | null>(null);
-    const activeCategory = categories.find((category) => category.slug === activeSlug) ?? categories[0];
-    const previewProduct = activeCategory ? getPreviewProduct(activeCategory, products) : undefined;
-    const previewImage = previewProduct ? getProductImage(previewProduct) : activeCategory ? getPreviewImage(activeCategory) : undefined;
-    const previewInitial = activeCategory?.name.trim().charAt(0).toUpperCase() ?? "C";
+function LoadingState({ label = "Cargando productos…" }: { label?: string }) {
+  return <div className="flex min-h-32 items-center justify-center gap-2 text-sm text-[color:var(--color-text-muted)]"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{label}</div>;
+}
 
-    if (!open) return null;
+function ProductGrid({ products, onNavigate, columns }: { products: MegaMenuProduct[]; onNavigate?: () => void; columns: "desktop" | "mobile" }) {
+  return <div className={`grid gap-3 ${columns === "mobile" ? "grid-cols-2" : "grid-cols-3 xl:grid-cols-4"}`}>
+    {products.map((product) => {
+      const image = imageOf(product);
+      return <Link key={product._id} href={`/product/${product._id}`} onClick={onNavigate} className="group min-w-0 rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] p-2 transition hover:-translate-y-0.5 hover:border-[color:var(--color-accent)] hover:shadow-[var(--shadow-sm)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]">
+        <div className="relative aspect-square overflow-hidden rounded-[calc(var(--radius-md)-0.25rem)] bg-[color:var(--color-surface-muted)]">
+          {image ? <Image src={image} alt={product.name} fill sizes={columns === "mobile" ? "(max-width: 767px) 40vw" : "(min-width: 1280px) 180px, 150px"} className="object-contain transition duration-200 group-hover:scale-[1.03]" /> : <span className="flex h-full items-center justify-center px-3 text-center text-xs text-[color:var(--color-text-subtle)]">Imagen no disponible</span>}
+        </div>
+        <p className="mt-2 line-clamp-2 min-h-9 text-xs font-semibold leading-4 text-[color:var(--color-text)]">{product.name}</p>
+        <p className="mt-1 text-sm font-bold text-[color:var(--color-accent-strong)]">{formatARS(product.price)}</p>
+      </Link>;
+    })}
+  </div>;
+}
 
-    function activateByOffset(currentIndex: number, offset: number) {
-      const next = categories[(currentIndex + offset + categories.length) % categories.length];
-      if (next) setActiveSlug(next.slug);
+const MegaMenu = React.forwardRef<HTMLDivElement, Props>(function MegaMenu({ categories, open = false, onMouseEnter, onMouseLeave, onClose, variant = "desktop" }, ref) {
+  const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const [pages, setPages] = useState<Record<string, CategoryPage>>({});
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const pagesRef = useRef(pages);
+  const controllerRef = useRef<AbortController | null>(null);
+  const inFlightRef = useRef(new Map<string, number>());
+  const requestVersionRef = useRef(0);
+
+  useEffect(() => { pagesRef.current = pages; }, [pages]);
+
+  const active = useMemo(() => categories.find((category) => category.slug === activeSlug) ?? categories[0], [activeSlug, categories]);
+  const state = active ? pages[active.slug] : undefined;
+
+  const cancelRequest = useCallback(() => {
+    requestVersionRef.current += 1;
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+    inFlightRef.current.clear();
+  }, []);
+
+  const load = useCallback(async (slug: string, page: number, retry = false) => {
+    const requestKey = `${slug}:${page}`;
+    const current = pagesRef.current[slug];
+    if (inFlightRef.current.has(requestKey) || (!retry && current?.loading) || (page > 1 && !current?.hasMore)) return;
+
+    cancelRequest();
+    const version = requestVersionRef.current;
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    inFlightRef.current.set(requestKey, version);
+    setPages((all) => ({
+      ...all,
+      [slug]: {
+        products: page === 1 ? (retry ? all[slug]?.products ?? [] : []) : all[slug]?.products ?? [],
+        page: page === 1 ? 0 : all[slug]?.page ?? 0,
+        hasMore: all[slug]?.hasMore ?? true,
+        loading: true,
+        error: null,
+      },
+    }));
+
+    try {
+      const response = await fetch(`/api/products?category=${encodeURIComponent(slug)}&limit=${PAGE_SIZE}&page=${page}`, { signal: controller.signal });
+      if (!response.ok) throw new Error("catalog_error");
+      const payload: unknown = await response.json();
+      if (controller.signal.aborted || requestVersionRef.current !== version || !payload || typeof payload !== "object") return;
+      const responsePayload = payload as ProductResponse;
+      const received = Array.isArray(responsePayload.products) ? responsePayload.products.filter(isProduct) : [];
+      setPages((all) => {
+        const prior = page === 1 ? [] : all[slug]?.products ?? [];
+        return {
+          ...all,
+          [slug]: { products: dedupeMegaMenuProducts([...prior, ...received]), page, hasMore: responsePayload.hasMore === true, loading: false, error: null },
+        };
+      });
+    } catch {
+      if (!controller.signal.aborted && requestVersionRef.current === version) {
+        setPages((all) => ({
+          ...all,
+          [slug]: { ...(all[slug] ?? { products: [], page: 0, hasMore: true }), loading: false, error: page === 1 ? "initial" : "more" },
+        }));
+      }
+    } finally {
+      if (inFlightRef.current.get(requestKey) === version) inFlightRef.current.delete(requestKey);
     }
+  }, [cancelRequest]);
 
-    return (
-      <div
-        ref={ref}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        className="ui-popover absolute left-0 top-full z-[999] mt-4 hidden w-[min(92vw,940px)] max-w-[940px] overflow-hidden md:grid md:grid-cols-[minmax(220px,0.76fr)_minmax(0,1.24fr)]"
-        aria-label="Categorías"
-      >
-        {categories.length === 0 ? (
-          <div className="p-6 text-sm text-[color:var(--color-text-muted)]">No hay categorías disponibles</div>
-        ) : (
-          <>
-            <div className="border-r border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] p-3" role="tablist" aria-label="Categorías principales">
-              <p className="px-3 pb-2 pt-1 text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-[color:var(--color-text-subtle)]">Explorar</p>
-              <div className="max-h-[360px] space-y-1 overflow-y-auto pr-1">
-                {categories.map((category, index) => {
-                  const isActive = activeCategory?.slug === category.slug;
-                  return (
-                    <button
-                      key={category._id ?? category.slug}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      onMouseEnter={() => setActiveSlug(category.slug)}
-                      onFocus={() => setActiveSlug(category.slug)}
-                      onClick={() => setActiveSlug(category.slug)}
-                      onKeyDown={(event) => {
-                        if (event.key === "ArrowDown" || event.key === "ArrowRight") {
-                          event.preventDefault();
-                          activateByOffset(index, 1);
-                        }
-                        if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
-                          event.preventDefault();
-                          activateByOffset(index, -1);
-                        }
-                      }}
-                      className={`flex min-h-11 w-full items-center justify-between rounded-[var(--radius-md)] px-3 text-left text-sm font-semibold transition ${isActive ? "bg-[color:var(--color-surface-strong)] text-[color:var(--color-accent-strong)] shadow-sm" : "text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-strong)] hover:text-[color:var(--color-text)]"}`}
-                    >
-                      {category.name}
-                      <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-[color:var(--color-accent)]" : "bg-transparent"}`} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+  const selectCategory = useCallback((slug: string, openProducts = variant === "mobile") => {
+    if (slug !== activeSlug) cancelRequest();
+    setActiveSlug(slug);
+    if (variant === "mobile") setMobileProductsOpen(openProducts);
+  }, [activeSlug, cancelRequest, variant]);
 
-            {activeCategory ? (
-              <div className="grid min-h-[360px] grid-cols-[minmax(0,1fr)_minmax(150px,.72fr)] gap-6 p-6" role="tabpanel">
-                <div>
-                  <p className="ui-eyebrow">Colección</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[color:var(--color-text)]">{activeCategory.name}</h2>
-                  <Link href={`/category/${activeCategory.slug}`} className="ui-button-primary mt-5">Ver categoría</Link>
+  useEffect(() => {
+    if (!open) {
+      cancelRequest();
+    }
+  }, [cancelRequest, open]);
 
-                  {activeCategory.children && activeCategory.children.length > 0 ? (
-                    <div className="mt-7 border-t border-[color:var(--color-border)] pt-5">
-                      <p className="text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-[color:var(--color-text-subtle)]">Subcategorías</p>
-                      <div className="mt-3 grid gap-1 sm:grid-cols-2">
-                        {activeCategory.children.map((child) => (
-                          <Link key={child.slug} href={`/category/${child.slug}`} className="rounded-[var(--radius-sm)] px-3 py-2 text-sm font-medium text-[color:var(--color-text-muted)] transition hover:bg-[color:var(--color-accent-soft)] hover:text-[color:var(--color-accent-strong)]">
-                            {child.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
+  useEffect(() => {
+    const shouldLoad = open && active && (variant === "desktop" || mobileProductsOpen) && !pagesRef.current[active.slug];
+    if (shouldLoad) void load(active.slug, 1);
+  }, [active, load, mobileProductsOpen, open, variant]);
 
-                <div className="mega-preview-stage">
-                <Link key={previewProduct?._id ?? activeCategory.slug} href={previewProduct ? `/product/${previewProduct._id}` : `/category/${activeCategory.slug}`} className="mega-preview-card group relative block min-h-48 overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-accent-soft)]">
-                  {previewImage ? (
-                    <Image src={previewImage} alt={previewProduct ? previewProduct.name : `Vista previa de ${activeCategory.name}`} fill sizes="180px" unoptimized className="mega-preview-image object-contain p-3" />
-                  ) : (
-                    <div className="mega-preview-fallback" aria-label={`Vista previa de ${activeCategory.name}`}>
-                      <span aria-hidden="true" className="mega-preview-initial">{previewInitial}</span>
-                      <span className="text-sm font-semibold">Próximamente</span>
-                      <span className="text-xs text-[color:var(--color-text-muted)]">{activeCategory.name}</span>
-                    </div>
-                  )}
-                  <span className="absolute inset-x-0 bottom-0 z-10 bg-[linear-gradient(transparent,rgba(15,23,42,.68))] px-4 pb-4 pt-12 text-sm font-semibold text-white">{previewProduct?.name ?? "Explorar"}</span>
-                </Link>
-                </div>
-              </div>
-            ) : null}
-          </>
-        )}
-      </div>
-    );
-  },
-);
+  useEffect(() => () => cancelRequest(), [cancelRequest]);
+
+  if (!open || categories.length === 0) return null;
+
+  const loadNext = () => {
+    if (active && state && state.hasMore && !state.loading) void load(active.slug, state.page + 1);
+  };
+  const onScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const node = event.currentTarget;
+    if (node.scrollHeight - node.scrollTop - node.clientHeight < 120) loadNext();
+  };
+  const retry = () => active && void load(active.slug, state?.error === "more" ? Math.max(1, (state?.page ?? 0) + 1) : 1, true);
+  const renderResults = (columns: "desktop" | "mobile") => <>
+    {state?.loading && state.products.length === 0 ? <LoadingState /> : null}
+    {state?.error === "initial" && state.products.length === 0 ? <div className="py-8 text-center"><p className="text-sm text-[color:var(--color-text-muted)]">No pudimos cargar los productos.</p><button type="button" className="ui-button-secondary mt-3" onClick={retry}>Reintentar</button></div> : null}
+    {state && state.products.length > 0 ? <ProductGrid products={state.products} columns={columns} onNavigate={variant === "mobile" ? onClose : undefined} /> : null}
+    {!state?.loading && !state?.error && state?.products.length === 0 ? <p className="py-8 text-center text-sm text-[color:var(--color-text-muted)]">No hay productos disponibles.</p> : null}
+    {state?.error === "more" ? <div className="mt-4 text-center"><p className="text-sm text-[color:var(--color-text-muted)]">No se pudieron cargar más productos.</p><button type="button" className="ui-button-secondary mt-2" onClick={retry}>Reintentar</button></div> : null}
+    {state?.loading && state.products.length > 0 ? <LoadingState label="Cargando más productos…" /> : null}
+    {state && !state.loading && !state.hasMore && state.products.length > 0 ? <p className="py-4 text-center text-xs text-[color:var(--color-text-muted)]">Fin de productos</p> : null}
+  </>;
+
+  if (variant === "mobile") {
+    return <section aria-label="Colecciones" className="min-h-0">
+      {!mobileProductsOpen ? <div className="flex max-h-[calc(100dvh-13rem)] flex-col gap-2 overflow-y-auto pr-1" role="list">
+        {categories.map((category) => <div key={category.slug} role="listitem"><button type="button" onClick={() => selectCategory(category.slug, true)} className="flex min-h-12 w-full items-center justify-between rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 text-left text-sm font-semibold text-[color:var(--color-text)] transition hover:bg-[color:var(--color-accent-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]"><span>{category.name}</span><ChevronRight className="h-4 w-4 text-[color:var(--color-text-subtle)]" aria-hidden="true" /></button></div>)}
+      </div> : <div className="min-h-0">
+        <div className="mb-3 flex items-center justify-between gap-3"><button type="button" onClick={() => setMobileProductsOpen(false)} className="ui-button-secondary inline-flex items-center gap-1.5" aria-label="Volver a categorías"><ArrowLeft className="h-4 w-4" aria-hidden="true" />Volver a categorías</button>{active ? <Link href={`/category/${active.slug}`} onClick={onClose} className="text-sm font-semibold text-[color:var(--color-accent-strong)]">Ver todos</Link> : null}</div>
+        <h2 className="mb-3 text-base font-semibold text-[color:var(--color-text)]">{active?.name}</h2>
+        <div className="max-h-[calc(100dvh-18rem)] overflow-y-auto overscroll-contain pr-1" aria-busy={state?.loading ?? false} onScroll={onScroll}>{renderResults("mobile")}</div>
+      </div>}
+    </section>;
+  }
+
+  return <div ref={ref} id="mega-menu" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onKeyDown={(event) => { if (event.key === "Escape") onClose?.(); }} className="ui-popover absolute left-0 top-full z-[999] mt-4 hidden w-[min(94vw,1100px)] overflow-hidden md:grid md:grid-cols-[230px_minmax(0,1fr)]" aria-label="Categorías">
+    <div className="max-h-[min(70vh,640px)] overflow-y-auto border-r border-[color:var(--color-border)] p-3" role="tablist" aria-label="Categorías del catálogo">
+      {categories.map((category) => <button key={category.slug} type="button" role="tab" aria-selected={active?.slug === category.slug} aria-controls="mega-menu-products" onMouseEnter={() => selectCategory(category.slug, false)} onFocus={() => selectCategory(category.slug, false)} onClick={() => selectCategory(category.slug, false)} className={`flex min-h-11 w-full items-center rounded-[var(--radius-md)] px-3 text-left text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] ${active?.slug === category.slug ? "bg-[color:var(--color-accent-soft)] text-[color:var(--color-accent-strong)]" : "text-[color:var(--color-text)] hover:bg-[color:var(--color-surface-muted)]"}`}>{category.name}</button>)}
+    </div>
+    {active ? <div id="mega-menu-products" role="tabpanel" tabIndex={0} className="max-h-[min(70vh,640px)] min-w-0 overflow-y-auto overscroll-contain p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--color-accent)]" aria-busy={state?.loading ?? false} onScroll={onScroll}>
+      <div className="sticky top-0 z-10 mb-4 flex items-center justify-between gap-3 bg-[color:var(--color-surface-strong)] pb-3"><div><h2 className="font-semibold text-[color:var(--color-text)]">{active.name}</h2><span className="sr-only" aria-live="polite">Categoría activa: {active.name}</span></div><Link href={`/category/${active.slug}`} className="ui-button-primary shrink-0">Ver todos</Link></div>
+      {renderResults("desktop")}
+    </div> : null}
+  </div>;
+});
 
 MegaMenu.displayName = "MegaMenu";
-
 export default MegaMenu;

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { resolveAppBaseUrl } from "@/lib/app-url";
 import { getDb } from "@/lib/mongo";
+import { getPublicCategories } from "@/lib/public-categories";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const db = await getDb();
     const [products, categories] = await Promise.all([
       db.collection("products").find({ active: { $ne: false } }, { projection: { _id: 1, slug: 1, updatedAt: 1, createdAt: 1 } }).toArray(),
-      db.collection("categorias").find({}, { projection: { slug: 1, updatedAt: 1, createdAt: 1 } }).toArray(),
+      getPublicCategories(),
     ]);
     dynamicEntries = [
       ...products.map((product) => ({
@@ -27,9 +28,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly" as const,
         priority: 0.7,
       })),
-      ...categories.filter((category) => typeof category.slug === "string" && category.slug).map((category) => ({
+      ...categories.filter((category) => category.slug).map((category) => ({
         url: `${baseUrl}/category/${encodeURIComponent(category.slug)}`,
-        lastModified: category.updatedAt instanceof Date ? category.updatedAt : category.createdAt instanceof Date ? category.createdAt : now,
+        lastModified: now,
         changeFrequency: "weekly" as const,
         priority: 0.8,
       })),

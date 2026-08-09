@@ -4,28 +4,29 @@ import ProductCard from "@/app/components/ProductCard";
 import { buildCategorySearchTerms } from "@/lib/category-routing";
 import { isValidCatalogSlug, normalizeCatalogSlug, normalizePublicProduct, type PublicProduct } from "@/lib/catalog";
 import { getDb } from "@/lib/mongo";
+import { unstable_cache } from "next/cache";
+import { PUBLIC_CATALOG_CACHE_TAG } from "@/lib/public-catalog-cache";
 
-export const dynamic = "force-dynamic";
-
-async function getCategory(slug: string): Promise<{ name: string; products: PublicProduct[] } | null> {
+const getCachedCategory = unstable_cache(async (slug: string): Promise<{ name: string; products: PublicProduct[] } | null> => {
   if (!isValidCatalogSlug(slug)) return null;
   const normalizedSlug = normalizeCatalogSlug(slug);
   const db = await getDb();
+  const terms = Array.from(new Set(buildCategorySearchTerms(normalizedSlug).map(normalizeCatalogSlug)));
   const [storedCategory, documents] = await Promise.all([
     db.collection("categorias").findOne({ slug: { $regex: `^${normalizedSlug}$`, $options: "i" }, active: { $ne: false } }),
-    db.collection("products").find({ active: { $ne: false } }).sort({ featured: -1, createdAt: -1 }).limit(250).toArray(),
+    db.collection("products").find({ active: { $ne: false }, categorySlug: { $in: terms } }, { projection: { costPrice: 0, supplier: 0, supplierId: 0, cjCost: 0 } }).sort({ featured: -1, createdAt: -1 }).limit(50).toArray(),
   ]);
-  const terms = new Set(buildCategorySearchTerms(normalizedSlug).map(normalizeCatalogSlug));
   const products = documents
     .map((document) => normalizePublicProduct(document))
-    .filter((product): product is PublicProduct => product !== null && product.inStock)
-    .filter((product) => product.categorySlug === normalizedSlug || (product.categorySlug !== null && terms.has(product.categorySlug)));
+    .filter((product): product is PublicProduct => product !== null && product.inStock);
   const storedName = storedCategory && typeof storedCategory.name === "string" ? storedCategory.name : undefined;
   const productCategoryName = products[0]?.category ?? undefined;
   const name = storedName ?? productCategoryName;
   if (!name) return null;
   return { name, products };
-}
+}, ["public-category-page"], { revalidate: 60, tags: [PUBLIC_CATALOG_CACHE_TAG] });
+
+async function getCategory(slug: string) { return getCachedCategory(slug); }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;

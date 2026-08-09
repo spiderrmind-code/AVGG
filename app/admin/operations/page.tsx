@@ -12,6 +12,9 @@ interface OrderRow {
   paymentStatus?: string;
   total?: number;
   tracking?: string;
+  stockIssue?: boolean;
+  stockIssueReason?: string;
+  stockIssueAt?: string;
   createdAt?: string;
 }
 
@@ -20,6 +23,7 @@ export default function OperationsPage() {
   const [trackingMap, setTrackingMap] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [cjOrderId, setCjOrderId] = useState<string | null>(null);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     try {
@@ -68,6 +72,19 @@ export default function OperationsPage() {
     } catch {
       setMessage("No se pudo guardar el tracking");
     }
+  };
+
+  const retryStock = async (orderId: string) => {
+    if (retryingId || !window.confirm("¿Reintentar la aplicación de stock? Sólo hacelo luego de confirmar disponibilidad.")) return;
+    try {
+      setRetryingId(orderId);
+      const response = await fetch(`/api/admin/orders/${orderId}/stock/retry`, { method: "POST", headers: { "Content-Type": "application/json" } });
+      const data = await response.json() as { success?: boolean; result?: { outcome?: string } };
+      if (!response.ok || !data.success) throw new Error(data.result?.outcome ?? "No se pudo aplicar el stock");
+      setOrders((current) => current.map((order) => order._id === orderId ? { ...order, stockIssue: false, stockIssueReason: undefined, status: "paid" } : order));
+      setMessage(data.result?.outcome === "already_applied" ? "El stock ya estaba aplicado" : "Stock aplicado correctamente");
+    } catch (error) { setMessage(error instanceof Error ? `Reintento no aplicado: ${error.message}` : "Reintento no aplicado"); }
+    finally { setRetryingId(null); }
   };
 
   return (
@@ -121,6 +138,7 @@ export default function OperationsPage() {
                       <input className="w-full px-3 py-2" value={trackingMap[order._id] ?? order.tracking ?? ""} onChange={(event) => setTrackingMap((prev) => ({ ...prev, [order._id]: event.target.value }))} placeholder="Tracking" />
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-700">
+                      {order.stockIssue ? <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><strong>Incidencia de stock:</strong> {order.stockIssueReason ?? "Sin información"}<br />{order.stockIssueAt ? new Date(order.stockIssueAt).toLocaleString("es-AR") : "Fecha no disponible"}<button type="button" disabled={retryingId !== null} onClick={() => retryStock(order._id)} className="ui-button-primary mt-2 min-h-0 px-3 py-2 disabled:opacity-50">{retryingId === order._id ? "Reintentando…" : "Reintentar aplicación de stock"}</button></div> : null}
                       <button type="button" onClick={() => saveTracking(order._id)} className="ui-button-primary min-h-0 px-3 py-2">Guardar</button>
                       <button type="button" onClick={() => setCjOrderId((current) => current === order._id ? null : order._id)} className="ui-button-secondary ml-2 min-h-0 px-3 py-2">CJ</button>
                       {cjOrderId === order._id ? <CjFulfillmentPanel orderId={order._id} /> : null}

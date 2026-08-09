@@ -1,11 +1,11 @@
 // components/Header.tsx
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import MegaMenu, { type MegaMenuProduct } from './MegaMenu';
+import MegaMenu from './MegaMenu';
 import { LogoSVG } from './Logo';
 import {
   Menu,
@@ -22,8 +22,6 @@ import { motion, AnimatePresence, type MotionProps } from 'framer-motion';
 import { signIn, useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/app/context/CartContext';
 import ThemeToggle from './ThemeToggle';
-import { catalogCategories } from '@/data/catalog-categories';
-import { normalizeCatalogSlug } from '@/lib/catalog';
 import { formatARS } from '@/lib/currency';
 
 export type Product = { id: string; title: string; href: string; image: string; price?: string };
@@ -51,7 +49,6 @@ function stringValue(value: unknown): string | undefined {
 type CategoryResponseItem = Record<string, unknown> & { name: string; slug: string };
 type CategoryChildResponseItem = Record<string, unknown> & { name: string; slug: string };
 
-type ProductResponseItem = Record<string, unknown> & { _id: string; name: string; category: string; categorySlug: string | null; featured: boolean; inStock: boolean; images: string[] };
 
 function isCategoryResponseItem(value: unknown): value is CategoryResponseItem {
   return isRecord(value) && typeof value.name === "string" && typeof value.slug === "string";
@@ -61,49 +58,6 @@ function isCategoryChildResponseItem(value: unknown): value is CategoryChildResp
   return isRecord(value) && typeof value.name === "string" && typeof value.slug === "string";
 }
 
-function isProductResponseItem(value: unknown): value is ProductResponseItem {
-  return isRecord(value)
-    && typeof value._id === "string"
-    && typeof value.name === "string"
-    && typeof value.category === "string"
-    && (typeof value.categorySlug === "string" || value.categorySlug === null)
-    && typeof value.featured === "boolean"
-    && typeof value.inStock === "boolean"
-    && Array.isArray(value.images)
-    && value.images.every((image) => typeof image === "string");
-}
-
-function hasProductImage(product: ProductResponseItem) {
-  return Boolean(stringValue(product.image)?.trim() || product.images.some((image) => image.trim()));
-}
-
-function toMegaMenuProducts(products: ProductResponseItem[], categories: Category[]): MegaMenuProduct[] {
-  const visibleSlugs = new Set(categories.map((category) => normalizeCatalogSlug(category.slug)));
-  const productsByCategory = new Map<string, ProductResponseItem[]>();
-
-  for (const product of products) {
-    if (!product.inStock || !hasProductImage(product)) continue;
-    const slug = product.categorySlug ?? normalizeCatalogSlug(product.category);
-    if (!visibleSlugs.has(slug)) continue;
-    const entries = productsByCategory.get(slug) ?? [];
-    entries.push(product);
-    productsByCategory.set(slug, entries);
-  }
-
-  return categories.flatMap((category) => (productsByCategory.get(normalizeCatalogSlug(category.slug)) ?? [])
-    .sort((left, right) => Number(right.featured) - Number(left.featured))
-    .slice(0, 2)
-    .map((product) => ({
-      _id: product._id,
-      name: product.name,
-      ...(stringValue(product.image) ? { image: stringValue(product.image) } : {}),
-      images: product.images,
-      category: product.category,
-      categorySlug: product.categorySlug,
-      featured: product.featured,
-      inStock: product.inStock,
-    }))).slice(0, 8);
-}
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -114,21 +68,14 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [megaProducts, setMegaProducts] = useState<MegaMenuProduct[]>([]);
   const [search, setSearch] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const fallbackCategories = useMemo<Category[]>(() => catalogCategories.map((cat) => ({
-    name: cat.name,
-    slug: cat.slug,
-    image: cat.image,
-    children: (cat.children ?? []).map((child) => ({ name: child.name, slug: child.slug })),
-  })), []);
-
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const suppressNextMegaTriggerFocusRef = useRef(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const cartTriggerRef = useRef<HTMLButtonElement | null>(null);
   const cartMenuRef = useRef<HTMLDivElement | null>(null);
@@ -137,7 +84,6 @@ export default function Header() {
   const debounceRef = useRef<number | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const previousSessionStatus = useRef(status);
-  const megaProductsRequestKey = useRef<string | null>(null);
 
   async function handleSignOut() {
     await signOut({ redirect: false });
@@ -180,34 +126,13 @@ export default function Header() {
       setCategories(normalized);
     } catch (err) {
       console.error('Error loading categories:', err);
-      setCategories(fallbackCategories);
+      setCategories([]);
     }
   }
 
   loadCategories();
-}, [fallbackCategories]);
+}, []);
 
-  useEffect(() => {
-    async function loadMegaProducts() {
-      const categoryKey = categories.map((category) => category.slug).join("|");
-      if (!categoryKey || megaProductsRequestKey.current === categoryKey) return;
-      megaProductsRequestKey.current = categoryKey;
-
-      try {
-        const response = await fetch("/api/products?limit=24");
-        if (!response.ok) return;
-        const data: unknown = await response.json();
-        const payload = isRecord(data) ? data : null;
-        const products = payload?.products ?? data;
-        if (!Array.isArray(products)) return;
-        setMegaProducts(toMegaMenuProducts(products.filter(isProductResponseItem), categories));
-      } catch {
-        setMegaProducts([]);
-      }
-    }
-
-    loadMegaProducts();
-  }, [categories]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 26);
@@ -258,10 +183,15 @@ export default function Header() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        const returnFocusToMegaTrigger = megaOpen;
         setMegaOpen(false);
         setMobileOpen(false);
         setCartOpen(false);
         setSuggestions([]);
+        if (returnFocusToMegaTrigger) {
+          suppressNextMegaTriggerFocusRef.current = true;
+          requestAnimationFrame(() => triggerRef.current?.focus());
+        }
       }
       if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && suggestions.length > 0) {
         e.preventDefault();
@@ -278,7 +208,7 @@ export default function Header() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [suggestions, selectedSuggestion]);
+  }, [megaOpen, suggestions, selectedSuggestion]);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -383,7 +313,13 @@ export default function Header() {
                     ref={triggerRef}
                     onMouseEnter={openMenuImmediate}
                     onMouseLeave={() => scheduleClose(180)}
-                    onFocus={openMenuImmediate}
+                      onFocus={() => {
+                        if (suppressNextMegaTriggerFocusRef.current) {
+                          suppressNextMegaTriggerFocusRef.current = false;
+                          return;
+                        }
+                        openMenuImmediate();
+                      }}
                     onBlur={() => scheduleClose(180)}
                     aria-expanded={megaOpen}
                     aria-controls="mega-menu"
@@ -396,7 +332,6 @@ export default function Header() {
                     ref={menuRef}
                     open={megaOpen}
                     categories={categories}
-                    products={megaProducts}
                     onMouseEnter={openMenuImmediate}
                     onMouseLeave={() => scheduleClose(180)}
                     onClose={() => setMegaOpen(false)}
@@ -612,29 +547,10 @@ export default function Header() {
               </div>
 
               <nav className="flex flex-col gap-3">
-                <details open className="rounded-[1.2rem] border border-black/10 bg-white/70 p-3 dark:border-white/10 dark:bg-white/10">
-                  <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-neutral-900 dark:text-white">Colecciones <ChevronDown className="h-4 w-4 text-neutral-500" /></summary>
-                  <div className="mt-3 flex flex-col gap-2">
-                    {categories.length === 0 ? (
-                      <span className="py-2 text-sm text-neutral-400">Sin categorías disponibles.</span>
-                    ) : (
-                      categories.map((category) => (
-                        <details key={category.slug} className="rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] px-3 py-1.5">
-                          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-[color:var(--color-text)]">
-                            {category.name}
-                            <ChevronDown className="h-4 w-4 text-[color:var(--color-text-subtle)]" />
-                          </summary>
-                          <div className="border-t border-[color:var(--color-border)] py-2">
-                            <Link href={`/category/${category.slug}`} className="block rounded-[var(--radius-sm)] px-2 py-2 text-sm font-medium text-[color:var(--color-accent-strong)] hover:bg-[color:var(--color-accent-soft)]">Ver categoría</Link>
-                            {category.children?.map((child) => (
-                              <Link key={child.slug} href={`/category/${child.slug}`} className="block rounded-[var(--radius-sm)] px-2 py-2 text-sm text-[color:var(--color-text-muted)] hover:bg-[color:var(--color-surface-muted)]">{child.name}</Link>
-                            ))}
-                          </div>
-                        </details>
-                      ))
-                    )}
-                  </div>
-                </details>
+                <div className="rounded-[1.2rem] border border-black/10 bg-white/70 p-3 dark:border-white/10 dark:bg-white/10">
+                  <h2 className="mb-3 text-sm font-semibold text-neutral-900 dark:text-white">Colecciones</h2>
+                  {categories.length === 0 ? <span className="py-2 text-sm text-neutral-400">Sin categorías disponibles.</span> : <MegaMenu variant="mobile" open={mobileOpen} categories={categories} onClose={() => setMobileOpen(false)} />}
+                </div>
 
                 <Link href={isAuthenticated ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">{isAuthenticated ? "Mi cuenta" : "Login"}</Link>
                 {isAuthenticated && session?.user?.role === "admin" ? (

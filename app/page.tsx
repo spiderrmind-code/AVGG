@@ -4,26 +4,13 @@ import Hero from "./components/Hero";
 import CategoriesSection from "./components/CategoriesSection";
 import PromotionsSection from "./components/PromotionsSection";
 import Link from "next/link";
-import { getDb } from "@/lib/mongo";
-import { normalizePublicProduct } from "@/lib/catalog";
+import { getPublicCategories } from "@/lib/public-categories";
+import { getPublicCatalog } from "@/lib/public-catalog";
 import type { Product } from "./components/ProductCard";
-
-export const dynamic = "force-dynamic";
 
 async function getProducts(): Promise<{ products: Product[]; unavailable: boolean }> {
   try {
-    const db = await getDb();
-    const products = await db
-      .collection("products")
-      .find({
-        active: { $ne: false },
-        $or: [{ stock: { $ne: false } }, { stock: { $gt: 0 } }],
-      })
-      .sort({ featured: -1, createdAt: -1 })
-      .limit(100)
-      .toArray();
-
-    return { products: products.map((product) => normalizePublicProduct(product)).filter((product): product is NonNullable<typeof product> => product !== null && product.inStock), unavailable: false };
+    return { products: await getPublicCatalog({ limit: 100 }), unavailable: false };
   } catch (error) {
     console.error("ERROR GET PRODUCTS:", error);
     return { products: [], unavailable: true };
@@ -31,15 +18,15 @@ async function getProducts(): Promise<{ products: Product[]; unavailable: boolea
 }
 
 export default async function Home() {
-  const { products, unavailable } = await getProducts();
+  const [{ products, unavailable }, categories] = await Promise.all([getProducts(), getPublicCategories()]);
 
   return (
     <main className="min-h-screen bg-transparent">
-      <Hero products={products} />
+      <Hero products={products} categories={categories} />
 
       {unavailable ? <section className="mx-auto max-w-7xl px-6 pt-8 lg:px-8"><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">El catálogo no está disponible temporalmente. Intentá nuevamente en unos minutos.</div></section> : null}
 
-      <CategoriesSection />
+      <CategoriesSection categories={categories} />
 
       <section className="ui-shell py-3 sm:py-5">
         <div className="marketplace-discovery-strip">
@@ -49,7 +36,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <PromotionsSection products={products} />
+      <PromotionsSection products={products} categories={categories} />
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="premium-shell rounded-[var(--radius-xl)] border border-black/5 bg-white/80 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-zinc-900/70">

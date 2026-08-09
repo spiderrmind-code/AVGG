@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { normalizeEmail, normalizeRole, validateRegisterInput } from "../lib/auth-validation";
+import { resolveAuthSecret } from "../lib/auth-secret";
 
 test("validateRegisterInput accepts a strong customer registration", () => {
   const result = validateRegisterInput({
@@ -34,4 +35,11 @@ test("normalize helpers map roles and emails consistently", () => {
   assert.equal(normalizeEmail("Ana@Example.com"), "ana@example.com");
   assert.equal(normalizeRole("ADMIN"), "admin");
   assert.equal(normalizeRole("customer"), "customer");
+});
+
+test("auth secret resolution keeps the auth handler and proxy compatible", () => {
+  assert.equal(resolveAuthSecret({ NEXTAUTH_SECRET: "canonical" }), "canonical");
+  assert.equal(resolveAuthSecret({ AUTH_SECRET: "legacy" }), "legacy");
+  assert.equal(resolveAuthSecret({ NEXTAUTH_SECRET: "same", AUTH_SECRET: "same" }), "same");
+  assert.throws(() => resolveAuthSecret({ NEXTAUTH_SECRET: "one", AUTH_SECRET: "two" }), /no pueden diferir/);
 });

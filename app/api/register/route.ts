@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/mongo";
 import { validateRegisterInput } from "@/lib/auth-validation";
-import { checkRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
+import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ success: false, message: "Origen no permitido" }, { status: 403 });
   if (!hasJsonContentType(request)) return NextResponse.json({ success: false, message: "Content-Type inválido" }, { status: 415 });
-  const limit = checkRateLimit(`register:${requestIdentifier(request)}`, 5, 15 * 60 * 1000);
+  const limit = await checkRateLimitDistributed(`register:${requestIdentifier(request)}`, 5, 15 * 60 * 1000);
   if (!limit.allowed) return NextResponse.json({ success: false, message: "Demasiadas solicitudes" }, { status: 429, headers: { "Retry-After": String(limit.retryAfter) } });
   try {
     const body = await request.json();

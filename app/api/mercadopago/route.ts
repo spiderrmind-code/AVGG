@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
 import { authorizeOrderAccess, canInitializePayment, resolvePaymentOrigin } from "@/lib/payment";
-import { checkRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
+import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { isMercadoPagoSandbox, requireMercadoPagoAccessToken, requireMercadoPagoMode, sanitizeMercadoPagoPreferenceError, selectMercadoPagoCheckoutUrl } from "@/lib/mercadopago-config";
 import { logServerError, logServerEvent } from "@/lib/logger";
@@ -36,7 +36,7 @@ function preferenceItems(value: unknown, currency: string): PreferenceItem[] | n
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ success: false, message: "Origen no permitido" }, { status: 403 });
   if (!hasJsonContentType(request)) return NextResponse.json({ success: false, message: "Content-Type inválido" }, { status: 415 });
-  const limit = checkRateLimit(`payment:${requestIdentifier(request)}`, 10, 10 * 60 * 1000);
+  const limit = await checkRateLimitDistributed(`payment:${requestIdentifier(request)}`, 10, 10 * 60 * 1000);
   if (!limit.allowed) return NextResponse.json({ success: false, message: "Demasiadas solicitudes" }, { status: 429, headers: { "Retry-After": String(limit.retryAfter) } });
   let orderId = "";
   try {

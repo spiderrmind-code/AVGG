@@ -84,6 +84,12 @@ export interface SupplierDocument {
   apiUrl?: string | null;
   syncStatus?: string;
   lastSync?: Date | string | null;
+  credentialsEncrypted?: {
+    version: 1;
+    iv: string;
+    ciphertext: string;
+    tag: string;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }

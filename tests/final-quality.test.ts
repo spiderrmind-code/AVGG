@@ -65,12 +65,15 @@ test("accesibilidad base mantiene idioma, navegación de salto y controles nombr
 test("administración aplica paginación y las rutas sensibles no declaran caché pública", () => {
   for (const path of [
     "app/api/admin/orders/route.ts", "app/api/admin/products/route.ts", "app/api/admin/customers/route.ts",
-    "app/api/admin/payments/route.ts", "app/api/admin/stock/route.ts",
+    "app/api/admin/payments/route.ts", "app/api/admin/stock/route.ts", "app/api/admin/operations/route.ts",
   ]) {
     const source = read(path);
     assert.ok(source.includes("page"), `${path}: page`);
     assert.ok(source.includes("limit"), `${path}: limit`);
   }
+  const operations = read("app/api/admin/operations/route.ts");
+  assert.ok(operations.includes("projection"));
+  assert.equal(operations.includes("find({}).sort"), false);
   const config = read("next.config.ts");
   assert.ok(config.includes("remotePatterns"));
   assert.equal(config.includes('hostname: "**"'), false);

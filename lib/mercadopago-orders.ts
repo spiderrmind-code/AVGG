@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import clientPromise, { getDb } from "@/lib/mongo";
 import type { VerifiedMercadoPagoPayment } from "@/lib/mercadopago";
 import { canTransitionMercadoPagoPaymentStatus, getMercadoPagoOrderStatus, normalizeMercadoPagoPaymentStatus, type MercadoPagoPaymentStatus } from "@/lib/mercadopago-payment-status";
+import { notifyOperationalAlert } from "@/lib/alerts";
 
 export type PaymentProcessingResult = { success: true; duplicate: boolean; orderId: string } | { success: false; reason: "missing_reference" | "order_not_found" | "amount_mismatch" | "currency_mismatch" | "payment_conflict" | "invalid_transition" | "database_error" };
 export type ApplyPaidOrderStockResult = { success: true; outcome: "applied" | "already_applied"; orderId: string } | { success: false; outcome: "order_not_found" | "payment_not_approved" | "invalid_items" | "product_not_found" | "insufficient_stock" | "processing_conflict" | "database_error"; orderId?: string };
@@ -65,7 +66,8 @@ export async function applyPaidOrderStock(orderId: string): Promise<ApplyPaidOrd
     return { success: true, outcome: "applied", orderId };
   } catch (error) {
     if (error instanceof StockIssueError) {
-      await db.collection("orders").updateOne({ _id: id }, { $set: { stockApplied: false, stockProcessing: false, stockIssue: true, stockIssueReason: error.outcome.toUpperCase(), status: "stock_issue", updatedAt: new Date() } });
+      await db.collection("orders").updateOne({ _id: id }, { $set: { stockApplied: false, stockProcessing: false, stockIssue: true, stockIssueReason: error.outcome.toUpperCase(), status: "stock_issue", stockIssueAt: new Date(), updatedAt: new Date() } });
+      notifyOperationalAlert("paid_order_stock_issue", { outcome: error.outcome, orderId });
       return { success: false, outcome: error.outcome, orderId };
     }
     await db.collection("orders").updateOne({ _id: id, stockApplied: { $ne: true } }, { $set: { stockProcessing: false, updatedAt: new Date() } });

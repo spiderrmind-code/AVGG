@@ -4,6 +4,8 @@ import { getDb } from "@/lib/mongo";
 import type { Document, Filter } from "mongodb";
 import { authOptions } from "@/auth";
 import { validateProductInput } from "@/lib/product-validation";
+import { invalidatePublicCategories } from "@/lib/public-categories";
+import { invalidatePublicCatalog } from "@/lib/public-catalog-cache";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -56,6 +58,8 @@ export async function POST(request: Request) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+    invalidatePublicCategories();
+    invalidatePublicCatalog();
 
     return NextResponse.json({ success: true, insertedId: result.insertedId });
   } catch (error) {

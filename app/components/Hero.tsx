@@ -8,12 +8,12 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { formatARS } from "@/lib/currency";
-import { catalogCategories, type CatalogCategory } from "@/data/catalog-categories";
 import type { Product } from "./ProductCard";
 
-type Props = { products: Product[] };
+type HeroCategory = { name: string; slug: string; description?: string; image?: string };
+type Props = { products: Product[]; categories: HeroCategory[] };
 type ProductSlide = { kind: "product"; product: Product };
-type CategorySlide = { kind: "category"; category: CatalogCategory };
+type CategorySlide = { kind: "category"; category: HeroCategory };
 type HeroSlide = ProductSlide | CategorySlide;
 
 function getTitle(product: Product) {
@@ -29,7 +29,7 @@ function getDiscount(product: Product) {
   return Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100);
 }
 
-export default function Hero({ products }: Props) {
+export default function Hero({ products, categories }: Props) {
   const router = useRouter();
   const { addToCart } = useCart();
   const discountedProducts = products.filter((product) => getDiscount(product) !== null);
@@ -37,8 +37,8 @@ export default function Hero({ products }: Props) {
   const prioritizedProducts = new Set([...discountedProducts, ...featuredProducts]);
   const orderedProducts = [...discountedProducts, ...featuredProducts, ...products.filter((product) => !prioritizedProducts.has(product))];
   const productSlides: ProductSlide[] = orderedProducts.slice(0, 5).map((product) => ({ kind: "product", product }));
-  const slides: HeroSlide[] = productSlides.length === 1 && catalogCategories[0]
-    ? [...productSlides, { kind: "category", category: catalogCategories[0] }]
+  const slides: HeroSlide[] = productSlides.length === 1 && categories[0]
+    ? [...productSlides, { kind: "category", category: categories[0] }]
     : productSlides;
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -107,9 +107,9 @@ export default function Hero({ products }: Props) {
 
   return (
     <section className="marketplace-hero-wrap border-b border-[color:var(--color-border)]" aria-label="Destacados">
-      <div className="ui-shell py-3 sm:py-5 lg:py-7">
+      <div className="ui-shell py-3 sm:py-4 lg:py-5">
         <div
-          className="marketplace-hero hero-offer-grid hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-5 py-7 shadow-[var(--shadow-strong)] sm:px-8 sm:py-10 lg:grid lg:min-h-[500px] lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.8fr)] lg:items-center lg:gap-12 lg:px-12"
+          className="marketplace-hero hero-offer-grid hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-5 py-7 shadow-[var(--shadow-strong)] sm:px-8 sm:py-10 lg:grid lg:h-[520px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-stretch lg:gap-8 lg:px-12"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onFocusCapture={() => setIsPaused(true)}
@@ -123,7 +123,7 @@ export default function Hero({ products }: Props) {
           <div className="marketplace-hero-grid" aria-hidden="true" />
           <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] border-l border-white/15 bg-white/10 lg:block" />
 
-          <div key={`hero-copy-${slideKey}`} className="marketplace-hero-copy hero-slide-content relative z-10 max-w-xl">
+          <div key={`hero-copy-${slideKey}`} className="marketplace-hero-copy hero-slide-content relative z-10 max-w-xl lg:flex lg:min-h-0 lg:flex-col lg:justify-center">
             <p className="ui-eyebrow">{category?.name ?? product.category ?? "Selección AVG"}</p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className={isOffer ? "ui-offer-badge" : "ui-badge"}>{category ? "Categoría" : isOffer ? "Oferta disponible" : "Selección destacada"}</span>
@@ -140,7 +140,7 @@ export default function Hero({ products }: Props) {
               </div>
             ) : null}
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex shrink-0 flex-col gap-3 sm:flex-row">
               {category ? <Link href={`/category/${category.slug}`} className="ui-button-primary w-full sm:w-auto">Explorar categoría</Link> : isOffer ? <Link href={productHref} className="ui-button-primary w-full sm:w-auto">Ver oferta</Link> : <button type="button" onClick={handleBuyNow} className="ui-button-primary w-full sm:w-auto">Comprar ahora</button>}
               <Link href="/#destacados" className="ui-button-secondary w-full sm:w-auto">Explorar productos</Link>
             </div>
@@ -152,7 +152,7 @@ export default function Hero({ products }: Props) {
             </div>
           </div>
 
-          <div key={`hero-media-${slideKey}`} className="hero-slide-content relative z-10 mt-9 lg:mt-0">
+          <div key={`hero-media-${slideKey}`} className="marketplace-hero-media hero-slide-content relative z-10 mt-9 lg:mt-0 lg:flex lg:min-h-0 lg:flex-col lg:justify-center">
             <div className="hero-product-stage ui-product-image relative mx-auto aspect-[4/3] max-w-[510px] overflow-hidden">
               <Image src={image} alt={title} fill priority sizes="(max-width: 1024px) 100vw, 42vw" unoptimized={Boolean(category)} className="hero-product-image object-contain p-6 sm:p-8" />
               <div className="absolute left-4 top-4 rounded-full bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text)] shadow-sm">{discount !== null ? `${discount}% OFF` : category ? "Explorar" : "Destacado"}</div>

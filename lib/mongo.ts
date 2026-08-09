@@ -3,12 +3,26 @@ import { logServerError } from "@/lib/logger";
 
 const configuredUri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
 
+function mongoUriDiagnostics(value: string | undefined) {
+  const normalized = value?.trim();
+  return {
+    exists: Boolean(value),
+    length: value?.length ?? 0,
+    startsWithMongoScheme: Boolean(normalized && (normalized.startsWith("mongodb://") || normalized.startsWith("mongodb+srv://"))),
+  };
+}
+
 if (!process.env.MONGODB_URI && process.env.MONGO_URI) {
   console.warn('Using deprecated MongoDB environment variable "MONGO_URI"; migrate to "MONGODB_URI".');
 }
 
 if (!configuredUri) {
   throw new Error('Falta la variable de entorno "MONGODB_URI"');
+}
+
+if (!mongoUriDiagnostics(configuredUri).startsWithMongoScheme) {
+  const diagnostics = mongoUriDiagnostics(configuredUri);
+  throw new Error(`MONGODB_URI inválida: exists=${diagnostics.exists}; length=${diagnostics.length}; startsWithMongoScheme=${diagnostics.startsWithMongoScheme}`);
 }
 
 const uri = configuredUri;

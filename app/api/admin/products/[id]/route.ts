@@ -4,6 +4,8 @@ import { ObjectId } from "mongodb";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
 import { validateProductInput } from "@/lib/product-validation";
+import { invalidatePublicCategories } from "@/lib/public-categories";
+import { invalidatePublicCatalog } from "@/lib/public-catalog-cache";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -27,6 +29,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const db = await getDb();
 
     await db.collection("products").updateOne({ _id: new ObjectId(id) }, { $set: { ...product, updatedAt: new Date() } });
+    invalidatePublicCategories();
+    invalidatePublicCatalog();
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === 11000) return NextResponse.json({ success: false, message: "SKU o slug ya existente" }, { status: 409 });
@@ -44,6 +48,8 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     if (!ObjectId.isValid(id)) return NextResponse.json({ success: false, message: "Producto inválido" }, { status: 400 });
     const db = await getDb();
     await db.collection("products").deleteOne({ _id: new ObjectId(id) });
+    invalidatePublicCategories();
+    invalidatePublicCatalog();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("ERROR DELETE PRODUCT:", error);

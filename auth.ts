@@ -6,8 +6,10 @@ import { getDb } from "@/lib/mongo";
 import { normalizeEmail, normalizeRole } from "@/lib/auth-validation";
 import { getGoogleAuthConfig } from "@/lib/auth-config";
 import { resolveSafeAuthRedirect } from "@/lib/auth-redirect";
+import { resolveAuthSecret } from "@/lib/auth-secret";
+import { checkRateLimitDistributed } from "@/lib/request-rate-limit";
 
-const configuredSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+const configuredSecret = resolveAuthSecret();
 if (!configuredSecret && process.env.NODE_ENV === "production") throw new Error("Missing authentication secret");
 const authSecret = configuredSecret ?? "local-development-secret";
 const google = getGoogleAuthConfig();
@@ -27,6 +29,8 @@ export const authOptions: AuthOptions = {
         const password = typeof credentials?.password === "string" ? credentials.password : "";
         if (!emailValue || !password) return null;
         const email = normalizeEmail(emailValue);
+        const limit = await checkRateLimitDistributed(`login:${email}`, 10, 15 * 60 * 1000);
+        if (!limit.allowed) return null;
         const user = await (await getDb()).collection("users").findOne({ email });
         if (!user || typeof user.password !== "string" || !(await bcrypt.compare(password, user.password))) return null;
         return { id: String(user._id), email, name: typeof user.name === "string" ? user.name : "", role: roleForEmail(email, typeof user.role === "string" ? user.role : undefined) };
