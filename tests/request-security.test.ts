@@ -20,3 +20,16 @@ test("origin and JSON checks reject malformed browser mutations", () => {
   if (original === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
   else process.env.NEXT_PUBLIC_APP_URL = original;
 });
+
+test("production Vercel origin is accepted when the configured public URL is stale", () => {
+  const originalPublicUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const originalVercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  process.env.NEXT_PUBLIC_APP_URL = "https://old.example.com";
+  process.env.VERCEL_PROJECT_PRODUCTION_URL = "avg-seven.vercel.app";
+  assert.equal(hasTrustedOrigin(new Request("https://avg-seven.vercel.app/api/register", { headers: { Origin: "https://avg-seven.vercel.app" } })), true);
+  assert.equal(hasTrustedOrigin(new Request("https://avg-seven.vercel.app/api/register", { headers: { Origin: "https://attacker.example" } })), false);
+  if (originalPublicUrl === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+  else process.env.NEXT_PUBLIC_APP_URL = originalPublicUrl;
+  if (originalVercelUrl === undefined) delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  else process.env.VERCEL_PROJECT_PRODUCTION_URL = originalVercelUrl;
+});

@@ -5,7 +5,14 @@ function originFrom(value: string | undefined): string | null {
 
 export function allowedRequestOrigins(): Set<string> {
   const origins = new Set<string>();
-  for (const value of [process.env.NEXT_PUBLIC_SITE_URL, process.env.NEXT_PUBLIC_APP_URL, process.env.NEXTAUTH_URL]) {
+  const configuredOrigins = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.NEXTAUTH_URL,
+  ];
+  const vercelOrigins = [process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL]
+    .map((value) => value?.trim() && (/^https?:\/\//i.test(value) ? value : `https://${value}`));
+  for (const value of [...configuredOrigins, ...vercelOrigins]) {
     const origin = originFrom(value);
     if (origin) origins.add(origin);
   }
