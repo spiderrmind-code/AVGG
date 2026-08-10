@@ -151,7 +151,7 @@ export default function ProductCard({
 
 
       <Link
-        href={`/product/${product.slug ?? product._id}`}
+        href={`/product/${product._id}`}
         className="block"
       >
 

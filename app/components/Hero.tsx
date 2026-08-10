@@ -2,19 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCart } from "@/app/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { formatARS } from "@/lib/currency";
 import type { Product } from "./ProductCard";
 
 type HeroCategory = { name: string; slug: string; description?: string; image?: string };
 type Props = { products: Product[]; categories: HeroCategory[] };
-type ProductSlide = { kind: "product"; product: Product };
-type CategorySlide = { kind: "category"; category: HeroCategory };
-type HeroSlide = ProductSlide | CategorySlide;
 
 function getTitle(product: Product) {
   return product.name ?? product.title ?? "Producto destacado";
@@ -29,157 +22,214 @@ function getDiscount(product: Product) {
   return Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100);
 }
 
-export default function Hero({ products, categories }: Props) {
-  const router = useRouter();
-  const { addToCart } = useCart();
+function getSavings(product: Product) {
+  if (!product.comparePrice || product.comparePrice <= product.price) return null;
+  return product.comparePrice - product.price;
+}
+
+export default function Hero({ products }: Props) {
   const discountedProducts = products.filter((product) => getDiscount(product) !== null);
   const featuredProducts = products.filter((product) => product.featured && getDiscount(product) === null);
   const prioritizedProducts = new Set([...discountedProducts, ...featuredProducts]);
-  const orderedProducts = [...discountedProducts, ...featuredProducts, ...products.filter((product) => !prioritizedProducts.has(product))];
-  const productSlides: ProductSlide[] = orderedProducts.slice(0, 5).map((product) => ({ kind: "product", product }));
-  const slides: HeroSlide[] = productSlides.length === 1 && categories[0]
-    ? [...productSlides, { kind: "category", category: categories[0] }]
-    : productSlides;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const touchStartX = useRef<number | null>(null);
-  const activeSlide = slides[activeIndex] ?? slides[0];
-  const product = activeSlide?.kind === "product" ? activeSlide.product : products[0];
-  const isCategorySlide = activeSlide?.kind === "category";
+  const orderedProducts = [
+    ...discountedProducts,
+    ...featuredProducts,
+    ...products.filter((product) => !prioritizedProducts.has(product)),
+  ];
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const handleChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
+  const visibleProducts = orderedProducts.slice(0, 8);
+  const leadProduct = visibleProducts[0];
+  const secondaryProducts = visibleProducts.slice(1);
 
-  useEffect(() => {
-    if (slides.length < 2 || isPaused || prefersReducedMotion) return;
+  if (!leadProduct) return null;
 
-    const timer = window.setInterval(() => {
-      setActiveIndex((index) => (index + 1) % slides.length);
-    }, 5000);
-
-    return () => window.clearInterval(timer);
-  }, [isPaused, prefersReducedMotion, slides.length]);
-
-  function selectSlide(index: number) {
-    setActiveIndex((index + slides.length) % slides.length);
-  }
-
-  function handleTouchEnd(event: React.TouchEvent<HTMLElement>) {
-    const startX = touchStartX.current;
-    touchStartX.current = null;
-    if (startX === null) return;
-
-    const distance = event.changedTouches[0].clientX - startX;
-    if (Math.abs(distance) < 42) return;
-    selectSlide(activeIndex + (distance < 0 ? 1 : -1));
-  }
-
-  function handleBuyNow() {
-    if (!product?._id) return;
-    addToCart({
-      _id: String(product._id),
-      name: getTitle(product),
-      price: Number(product.price ?? 0),
-      comparePrice: Number(product.comparePrice ?? 0) || undefined,
-      image: getImage(product),
-      inStock: product.inStock === true,
-      stockQuantity: product.stockQuantity,
-    }, 1);
-    router.push("/checkout");
-  }
-
-  if (!activeSlide || !product) return null;
-
-  const category = isCategorySlide ? activeSlide.category : undefined;
-  const title = category ? category.name : getTitle(product);
-  const description = category?.description ?? product.description?.trim() ?? "Una selección cuidada para comprar con claridad, seguridad y una experiencia simple.";
-  const image = category?.image ?? getImage(product);
-  const discount = category ? null : getDiscount(product);
-  const savings = discount !== null && product.comparePrice ? product.comparePrice - product.price : null;
-  const isOffer = !category && discount !== null;
-  const slideKey = category ? `category-${category.slug}` : `product-${product._id}`;
-  const productHref = `/product/${product._id}`;
+  const leadDiscount = getDiscount(leadProduct);
+  const leadSavings = getSavings(leadProduct);
+  const leadHref = `/product/${leadProduct._id}`;
 
   return (
-    <section className="marketplace-hero-wrap border-b border-[color:var(--color-border)]" aria-label="Destacados">
+    <section
+      className="marketplace-hero-wrap border-b border-[color:var(--color-border)]"
+      aria-label="Ofertas destacadas"
+    >
       <div className="ui-shell py-3 sm:py-4 lg:py-5">
-        <div
-          className="marketplace-hero hero-offer-grid hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-5 py-7 shadow-[var(--shadow-strong)] sm:px-8 sm:py-10 lg:grid lg:h-[520px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-stretch lg:gap-8 lg:px-12"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onFocusCapture={() => setIsPaused(true)}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsPaused(false);
-          }}
-          onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }}
-          onTouchEnd={handleTouchEnd}
-        >
+        <div className="marketplace-hero hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-4 py-5 shadow-[var(--shadow-strong)] sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="marketplace-hero-sun" aria-hidden="true" />
           <div className="marketplace-hero-grid" aria-hidden="true" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] border-l border-white/15 bg-white/10 lg:block" />
 
-          <div key={`hero-copy-${slideKey}`} className="marketplace-hero-copy hero-slide-content relative z-10 max-w-xl lg:flex lg:min-h-0 lg:flex-col lg:justify-center">
-            <p className="ui-eyebrow">{category?.name ?? product.category ?? "Selección AVG"}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className={isOffer ? "ui-offer-badge" : "ui-badge"}>{category ? "Categoría" : isOffer ? "Oferta disponible" : "Selección destacada"}</span>
-              {discount !== null ? <span className="ui-offer-badge">{discount}% menos</span> : null}
-            </div>
-            <h1 className="mt-5 text-4xl font-bold leading-[0.94] tracking-[-0.055em] text-white sm:text-5xl lg:text-6xl">{title}</h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-white/85 sm:text-lg">{description}</p>
-
-            {!category ? (
-              <div className="mt-7 flex flex-wrap items-end gap-x-4 gap-y-2">
-                <span className="marketplace-hero-price">{formatARS(Number(product.price ?? 0))}</span>
-                {product.comparePrice && product.comparePrice > product.price ? <span className="pb-1 text-sm text-[color:var(--color-text-subtle)] line-through">{formatARS(Number(product.comparePrice))}</span> : null}
-                {savings ? <span className="ui-offer-badge">Ahorrás {formatARS(savings)}</span> : null}
+          <div className="relative z-10 mb-5 flex items-end justify-between gap-4 sm:mb-6">
+            <div>
+              <p className="ui-eyebrow text-white/75">Descubrí oportunidades reales</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-[-0.035em] text-white sm:text-3xl lg:text-4xl">
+                  Ofertas HOT
+                </h1>
+                <span className="ui-offer-badge">Precios reales</span>
               </div>
-            ) : null}
-
-            <div className="mt-8 flex shrink-0 flex-col gap-3 sm:flex-row">
-              {category ? <Link href={`/category/${category.slug}`} className="ui-button-primary w-full sm:w-auto">Explorar categoría</Link> : isOffer ? <Link href={productHref} className="ui-button-primary w-full sm:w-auto">Ver oferta</Link> : <button type="button" onClick={handleBuyNow} className="ui-button-primary w-full sm:w-auto">Comprar ahora</button>}
-              <Link href="/#destacados" className="ui-button-secondary w-full sm:w-auto">Explorar productos</Link>
             </div>
 
-            <div className="ui-trust-list mt-7">
+            <Link
+              href="/#destacados"
+              className="hidden shrink-0 text-sm font-semibold text-white/90 transition hover:text-white sm:inline-flex"
+            >
+              Ver todos los productos →
+            </Link>
+          </div>
+
+          <div className="relative z-10 grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.55fr)] lg:gap-5">
+            <article className="group relative overflow-hidden rounded-[var(--radius-xl)] border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:p-5">
+              <Link href={leadHref} className="block">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[calc(var(--radius-xl)-0.35rem)] bg-[color:var(--color-surface-strong)]">
+                  <Image
+                    src={getImage(leadProduct)}
+                    alt={getTitle(leadProduct)}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-contain p-5 transition duration-300 group-hover:scale-[1.03] sm:p-7"
+                  />
+
+                  <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                    {leadDiscount !== null ? (
+                      <span className="ui-offer-badge">{leadDiscount}% OFF</span>
+                    ) : (
+                      <span className="ui-badge">Elegido AVG</span>
+                    )}
+                    {leadProduct.featured ? <span className="ui-badge">Destacado</span> : null}
+                  </div>
+                </div>
+              </Link>
+
+              <div className="mt-4">
+                <p className="ui-eyebrow text-white/70">
+                  {leadProduct.category ?? "Selección AVG"}
+                </p>
+
+                <Link href={leadHref} className="mt-1 block">
+                  <h2 className="line-clamp-2 text-xl font-bold leading-tight tracking-[-0.025em] text-white sm:text-2xl">
+                    {getTitle(leadProduct)}
+                  </h2>
+                </Link>
+
+                <div className="mt-3 flex flex-wrap items-end gap-x-3 gap-y-1">
+                  <span className="text-3xl font-extrabold tracking-[-0.04em] text-white sm:text-4xl">
+                    {formatARS(Number(leadProduct.price ?? 0))}
+                  </span>
+
+                  {leadProduct.comparePrice && leadProduct.comparePrice > leadProduct.price ? (
+                    <span className="pb-1 text-sm text-white/60 line-through">
+                      {formatARS(Number(leadProduct.comparePrice))}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {leadSavings ? (
+                    <span className="ui-offer-badge">
+                      Ahorrás {formatARS(leadSavings)}
+                    </span>
+                  ) : null}
+
+                  <Link href={leadHref} className="ui-button-primary ml-auto">
+                    Ver oferta
+                  </Link>
+                </div>
+              </div>
+            </article>
+
+            <div
+              className="grid auto-cols-[72%] grid-flow-col gap-3 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:auto-cols-[44%] lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0"
+              aria-label="Más ofertas"
+            >
+              {secondaryProducts.map((product, index) => {
+                const discount = getDiscount(product);
+                const href = `/product/${product._id}`;
+
+                return (
+                  <article
+                    key={String(product._id)}
+                    className="group flex min-w-0 flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-strong)] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <Link href={href} className="block">
+                      <div className="relative aspect-[4/3] overflow-hidden bg-[color:var(--color-surface)]">
+                        <Image
+                          src={getImage(product)}
+                          alt={getTitle(product)}
+                          fill
+                          sizes="(max-width: 640px) 72vw, (max-width: 1024px) 44vw, 18vw"
+                          className="object-contain p-3 transition duration-300 group-hover:scale-[1.04] sm:p-4"
+                        />
+
+                        <div className="absolute left-2.5 top-2.5">
+                          {discount !== null ? (
+                            <span className="ui-offer-badge">{discount}% OFF</span>
+                          ) : product.featured ? (
+                            <span className="ui-badge">Elegido AVG</span>
+                          ) : (
+                            <span className="ui-badge">Descubrí</span>
+                          )}
+                        </div>
+
+                        {index === 0 && discount !== null ? (
+                          <span className="absolute right-2.5 top-2.5 rounded-full bg-[color:var(--color-surface-strong)] px-2 py-1 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-[color:var(--color-text)] shadow-sm">
+                            Hot
+                          </span>
+                        ) : null}
+                      </div>
+                    </Link>
+
+                    <div className="flex flex-1 flex-col p-3 sm:p-3.5">
+                      <p className="truncate text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--color-text-subtle)]">
+                        {product.category ?? "AVG"}
+                      </p>
+
+                      <Link href={href} className="mt-1 block">
+                        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-[color:var(--color-text)]">
+                          {getTitle(product)}
+                        </h3>
+                      </Link>
+
+                      <div className="mt-auto pt-3">
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                          <span className="text-lg font-extrabold tracking-[-0.025em] text-[color:var(--color-text)] sm:text-xl">
+                            {formatARS(Number(product.price ?? 0))}
+                          </span>
+
+                          {product.comparePrice && product.comparePrice > product.price ? (
+                            <span className="text-xs text-[color:var(--color-text-subtle)] line-through">
+                              {formatARS(Number(product.comparePrice))}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <Link
+                          href={href}
+                          className="mt-2 inline-flex text-xs font-bold text-[color:var(--color-accent)] transition hover:opacity-80"
+                        >
+                          Ver producto →
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="relative z-10 mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/15 pt-4">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-white/75 sm:text-sm">
               <span>Compra segura</span>
               <span>Envío con seguimiento</span>
               <span>Soporte real</span>
             </div>
-          </div>
 
-          <div key={`hero-media-${slideKey}`} className="marketplace-hero-media hero-slide-content relative z-10 mt-9 lg:mt-0 lg:flex lg:min-h-0 lg:flex-col lg:justify-center">
-            <div className="hero-product-stage ui-product-image relative mx-auto aspect-[4/3] max-w-[510px] overflow-hidden">
-              <Image src={image} alt={title} fill priority sizes="(max-width: 1024px) 100vw, 42vw" unoptimized={Boolean(category)} className="hero-product-image object-contain p-6 sm:p-8" />
-              <div className="absolute left-4 top-4 rounded-full bg-[color:var(--color-surface-strong)] px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text)] shadow-sm">{discount !== null ? `${discount}% OFF` : category ? "Explorar" : "Destacado"}</div>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-4">
-              <div>
-                <p className="ui-eyebrow">{category ? "Categoría seleccionada" : "Producto seleccionado"}</p>
-                <h2 className="mt-1 text-lg font-semibold text-[color:var(--color-text)]">{title}</h2>
-              </div>
-              {slides.length > 1 ? (
-                <div className="flex items-center gap-2" aria-label="Controles del carrusel">
-                  <button type="button" onClick={() => selectSlide(activeIndex - 1)} className="ui-icon-button" aria-label="Anterior"><ChevronLeft className="h-4 w-4" /></button>
-                  <button type="button" onClick={() => selectSlide(activeIndex + 1)} className="ui-icon-button" aria-label="Siguiente"><ChevronRight className="h-4 w-4" /></button>
-                </div>
-              ) : null}
-            </div>
+            <Link
+              href="/#destacados"
+              className="text-sm font-semibold text-white transition hover:text-white/80 sm:hidden"
+            >
+              Ver todos →
+            </Link>
           </div>
-
-          {slides.length > 1 ? (
-            <div className="relative z-10 mt-7 flex items-center gap-2 lg:absolute lg:bottom-8 lg:left-12 lg:mt-0" aria-label="Seleccionar destacado">
-              {slides.map((slide, index) => {
-                const label = slide.kind === "category" ? slide.category.name : getTitle(slide.product);
-                const key = slide.kind === "category" ? `category-${slide.category.slug}` : `product-${slide.product._id}`;
-                return <button key={key} type="button" onClick={() => selectSlide(index)} aria-label={`Ver destacado ${index + 1}: ${label}`} aria-current={activeIndex === index} className={`h-2 rounded-full transition-all ${activeIndex === index ? "w-7 bg-[color:var(--color-accent)]" : "w-2 bg-[color:var(--color-border)] hover:bg-[color:var(--color-text-subtle)]"}`} />;
-              })}
-            </div>
-          ) : null}
         </div>
       </div>
     </section>

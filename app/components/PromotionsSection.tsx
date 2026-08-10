@@ -21,7 +21,7 @@ function CommercialCard({ product, tone }: { product: Product; tone: "offer" | "
   const image = product.image?.trim() || product.images?.find(Boolean) || PLACEHOLDER_IMAGE;
   const offer = getPublicOffer({ price: product.price, comparePrice: product.comparePrice, inStock: product.inStock === true });
   return <article className={`avg-commerce-card avg-commerce-card-${tone} snap-start`}>
-    <Link href={`/product/${product.slug ?? product._id}`} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]">
+    <Link href={`/product/${product._id}`} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]">
       <div className="relative aspect-[4/3] overflow-hidden rounded-[calc(var(--radius-lg)-0.2rem)] bg-[color:var(--color-surface-muted)]">
         <Image src={image} alt={title} fill sizes="(max-width: 639px) 78vw, (max-width: 1023px) 38vw, 260px" className="object-contain transition duration-300 group-hover:scale-[1.04]" loading="lazy" />
         {offer ? <span className="avg-commerce-badge">-{offer.discountPercent}%</span> : null}

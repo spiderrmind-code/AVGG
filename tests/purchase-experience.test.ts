@@ -30,7 +30,7 @@ test("catalog escapes search metacharacters and normalizes active cart identitie
 
 test("ProductCard keeps navigation, ARS rendering, stock guard, and private fields out of the UI", () => {
   const card = source("app/components/ProductCard.tsx");
-  assert.match(card, /href=\{`\/product\/\$\{product\.slug \?\? product\._id\}`\}/);
+  assert.match(card, /href=\{`\/product\/\$\{product\._id\}`\}/);
   assert.match(card, /formatARS\(product\.price\)/);
   assert.match(card, /event\.preventDefault\(\)/);
   assert.match(card, /event\.stopPropagation\(\)/);

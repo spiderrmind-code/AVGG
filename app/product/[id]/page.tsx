@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const title = product.name || "Producto";
   const description = product.description?.trim() || `Conocé ${title} en AVG Connects.`;
   const image = product.image ?? product.images?.[0];
-  return { title, description, alternates: { canonical: `/product/${encodeURIComponent(id)}` }, openGraph: { title, description, type: "website", images: image ? [{ url: image, alt: title }] : undefined } };
+  return { title, description, alternates: { canonical: `/product/${encodeURIComponent(product._id)}` }, openGraph: { title, description, type: "website", images: image ? [{ url: image, alt: title }] : undefined } };
 }
 
 export default async function ProductPage({
@@ -176,7 +176,7 @@ export default async function ProductPage({
 
 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": [
-          { "@type": "Product", name: product.name, description: product.description, image: [image], offers: { "@type": "Offer", price: product.price, priceCurrency: "ARS", availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${resolveAppBaseUrl()}/product/${encodeURIComponent(id)}` } },
+          { "@type": "Product", name: product.name, description: product.description, image: [image], offers: { "@type": "Offer", price: product.price, priceCurrency: "ARS", availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${resolveAppBaseUrl()}/product/${encodeURIComponent(product._id)}` } },
           { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Inicio", item: resolveAppBaseUrl() }, { "@type": "ListItem", position: 2, name: product.name }] },
         ] }).replace(/</g, "\\u003c") }} />
         <Link

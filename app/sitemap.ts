@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
     dynamicEntries = [
       ...products.map((product) => ({
-        url: `${baseUrl}/product/${encodeURIComponent(String(product.slug ?? product._id))}`,
+        url: `${baseUrl}/product/${encodeURIComponent(String(product._id))}`,
         lastModified: product.updatedAt instanceof Date ? product.updatedAt : product.createdAt instanceof Date ? product.createdAt : now,
         changeFrequency: "weekly" as const,
         priority: 0.7,

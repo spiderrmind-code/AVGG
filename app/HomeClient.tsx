@@ -160,7 +160,7 @@ function ProductCard({
 
   return (
     <article className="group rounded-[1.75rem] border border-neutral-200/80 bg-white p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(0,0,0,0.12)]">
-      <Link href={`/product/${product.slug || product._id}`} className="block">
+      <Link href={`/product/${product._id}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-[1.35rem] bg-neutral-100">
           {discount > 0 ? (
             <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">

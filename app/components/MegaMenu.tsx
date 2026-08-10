@@ -24,7 +24,7 @@ export type MegaMenuProduct = {
   inStock: boolean;
 };
 
-type CategoryPage = {
+export type CategoryPage = {
   products: MegaMenuProduct[];
   page: number;
   hasMore: boolean;
@@ -62,6 +62,16 @@ export function dedupeMegaMenuProducts(products: MegaMenuProduct[]) {
   return [...new Map(products.map((product) => [product._id, product])).values()];
 }
 
+export function resetAbortedMegaMenuPages(pages: Record<string, CategoryPage>) {
+  return Object.fromEntries(
+    Object.entries(pages).map(([slug, page]) => [slug, page.loading ? { ...page, loading: false } : page]),
+  );
+}
+
+export function shouldLoadMegaMenuCategory(page: CategoryPage | undefined, hasPendingRequest = false) {
+  return !page || (!hasPendingRequest && page.products.length === 0 && page.page === 0 && page.error === null);
+}
+
 function LoadingState({ label = "Cargando productos…" }: { label?: string }) {
   return <div className="flex min-h-32 items-center justify-center gap-2 text-sm text-[color:var(--color-text-muted)]"><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />{label}</div>;
 }
@@ -95,19 +105,24 @@ const MegaMenu = React.forwardRef<HTMLDivElement, Props>(function MegaMenu({ cat
   const active = useMemo(() => categories.find((category) => category.slug === activeSlug) ?? categories[0], [activeSlug, categories]);
   const state = active ? pages[active.slug] : undefined;
 
-  const cancelRequest = useCallback(() => {
+  const abortRequest = useCallback(() => {
     requestVersionRef.current += 1;
     controllerRef.current?.abort();
     controllerRef.current = null;
     inFlightRef.current.clear();
   }, []);
 
+  const cancelRequest = useCallback((resetLoading = false) => {
+    abortRequest();
+    if (resetLoading) setPages(resetAbortedMegaMenuPages);
+  }, [abortRequest]);
+
   const load = useCallback(async (slug: string, page: number, retry = false) => {
     const requestKey = `${slug}:${page}`;
     const current = pagesRef.current[slug];
-    if (inFlightRef.current.has(requestKey) || (!retry && current?.loading) || (page > 1 && !current?.hasMore)) return;
+    if (inFlightRef.current.has(requestKey) || (page > 1 && !current?.hasMore)) return;
 
-    cancelRequest();
+    cancelRequest(true);
     const version = requestVersionRef.current;
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -150,23 +165,26 @@ const MegaMenu = React.forwardRef<HTMLDivElement, Props>(function MegaMenu({ cat
   }, [cancelRequest]);
 
   const selectCategory = useCallback((slug: string, openProducts = variant === "mobile") => {
-    if (slug !== activeSlug) cancelRequest();
+    const selectedSlug = activeSlug ?? categories[0]?.slug ?? null;
+    if (slug !== selectedSlug) cancelRequest(true);
     setActiveSlug(slug);
     if (variant === "mobile") setMobileProductsOpen(openProducts);
-  }, [activeSlug, cancelRequest, variant]);
+  }, [activeSlug, cancelRequest, categories, variant]);
 
   useEffect(() => {
     if (!open) {
-      cancelRequest();
+      abortRequest();
     }
-  }, [cancelRequest, open]);
+  }, [abortRequest, open]);
 
   useEffect(() => {
-    const shouldLoad = open && active && (variant === "desktop" || mobileProductsOpen) && !pagesRef.current[active.slug];
+    const page = active ? pagesRef.current[active.slug] : undefined;
+    const hasPendingRequest = active ? inFlightRef.current.has(`${active.slug}:${page?.page ? page.page + 1 : 1}`) : false;
+    const shouldLoad = open && active && (variant === "desktop" || mobileProductsOpen) && shouldLoadMegaMenuCategory(page, hasPendingRequest);
     if (shouldLoad) void load(active.slug, 1);
   }, [active, load, mobileProductsOpen, open, variant]);
 
-  useEffect(() => () => cancelRequest(), [cancelRequest]);
+  useEffect(() => () => abortRequest(), [abortRequest]);
 
   if (!open || categories.length === 0) return null;
 
