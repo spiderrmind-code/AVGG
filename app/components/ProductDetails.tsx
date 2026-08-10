@@ -54,13 +54,13 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
         <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="ui-surface p-4 sm:p-6">
             <div className="ui-product-image relative aspect-[4/4.1] overflow-hidden">
-              <Image src={selectedImage} alt={title} fill className="object-contain" />
+              <Image src={selectedImage} alt={title} fill sizes="(max-width: 1023px) calc(100vw - 2rem), 50vw" className="object-contain" />
             </div>
             {images.length > 1 ? (
               <div className="mt-4 grid grid-cols-4 gap-3">
                 {images.map((image, index) => (
                   <button key={`${image}-${index}`} type="button" aria-label={`Ver imagen ${index + 1} de ${title}`} aria-pressed={selectedImage === image} onClick={() => setSelectedImage(image)} className={`relative aspect-square overflow-hidden rounded-[var(--radius-md)] border transition ${selectedImage === image ? "border-[color:var(--color-accent)] shadow-sm" : "border-[color:var(--color-border)] hover:border-[color:var(--color-accent)]"}`}>
-                    <Image src={image} alt={`${title}-${index + 1}`} fill className="object-cover" />
+                    <Image src={image} alt={`${title}-${index + 1}`} fill sizes="(max-width: 639px) 22vw, 120px" className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -115,7 +115,7 @@ export default function ProductDetails({ product, relatedProducts }: ProductDeta
               return (
                 <Link key={String(item._id)} href={`/product/${item._id}`} className="ui-card ui-card-hover p-4">
                   <div className="ui-product-image relative aspect-square overflow-hidden">
-                    <Image src={image} alt={relatedTitle} fill className="object-cover" />
+                    <Image src={image} alt={relatedTitle} fill sizes="(max-width: 767px) calc(100vw - 2rem), (max-width: 1023px) 33vw, 384px" className="object-cover" />
                   </div>
                   <h3 className="mt-4 font-semibold text-neutral-950">{relatedTitle}</h3>
                   <p className="mt-2 text-sm text-neutral-600">{item.category ?? "Producto premium"}</p>

@@ -161,7 +161,7 @@ export default function ProductCard({
             src={image}
             alt={title}
             fill
-            sizes="(max-width:768px)100vw,25vw"
+            sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 288px"
             className="object-cover transition duration-300"
             loading="lazy"
           />

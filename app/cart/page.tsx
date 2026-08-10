@@ -46,15 +46,15 @@ export default function CartPage() {
 
     <main className="ui-page">
 
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl min-w-0">
 
         <p className="ui-eyebrow">Carrito</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-0.045em] text-[color:var(--color-text)] sm:text-4xl">
+        <h1 className="mt-2 max-w-3xl text-2xl font-semibold tracking-[-0.045em] text-[color:var(--color-text)] sm:text-4xl">
           Tu carrito está listo para cerrar la compra
         </h1>
 
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.55fr]">
+        <div className="mt-6 grid min-w-0 gap-5 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.55fr)]">
 
 
           <section className="space-y-4">
@@ -63,24 +63,25 @@ export default function CartPage() {
 
               <div
                 key={item._id}
-                className="ui-card flex flex-col gap-5 p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:flex-row sm:items-center sm:p-5"
+                className="ui-card flex min-w-0 flex-col gap-4 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:flex-row sm:items-center sm:gap-5 sm:p-5"
               >
 
-                <div className="ui-product-image relative h-28 w-full overflow-hidden sm:h-24 sm:w-24">
+                <div className="ui-product-image relative h-24 w-full shrink-0 overflow-hidden sm:h-24 sm:w-24">
 
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
+                    sizes="(max-width: 639px) calc(100vw - 3.5rem), 96px"
                     className="rounded-[var(--radius-md)] object-cover"
                   />
 
                 </div>
 
 
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
 
-                  <h2 className="font-semibold text-[color:var(--color-text)]">
+                  <h2 className="line-clamp-2 font-semibold text-[color:var(--color-text)]">
                     {item.name}
                   </h2>
 
@@ -92,7 +93,7 @@ export default function CartPage() {
 
 
 
-                <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] p-1">
+                <div className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] p-1 sm:w-auto">
 
                   <button
                     type="button"
@@ -133,7 +134,7 @@ export default function CartPage() {
 
 
 
-                <div className="flex items-center justify-between gap-4 border-t border-[color:var(--color-border)] pt-4 sm:block sm:border-0 sm:pt-0 sm:text-right">
+                <div className="flex items-center justify-between gap-4 border-t border-[color:var(--color-border)] pt-3 sm:block sm:border-0 sm:pt-0 sm:text-right">
 
                   <p className="font-semibold">
                     {formatARS(item.price * item.quantity)}
@@ -161,7 +162,7 @@ export default function CartPage() {
 
 
 
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
 
             <CartSummary />
 
