@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
-import { authorizeOrderAccess, canInitializePayment, resolvePaymentOrigin } from "@/lib/payment";
+import { authorizeOrderAccess, canInitializePayment } from "@/lib/payment";
 import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { isMercadoPagoSandbox, requireMercadoPagoAccessToken, requireMercadoPagoMode, sanitizeMercadoPagoPreferenceError, selectMercadoPagoCheckoutUrl } from "@/lib/mercadopago-config";
@@ -71,7 +71,10 @@ export async function POST(request: Request) {
       if (!canInitializePayment({ status: typeof current?.status === "string" ? current.status : undefined, paymentStatus: typeof current?.paymentStatus === "string" ? current.paymentStatus : undefined })) return NextResponse.json({ success: false, message: "La orden no está pendiente" }, { status: 400 });
       return NextResponse.json({ success: false, message: "La preferencia se está inicializando; reintentá en unos segundos" }, { status: 409 });
     }
-    const origin = resolvePaymentOrigin();
+    // The request origin has already passed CSRF/origin validation above. Using it
+    // keeps Mercado Pago return URLs on the canonical domain the customer used,
+    // even if an older public URL environment value still points to a Vercel alias.
+    const origin = new URL(request.url).origin;
     const preference = { items, back_urls: { success: `${origin}/checkout/success`, failure: `${origin}/checkout/failure`, pending: `${origin}/checkout/pending` }, auto_return: "approved", external_reference: orderId, notification_url: `${origin}/api/webhooks/mercadopago`, ...(!sandbox && email ? { payer: { email } } : {}), metadata: { order_id: orderId, order_number: typeof order.orderNumber === "string" ? order.orderNumber : undefined }, statement_descriptor: "AVG CONNECTS" };
     const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 12_000);
     try {
