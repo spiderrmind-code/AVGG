@@ -42,7 +42,7 @@ test("category and search reuse ProductCard while filtering public active produc
   const category = source("app/category/[slug]/page.tsx");
   const search = source("app/search/page.tsx");
   assert.match(category, /isValidCatalogSlug\(slug\)/);
-  assert.match(category, /active: \{ \$ne: false \}/);
+  assert.match(category, /buildPublicCategoryFilter\(normalizedSlug\)/);
   assert.match(category, /<ProductCard key=\{product\._id\} product=\{product\}/);
   assert.match(search, /escapeRegex\(query\.trim\(\)\)/);
   assert.match(search, /\.limit\(20\)/);

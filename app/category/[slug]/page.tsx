@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ProductCard from "@/app/components/ProductCard";
-import { buildCategorySearchTerms } from "@/lib/category-routing";
 import { isValidCatalogSlug, normalizeCatalogSlug, normalizePublicProduct, type PublicProduct } from "@/lib/catalog";
 import { getDb } from "@/lib/mongo";
 import { unstable_cache } from "next/cache";
 import { PUBLIC_CATALOG_CACHE_TAG } from "@/lib/public-catalog-cache";
+import { buildPublicCategoryFilter } from "@/lib/public-catalog-category-filter";
 
 const getCachedCategory = unstable_cache(async (slug: string): Promise<{ name: string; products: PublicProduct[] } | null> => {
   if (!isValidCatalogSlug(slug)) return null;
   const normalizedSlug = normalizeCatalogSlug(slug);
   const db = await getDb();
-  const terms = Array.from(new Set(buildCategorySearchTerms(normalizedSlug).map(normalizeCatalogSlug)));
   const [storedCategory, documents] = await Promise.all([
     db.collection("categorias").findOne({ slug: { $regex: `^${normalizedSlug}$`, $options: "i" }, active: { $ne: false } }),
-    db.collection("products").find({ active: { $ne: false }, categorySlug: { $in: terms } }, { projection: { costPrice: 0, supplier: 0, supplierId: 0, cjCost: 0 } }).sort({ featured: -1, createdAt: -1 }).limit(50).toArray(),
+    db.collection("products").find({ active: { $ne: false }, ...buildPublicCategoryFilter(normalizedSlug) }, { projection: { costPrice: 0, supplier: 0, supplierId: 0, cjCost: 0 } }).sort({ featured: -1, createdAt: -1 }).limit(50).toArray(),
   ]);
   const products = documents
     .map((document) => normalizePublicProduct(document))
