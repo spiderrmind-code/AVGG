@@ -9,6 +9,7 @@ import { getDb } from "@/lib/mongo";
 import { checkRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { maskOrderEmail } from "@/lib/order-presentation";
+import { calculateOrderFinancials } from "@/lib/order-financials";
 
 type Customer = { firstName: string; lastName: string; email: string; phone: string; address: string; city: string; province: string; postalCode: string; countryCode: string };
 type OrderItem = { _id: string; name: string; price: number; quantity: number; image?: string; _internal: { supplier: unknown; supplierId: unknown; costPrice: unknown; sku: unknown; shippingDays: unknown; margin: unknown } };
@@ -115,7 +116,8 @@ export async function POST(request: Request) {
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingAmount = 0; const discountAmount = 0; const currency = String(process.env.MERCADOPAGO_CURRENCY ?? "ARS").trim().toUpperCase();
     const now = new Date();
-    const order = { orderNumber: `AVG-${Date.now()}-${randomBytes(3).toString("hex")}`, customer, customerEmail: session?.user?.email ? normalizeEmail(session.user.email) : customer.email, ...(session?.user?.id ? { userId: session.user.id } : { guestAccessTokenHash: hashGuestAccessToken(guestAccessToken!) }), idempotencyOwner: owner, idempotencyKey, idempotencyFingerprint: fingerprint, items, subtotal, shippingAmount, discountAmount, total: subtotal + shippingAmount - discountAmount, currency, status: "pending", paymentStatus: "pending", paymentId: null, preferenceId: null, initPoint: null, createdAt: now, updatedAt: now };
+    const total = subtotal + shippingAmount - discountAmount;
+    const order = { orderNumber: `AVG-${Date.now()}-${randomBytes(3).toString("hex")}`, customer, customerEmail: session?.user?.email ? normalizeEmail(session.user.email) : customer.email, ...(session?.user?.id ? { userId: session.user.id } : { guestAccessTokenHash: hashGuestAccessToken(guestAccessToken!) }), idempotencyOwner: owner, idempotencyKey, idempotencyFingerprint: fingerprint, items, subtotal, shippingAmount, discountAmount, total, currency, financials: calculateOrderFinancials({ subtotal, discountAmount, shippingChargedToCustomer: shippingAmount, items }), status: "pending", paymentStatus: "pending", paymentId: null, preferenceId: null, initPoint: null, createdAt: now, updatedAt: now };
     try {
       const result = await db.collection("orders").insertOne(order);
       return NextResponse.json({ success: true, reused: false, orderId: String(result.insertedId), orderNumber: order.orderNumber, ...(guestAccessToken ? { guestAccessToken } : {}) });

@@ -51,17 +51,49 @@ export interface OrderDocument {
   preferenceId?: string;
   initPoint?: string;
   /** Estado del pedido en el proveedor, independiente del estado operativo de la tienda. */
-  fulfillmentStatus?: "ready" | "requesting" | "submitted" | "processing" | "shipped" | "delivered" | "failed" | "unknown";
+  fulfillmentStatus?: "pending" | "ready" | "processing" | "requesting" | "submitted" | "confirmed" | "preparing" | "shipped" | "in_transit" | "delivered" | "failed" | "blocked" | "cancelled" | "unknown";
   fulfillmentProcessing?: boolean;
   fulfillmentRequestedAt?: Date;
+  fulfillmentQueuedAt?: Date;
+  fulfillmentStartedAt?: Date;
+  fulfillmentSubmittedAt?: Date;
+  fulfillmentCancelledAt?: Date;
+  fulfillmentAttempts?: number;
+  fulfillmentIdempotencyKey?: string;
+  nextFulfillmentRetryAt?: Date;
+  lastFulfillmentError?: string | null;
+  lastFulfillmentErrorMessage?: string;
+  lastFulfillmentErrorAt?: Date;
   fulfilledAt?: Date;
   fulfillmentError?: "provider_error" | "timeout_uncertain" | null;
   /** Identificador genérico del proveedor para pedidos históricos o futuros. */
   supplierOrderId?: string;
+  externalOrderId?: string;
   carrier?: string;
   tracking?: string;
+  trackingNumber?: string;
   trackingUrl?: string;
+  shippingStatus?: string;
+  shippedAt?: Date;
+  deliveredAt?: Date;
   lastTrackingSyncAt?: Date;
+  reconciliationStatus?: "ok" | "incident";
+  lastReconciledAt?: Date;
+  financials?: {
+    grossAmount: number;
+    discountAmount: number;
+    shippingChargedToCustomer: number;
+    customerPaidAmount: number;
+    supplierCost: number | null;
+    dropsheableFee: number | null;
+    dropsheableFeeRate: number | null;
+    mercadoPagoFee: number | null;
+    shippingCost: number | null;
+    taxesOrOtherCosts: number | null;
+    netProfit: number | null;
+    profitMargin: number | null;
+    profitStatus: "pending" | "calculated";
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }

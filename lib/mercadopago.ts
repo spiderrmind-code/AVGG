@@ -10,6 +10,7 @@ export type VerifiedMercadoPagoPayment = {
   externalReference: string | null;
   preferenceId: string | null;
   dateApproved: string | null;
+  mercadoPagoFee: number | null;
 };
 
 export class MercadoPagoProviderError extends Error {
@@ -28,6 +29,7 @@ export async function getMercadoPagoPayment(paymentId: string): Promise<Verified
       externalReference: typeof payment.external_reference === "string" ? payment.external_reference : null,
       preferenceId: null,
       dateApproved: typeof payment.date_approved === "string" ? payment.date_approved : null,
+      mercadoPagoFee: Array.isArray(payment.fee_details) && payment.fee_details.some((fee) => typeof fee.amount === "number" && Number.isFinite(fee.amount)) ? payment.fee_details.reduce((total, fee) => total + (typeof fee.amount === "number" && Number.isFinite(fee.amount) ? fee.amount : 0), 0) : null,
     };
   } catch (error) {
     const statusCode = typeof error === "object" && error && "status" in error && typeof error.status === "number" ? error.status : undefined;

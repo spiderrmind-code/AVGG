@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongo";
 import { syncDropsheableCatalog } from "@/lib/dropsheable/sync";
+import { isAuthorizedCronRequest } from "@/lib/cron-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,26 +12,8 @@ declare global {
   var __dropsheableSyncLock: SyncLock;
 }
 
-function getExpectedCronSecret() {
-  return process.env.VERCEL_CRON_SECRET?.trim() || process.env.CRON_SECRET?.trim();
-}
-
-function isAuthorized(request: Request) {
-  const expected = getExpectedCronSecret();
-  if (!expected) return false;
-
-  const authHeader = request.headers.get("authorization") || "";
-  if (authHeader.startsWith("Bearer ")) {
-    return authHeader.slice("Bearer ".length).trim() === expected;
-  }
-
-  const cronHeader = request.headers.get("x-vercel-cron") || "";
-  const customSecretHeader = request.headers.get("x-cron-secret") || "";
-  return cronHeader === "1" && customSecretHeader === expected;
-}
-
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 

@@ -3,6 +3,7 @@ import clientPromise, { getDb } from "@/lib/mongo";
 import type { VerifiedMercadoPagoPayment } from "@/lib/mercadopago";
 import { canTransitionMercadoPagoPaymentStatus, getMercadoPagoOrderStatus, normalizeMercadoPagoPaymentStatus, type MercadoPagoPaymentStatus } from "@/lib/mercadopago-payment-status";
 import { notifyOperationalAlert } from "@/lib/alerts";
+import { calculateOrderFinancials, updateOrderFinancials } from "@/lib/order-financials";
 
 export type PaymentProcessingResult = { success: true; duplicate: boolean; orderId: string } | { success: false; reason: "missing_reference" | "order_not_found" | "amount_mismatch" | "currency_mismatch" | "payment_conflict" | "invalid_transition" | "database_error" };
 export type ApplyPaidOrderStockResult = { success: true; outcome: "applied" | "already_applied"; orderId: string } | { success: false; outcome: "order_not_found" | "payment_not_approved" | "invalid_items" | "product_not_found" | "insufficient_stock" | "processing_conflict" | "database_error"; orderId?: string };
@@ -28,7 +29,10 @@ export async function processVerifiedMercadoPagoPayment(payment: VerifiedMercado
     if (existingPaymentId && existingPaymentId !== payment.id && terminalStatus.includes(paymentStatus)) return { success: false, reason: "invalid_transition" };
     const currentPaymentStatus = typeof order.paymentStatus === "string" ? order.paymentStatus : "pending";
     const now = new Date();
-    const update = await db.collection("orders").updateOne({ _id: orderId, paymentStatus: currentPaymentStatus, ...(existingPaymentId ? { paymentId: existingPaymentId } : {}) }, { $set: { paymentId: payment.id, paymentStatus, status: getMercadoPagoOrderStatus(paymentStatus), paymentProcessedAt: now, paymentStatusDetail: payment.statusDetail, ...(paymentStatus === "approved" ? { fulfillmentStatus: "pending", fulfillmentQueuedAt: now } : {}), updatedAt: now } });
+    const existingFinancials = order.financials ?? calculateOrderFinancials({ subtotal: Number(order.subtotal ?? order.total ?? 0), discountAmount: Number(order.discountAmount ?? 0), shippingChargedToCustomer: Number(order.shippingAmount ?? 0), items: Array.isArray(order.items) ? order.items : [], mercadoPagoFee: payment.mercadoPagoFee });
+    const financials = updateOrderFinancials(existingFinancials, payment.mercadoPagoFee);
+    const fulfillmentUpdate = paymentStatus === "approved" ? { fulfillmentStatus: "pending", fulfillmentQueuedAt: now } : ["rejected", "cancelled", "refunded", "partially_refunded", "charged_back"].includes(paymentStatus) ? { fulfillmentStatus: "cancelled", fulfillmentCancelledAt: now } : {};
+    const update = await db.collection("orders").updateOne({ _id: orderId, paymentStatus: currentPaymentStatus, ...(existingPaymentId ? { paymentId: existingPaymentId } : {}) }, { $set: { paymentId: payment.id, paymentStatus, status: getMercadoPagoOrderStatus(paymentStatus), paymentProcessedAt: now, paymentStatusDetail: payment.statusDetail, financials, ...fulfillmentUpdate, updatedAt: now } });
     return update.matchedCount ? { success: true, duplicate: false, orderId: String(orderId) } : { success: true, duplicate: true, orderId: String(orderId) };
   } catch { return { success: false, reason: "database_error" }; }
 }

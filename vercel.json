@@ -4,6 +4,14 @@
     {
       "path": "/api/cron/dropsheable-sync",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/fulfillment",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/reconcile-orders",
+      "schedule": "0 * * * *"
     }
   ]
 }
