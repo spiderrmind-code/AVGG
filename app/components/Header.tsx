@@ -476,7 +476,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="order-5 hidden min-h-11 rounded-full border border-black/10 bg-white/80 px-4 text-sm font-semibold text-neutral-700 transition hover:border-[color:var(--color-accent)] hover:bg-[color:var(--color-accent-soft)] hover:text-[color:var(--color-accent-strong)] md:inline-flex md:items-center dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  className="order-5 inline-flex min-h-11 items-center rounded-full border border-black/10 bg-white/80 px-4 text-sm font-semibold text-neutral-700 transition hover:border-[color:var(--color-accent)] hover:bg-[color:var(--color-accent-soft)] hover:text-[color:var(--color-accent-strong)] dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
                 >
                   Cerrar sesión
                 </button>
