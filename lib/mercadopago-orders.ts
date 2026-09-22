@@ -27,7 +27,8 @@ export async function processVerifiedMercadoPagoPayment(payment: VerifiedMercado
     const terminalStatus: MercadoPagoPaymentStatus[] = ["partially_refunded", "refunded", "charged_back"];
     if (existingPaymentId && existingPaymentId !== payment.id && terminalStatus.includes(paymentStatus)) return { success: false, reason: "invalid_transition" };
     const currentPaymentStatus = typeof order.paymentStatus === "string" ? order.paymentStatus : "pending";
-    const update = await db.collection("orders").updateOne({ _id: orderId, paymentStatus: currentPaymentStatus, ...(existingPaymentId ? { paymentId: existingPaymentId } : {}) }, { $set: { paymentId: payment.id, paymentStatus, status: getMercadoPagoOrderStatus(paymentStatus), paymentProcessedAt: new Date(), paymentStatusDetail: payment.statusDetail, updatedAt: new Date() } });
+    const now = new Date();
+    const update = await db.collection("orders").updateOne({ _id: orderId, paymentStatus: currentPaymentStatus, ...(existingPaymentId ? { paymentId: existingPaymentId } : {}) }, { $set: { paymentId: payment.id, paymentStatus, status: getMercadoPagoOrderStatus(paymentStatus), paymentProcessedAt: now, paymentStatusDetail: payment.statusDetail, ...(paymentStatus === "approved" ? { fulfillmentStatus: "pending", fulfillmentQueuedAt: now } : {}), updatedAt: now } });
     return update.matchedCount ? { success: true, duplicate: false, orderId: String(orderId) } : { success: true, duplicate: true, orderId: String(orderId) };
   } catch { return { success: false, reason: "database_error" }; }
 }
@@ -61,12 +62,14 @@ export async function applyPaidOrderStock(orderId: string): Promise<ApplyPaidOrd
         const update = await db.collection("products").updateOne({ _id: new ObjectId(productId), stockQuantity: { $gte: quantity } }, { $inc: { stockQuantity: -quantity } }, { session });
         if (!update.matchedCount) throw new StockIssueError("insufficient_stock");
       }
-      await db.collection("orders").updateOne({ _id: id }, { $set: { stockApplied: true, stockAppliedAt: new Date(), stockProcessing: false, stockIssue: false, status: "paid", updatedAt: new Date() }, $unset: { stockIssueReason: "" } }, { session });
+      const now = new Date();
+      await db.collection("orders").updateOne({ _id: id }, { $set: { stockApplied: true, stockAppliedAt: now, stockProcessing: false, stockIssue: false, status: "paid", fulfillmentStatus: "pending", fulfillmentQueuedAt: now, updatedAt: now }, $unset: { stockIssueReason: "", stockIssueAt: "" } }, { session });
     });
     return { success: true, outcome: "applied", orderId };
   } catch (error) {
     if (error instanceof StockIssueError) {
-      await db.collection("orders").updateOne({ _id: id }, { $set: { stockApplied: false, stockProcessing: false, stockIssue: true, stockIssueReason: error.outcome.toUpperCase(), status: "stock_issue", stockIssueAt: new Date(), updatedAt: new Date() } });
+      const now = new Date();
+      await db.collection("orders").updateOne({ _id: id }, { $set: { stockApplied: false, stockProcessing: false, stockIssue: true, stockIssueReason: error.outcome.toUpperCase(), stockIssueAt: now, fulfillmentStatus: "blocked", status: "stock_issue", updatedAt: now } });
       notifyOperationalAlert("paid_order_stock_issue", { outcome: error.outcome, orderId });
       return { success: false, outcome: error.outcome, orderId };
     }
