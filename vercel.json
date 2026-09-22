@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/reconcile-orders",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/promotions",
+      "schedule": "15 3 * * *"
     }
   ]
 }

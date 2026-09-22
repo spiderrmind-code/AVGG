@@ -4,6 +4,7 @@ import type { PromotionStatus, PromotionType } from "@/models/Promotion";
 export type PromotionProduct = {
   _id: ObjectId | string;
   price: unknown;
+  comparePrice?: unknown;
   active?: unknown;
   stock?: unknown;
   stockQuantity?: unknown;
@@ -11,6 +12,7 @@ export type PromotionProduct = {
 
 export type PromotionInput = {
   productId: unknown;
+  basePrice?: unknown;
   promotionalPrice: unknown;
   type: unknown;
   startsAt: unknown;
@@ -42,7 +44,7 @@ function productHasStock(product: PromotionProduct) {
 
 export function promotionCanBeActive(product: PromotionProduct, promotion: Pick<ValidatedPromotion, "basePrice" | "promotionalPrice" | "startsAt" | "endsAt">, now = new Date()) {
   return productHasStock(product)
-    && positiveNumber(product.price) === promotion.basePrice
+    && (positiveNumber(product.price) === promotion.basePrice || (positiveNumber(product.comparePrice) === promotion.basePrice && promotion.basePrice > (positiveNumber(product.price) ?? 0)))
     && promotion.promotionalPrice > 0
     && promotion.promotionalPrice < promotion.basePrice
     && promotion.startsAt <= now
@@ -51,7 +53,9 @@ export function promotionCanBeActive(product: PromotionProduct, promotion: Pick<
 
 export function validatePromotionInput(input: PromotionInput, product: PromotionProduct, now = new Date()): ValidatedPromotion | null {
   const productId = typeof input.productId === "string" && ObjectId.isValid(input.productId) ? new ObjectId(input.productId) : input.productId instanceof ObjectId ? input.productId : null;
-  const basePrice = positiveNumber(product.price);
+  const currentPrice = positiveNumber(product.price);
+  const requestedBasePrice = input.basePrice === undefined ? currentPrice : positiveNumber(input.basePrice);
+  const basePrice = requestedBasePrice !== null && (requestedBasePrice === currentPrice || requestedBasePrice === positiveNumber(product.comparePrice)) ? requestedBasePrice : null;
   const promotionalPrice = positiveNumber(input.promotionalPrice);
   const startsAt = new Date(String(input.startsAt ?? ""));
   const endsAt = new Date(String(input.endsAt ?? ""));
