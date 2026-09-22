@@ -11,7 +11,7 @@ import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { maskOrderEmail } from "@/lib/order-presentation";
 
 type Customer = { firstName: string; lastName: string; email: string; phone: string; address: string; city: string; province: string; postalCode: string; countryCode: string };
-type OrderItem = { _id: string; name: string; price: number; quantity: number; image?: string; _internal: { supplier: unknown; supplierId: unknown; costPrice: unknown; sku: unknown; shippingDays: unknown; margin: unknown; cjId: unknown; cjVariantId: unknown; cjSku: unknown } };
+type OrderItem = { _id: string; name: string; price: number; quantity: number; image?: string; _internal: { supplier: unknown; supplierId: unknown; costPrice: unknown; sku: unknown; shippingDays: unknown; margin: unknown } };
 type CheckoutOrder = Record<string, unknown>;
 
 function object(value: unknown): Record<string, unknown> | null { return value && typeof value === "object" ? value as Record<string, unknown> : null; }
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       const price = product && typeof product.price === "number" ? product.price : NaN;
       const stock = product && typeof product.stockQuantity === "number" ? product.stockQuantity : typeof product?.stock === "number" ? product.stock : product?.stock === false ? 0 : undefined;
       if (!product || !Number.isFinite(price) || price <= 0 || (typeof stock === "number" && (stock <= 0 || quantity > stock))) return NextResponse.json({ success: false, message: "Producto no disponible" }, { status: 400 });
-      items.push({ _id: String(product._id), name: String(product.name ?? product.title ?? "Producto"), price, quantity, image: typeof product.image === "string" ? product.image : undefined, _internal: { supplier: product.supplier ?? null, supplierId: product.supplierId ?? null, costPrice: product.costPrice ?? null, sku: product.sku ?? null, shippingDays: product.shippingDays ?? null, margin: product.margin ?? null, cjId: product.cjId ?? null, cjVariantId: product.cjVariantId ?? null, cjSku: product.cjSku ?? null } });
+      items.push({ _id: String(product._id), name: String(product.name ?? product.title ?? "Producto"), price, quantity, image: typeof product.image === "string" ? product.image : undefined, _internal: { supplier: product.supplier ?? null, supplierId: product.supplierId ?? null, costPrice: product.costPrice ?? null, sku: product.sku ?? null, shippingDays: product.shippingDays ?? null, margin: product.margin ?? null } });
     }
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingAmount = 0; const discountAmount = 0; const currency = String(process.env.MERCADOPAGO_CURRENCY ?? "ARS").trim().toUpperCase();

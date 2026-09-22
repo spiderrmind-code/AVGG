@@ -56,7 +56,7 @@ export interface OrderDocument {
   fulfillmentRequestedAt?: Date;
   fulfilledAt?: Date;
   fulfillmentError?: "provider_error" | "timeout_uncertain" | null;
-  /** Identificador genérico del proveedor; para CJ contiene su id de pedido. */
+  /** Identificador genérico del proveedor para pedidos históricos o futuros. */
   supplierOrderId?: string;
   carrier?: string;
   tracking?: string;

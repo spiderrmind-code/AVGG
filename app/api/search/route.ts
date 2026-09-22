@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
         { title: { $regex: escapedQuery, $options: "i" } },
         { description: { $regex: escapedQuery, $options: "i" } },
         { category: { $regex: escapedQuery, $options: "i" } },
+        { sku: { $regex: escapedQuery, $options: "i" } },
+        { brand: { $regex: escapedQuery, $options: "i" } },
       ],
     }).limit(20).toArray();
     const results = products.map((product) => normalizePublicProduct(product)).filter((product) => product !== null);

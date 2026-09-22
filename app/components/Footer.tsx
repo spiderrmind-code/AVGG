@@ -19,12 +19,12 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-bg-strong)" }}>
+    <footer className="mt-auto border-t" style={{ borderColor: "var(--color-border)", background: "linear-gradient(180deg, rgba(242,246,255,0.96) 0%, rgba(245,247,251,0.96) 100%)" }}>
       <div className="ui-shell py-12 sm:py-16">
         <div className="ui-surface grid gap-10 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.72fr_0.72fr] lg:gap-12 lg:p-10">
           <div>
             <Link href="/" className="inline-flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.06)] dark:border-white/10 dark:bg-zinc-800/80">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_12px_28px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-zinc-800/80">
                 <LogoSVG />
               </div>
               <div>
@@ -36,9 +36,9 @@ export default function Footer() {
               Diseñamos una experiencia de compra elegante, confiable y pensada para personas que valoran tecnología, claridad y detalle.
             </p>
             <div className="mt-6 flex flex-wrap gap-2 text-sm text-neutral-600">
-              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/10">Soporte real</span>
-              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/10">Pago seguro</span>
-              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 dark:border-white/10 dark:bg-white/10">Envíos claros</span>
+              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/10">Soporte real</span>
+              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/10">Pago seguro</span>
+              <span className="rounded-full border border-black/10 bg-white/80 px-3 py-2 shadow-sm dark:border-white/10 dark:bg-white/10">Envíos claros</span>
             </div>
           </div>
 

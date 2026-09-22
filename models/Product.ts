@@ -22,7 +22,9 @@ export interface IProduct {
 
   supplier?: string;
   supplierId?: string;
+  dropsheableId?: string;
   supplierLink?: string;
+  stockQuantity?: number;
 
   shippingDays?: string;
   shippingInfo?: string;
@@ -109,6 +111,10 @@ const ProductSchema: Schema<IProduct> = new Schema(
       type: String,
     },
 
+    dropsheableId: {
+      type: String,
+    },
+
     supplierLink: {
       type: String,
     },
@@ -125,6 +131,10 @@ const ProductSchema: Schema<IProduct> = new Schema(
     stock: {
       type: Boolean,
       default: true,
+    },
+
+    stockQuantity: {
+      type: Number,
     },
 
     active: {

@@ -1,7 +1,55 @@
+import fs from "node:fs";
+import path from "node:path";
 import { MongoClient, MongoClientOptions } from "mongodb";
 import { logServerError } from "@/lib/logger";
 
-const configuredUri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
+export function normalizeMongoValue(value: string | undefined) {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return /^mongodb(\+srv)?:\/\//.test(trimmed) ? trimmed : undefined;
+}
+
+function readDotEnvLocal() {
+  const envPath = path.resolve(process.cwd(), ".env.local");
+  if (!fs.existsSync(envPath)) return {} as Record<string, string>;
+
+  const values: Record<string, string> = {};
+  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (!match) continue;
+    const [, key, rawValue] = match;
+    const value = rawValue.trim();
+    if (value) values[key] = value;
+  }
+  return values;
+}
+
+export function resolveMongoConfig(
+  env: NodeJS.ProcessEnv = process.env,
+  fileEnv: Record<string, string> = readDotEnvLocal(),
+) {
+  const envUri = normalizeMongoValue(env.MONGODB_URI ?? env.MONGO_URI);
+  const fileUri = normalizeMongoValue(fileEnv.MONGODB_URI ?? fileEnv.MONGO_URI);
+  const uri = envUri ?? fileUri;
+
+  const envDb = env.MONGODB_DB?.trim();
+  const fileDb = fileEnv.MONGODB_DB?.trim();
+  const dbName = (envDb && envDb.length > 1 ? envDb : fileDb) ?? "AVGCONNECTS";
+
+  return { uri, dbName };
+}
+
+const fileEnv = readDotEnvLocal();
+const resolvedMongo = resolveMongoConfig(process.env, fileEnv);
+
+if (resolvedMongo.uri && process.env.MONGODB_URI !== resolvedMongo.uri) {
+  process.env.MONGODB_URI = resolvedMongo.uri;
+}
+if (resolvedMongo.dbName && process.env.MONGODB_DB !== resolvedMongo.dbName) {
+  process.env.MONGODB_DB = resolvedMongo.dbName;
+}
+
+const configuredUri = resolvedMongo.uri;
 
 function mongoUriDiagnostics(value: string | undefined) {
   const normalized = value?.trim();
@@ -27,7 +75,7 @@ if (!mongoUriDiagnostics(configuredUri).startsWithMongoScheme) {
 
 const uri = configuredUri;
 
-const dbName = process.env.MONGODB_DB || "AVGCONNECTS";
+const dbName = resolvedMongo.dbName;
 const options: MongoClientOptions = {
   serverSelectionTimeoutMS: 8_000,
   connectTimeoutMS: 8_000,

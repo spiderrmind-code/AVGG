@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { formatARS } from "@/lib/currency";
+import { sanitizeProductImage } from "@/lib/catalog";
 
 
 export interface Product {
@@ -64,8 +65,8 @@ export default function ProductCard({
 
 
   const image =
-    product.image ??
-    product.images?.[0] ??
+    sanitizeProductImage(product.image) ??
+    (Array.isArray(product.images) ? product.images.map((item) => sanitizeProductImage(item)).find((item): item is string => Boolean(item)) : undefined) ??
     PLACEHOLDER_IMAGE;
 
 
@@ -166,7 +167,7 @@ export default function ProductCard({
             loading="lazy"
           />
           {discount ? <div className="ui-offer-badge absolute left-3 top-3">{discount}% menos</div> : null}
-          {product.featured ? <div className="absolute right-3 top-3 rounded-full bg-neutral-950 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">Destacado</div> : null}
+          {product.featured ? <div className="absolute right-3 top-3 rounded-full bg-slate-800 px-3 py-1 text-[11px] font-semibold text-white shadow-sm">Destacado</div> : null}
         </div>
 
 

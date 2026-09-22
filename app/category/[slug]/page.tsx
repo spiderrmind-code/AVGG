@@ -13,7 +13,7 @@ const getCachedCategory = unstable_cache(async (slug: string): Promise<{ name: s
   const db = await getDb();
   const [storedCategory, documents] = await Promise.all([
     db.collection("categorias").findOne({ slug: { $regex: `^${normalizedSlug}$`, $options: "i" }, active: { $ne: false } }),
-    db.collection("products").find({ active: { $ne: false }, ...buildPublicCategoryFilter(normalizedSlug) }, { projection: { costPrice: 0, supplier: 0, supplierId: 0, cjCost: 0 } }).sort({ featured: -1, createdAt: -1 }).limit(50).toArray(),
+    db.collection("products").find({ active: { $ne: false }, ...buildPublicCategoryFilter(normalizedSlug) }, { projection: { costPrice: 0, supplier: 0, supplierId: 0 } }).sort({ featured: -1, createdAt: -1 }).limit(50).toArray(),
   ]);
   const products = documents
     .map((document) => normalizePublicProduct(document))

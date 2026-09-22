@@ -15,14 +15,6 @@ test("normalizes a public product without internal fields", () => {
   assert.equal("supplierId" in product, false);
 });
 
-test("does not expose the historical CJ import marker in public descriptions", () => {
-  const product = normalizePublicProduct({
-    _id: "product-1", name: "Producto", price: 100, stock: true,
-    description: "Producto importado desde CJ Dropshipping. Descripción comercial.",
-  });
-  assert.equal(product?.description, "Descripción comercial.");
-});
-
 test("treats boolean and numeric stock consistently", () => {
   assert.deepEqual(getStockStatus({ stock: false }), { inStock: false });
   assert.deepEqual(getStockStatus({ stock: 2 }), { inStock: true, stockQuantity: 2 });
@@ -31,4 +23,18 @@ test("treats boolean and numeric stock consistently", () => {
 
 test("escapes user input before constructing catalog regex", () => {
   assert.equal(escapeRegex("(sale)+.*"), "\\(sale\\)\\+\\.\\*");
+});
+
+test("rejects malformed data URLs without crashing image loading", () => {
+  const product = normalizePublicProduct({
+    _id: "product-bad-image",
+    name: "Producto con imagen inválida",
+    price: 100,
+    image: "data:image/png;base64",
+    images: ["data:image/png;base64", "https://example.com/ok.jpg"],
+  });
+
+  assert.ok(product);
+  assert.equal(product.image, "https://example.com/ok.jpg");
+  assert.deepEqual(product.images, ["https://example.com/ok.jpg"]);
 });

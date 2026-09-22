@@ -57,11 +57,11 @@ export default function Hero({ products }: Props) {
           <div className="marketplace-hero-sun" aria-hidden="true" />
           <div className="marketplace-hero-grid" aria-hidden="true" />
 
-          <div className="relative z-10 mb-5 flex items-end justify-between gap-4 sm:mb-6">
+          <div className="home-hero-header relative z-10 mb-5 flex items-end justify-between gap-4 sm:mb-6">
             <div>
-              <p className="ui-eyebrow text-white/75">Descubrí oportunidades reales</p>
+              <p className="home-hero-kicker ui-eyebrow text-white/75">Descubrí oportunidades reales</p>
               <div className="mt-1 flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-[-0.035em] text-white sm:text-3xl lg:text-4xl">
+                <h1 className="home-hero-title text-2xl font-bold tracking-[-0.065em] text-white sm:text-3xl lg:text-5xl">
                   Ofertas HOT
                 </h1>
                 <span className="ui-offer-badge">Precios reales</span>
@@ -70,14 +70,14 @@ export default function Hero({ products }: Props) {
 
             <Link
               href="/#destacados"
-              className="hidden shrink-0 text-sm font-semibold text-white/90 transition hover:text-white sm:inline-flex"
+              className="home-hero-link hidden shrink-0 text-sm font-semibold text-white/90 transition hover:text-white sm:inline-flex"
             >
               Ver todos los productos →
             </Link>
           </div>
 
           <div className="relative z-10 grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.55fr)] lg:gap-5">
-            <article className="group relative overflow-hidden rounded-[var(--radius-xl)] border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:p-5">
+            <article className="home-hero-focus group relative overflow-hidden rounded-[var(--radius-xl)] border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:p-5">
               <Link href={leadHref} className="block">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[calc(var(--radius-xl)-0.35rem)] bg-[color:var(--color-surface-strong)]">
                   <Image
@@ -100,19 +100,19 @@ export default function Hero({ products }: Props) {
                 </div>
               </Link>
 
-              <div className="mt-4">
-                <p className="ui-eyebrow text-white/70">
+              <div className="home-hero-copy mt-4">
+                <p className="home-hero-meta ui-eyebrow text-white/70">
                   {leadProduct.category ?? "Selección AVG"}
                 </p>
 
                 <Link href={leadHref} className="mt-1 block">
-                  <h2 className="line-clamp-2 text-xl font-bold leading-tight tracking-[-0.025em] text-white sm:text-2xl">
+                  <h2 className="home-hero-product-title line-clamp-2 text-xl font-bold leading-[0.96] tracking-[-0.05em] text-white sm:text-2xl lg:text-[2.05rem]">
                     {getTitle(leadProduct)}
                   </h2>
                 </Link>
 
                 <div className="mt-3 flex flex-wrap items-end gap-x-3 gap-y-1">
-                  <span className="text-3xl font-extrabold tracking-[-0.04em] text-white sm:text-4xl">
+                  <span className="home-hero-price text-3xl font-extrabold tracking-[-0.06em] text-white sm:text-4xl">
                     {formatARS(Number(leadProduct.price ?? 0))}
                   </span>
 
@@ -130,7 +130,7 @@ export default function Hero({ products }: Props) {
                     </span>
                   ) : null}
 
-                  <Link href={leadHref} className="ui-button-primary ml-auto">
+                  <Link href={leadHref} className="home-hero-cta ui-button-primary ml-auto">
                     Ver oferta
                   </Link>
                 </div>
@@ -138,7 +138,7 @@ export default function Hero({ products }: Props) {
             </article>
 
             <div
-              className="grid auto-cols-[72%] grid-flow-col gap-3 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:auto-cols-[44%] lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0"
+              className="home-hero-grid grid auto-cols-[72%] grid-flow-col gap-3 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:auto-cols-[44%] lg:grid-flow-row lg:grid-cols-3 lg:overflow-visible lg:pb-0"
               aria-label="Más ofertas"
             >
               {secondaryProducts.map((product, index) => {

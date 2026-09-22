@@ -1,8 +1,5 @@
-﻿import mongoose from "mongoose";
+import mongoose from "mongoose";
 import Product from "@/models/Product";
-import { normalizePublicProduct } from "@/lib/catalog";
-import { resolveMongoConfig } from "@/lib/mongo";
-import { buildPublicCatalogFilter } from "@/lib/public-catalog-category-filter";
 
 type GetPublicCatalogOptions = {
   limit?: number;
@@ -12,7 +9,7 @@ type GetPublicCatalogOptions = {
 };
 
 async function connectDB() {
-  const { uri, dbName } = resolveMongoConfig();
+  const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
 
   if (!uri) {
     throw new Error("Falta MONGO_URI o MONGODB_URI en .env.local");
@@ -28,7 +25,7 @@ async function connectDB() {
   }
 
   await mongoose.connect(uri, {
-    dbName: dbName || undefined,
+    dbName: process.env.MONGODB_DB || undefined,
   });
 }
 
@@ -41,10 +38,17 @@ export async function getPublicCatalog(
   const page = Math.max(options.page ?? 1, 1);
   const skip = (page - 1) * limit;
 
-  const filter = buildPublicCatalogFilter({
-    category: options.category,
-    featured: options.featured,
-  });
+  const filter: Record<string, unknown> = {
+    active: { $ne: false },
+  };
+
+  if (options.category) {
+    filter.category = options.category;
+  }
+
+  if (options.featured !== undefined) {
+    filter.featured = options.featured;
+  }
 
   const products = await Product.find(filter)
     .sort({ createdAt: -1 })
@@ -52,11 +56,8 @@ export async function getPublicCatalog(
     .limit(limit)
     .lean();
 
-  return products
-    .map((product) => normalizePublicProduct(product as unknown as Record<string, unknown>))
-    .filter((product): product is NonNullable<typeof product> => product !== null)
-    .map((product) => ({
-      ...product,
-      _id: String(product._id),
-    }));
+  return products.map((product) => ({
+    ...product,
+    _id: product._id.toString(),
+  }));
 }

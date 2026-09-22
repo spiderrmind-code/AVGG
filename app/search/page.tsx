@@ -13,6 +13,8 @@ async function getSearchResults(query: string): Promise<PublicProduct[]> {
       { title: { $regex: escapedQuery, $options: "i" } },
       { description: { $regex: escapedQuery, $options: "i" } },
       { category: { $regex: escapedQuery, $options: "i" } },
+      { sku: { $regex: escapedQuery, $options: "i" } },
+      { brand: { $regex: escapedQuery, $options: "i" } },
     ],
   }).limit(20).toArray();
 

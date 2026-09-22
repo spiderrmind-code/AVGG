@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import ProductGrid from "./components/ProductGrid";
 import BenefitsSection from "./components/BenefitsSection";
 import Hero from "./components/Hero";
@@ -40,7 +42,8 @@ export default async function Home() {
       {unavailable ? (
         <section className="mx-auto max-w-7xl px-6 pt-8 lg:px-8">
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
-            El catálogo no está disponible temporalmente. Intentá nuevamente en unos minutos.
+            El catálogo no está disponible temporalmente. Intentá nuevamente
+            en unos minutos.
           </div>
         </section>
       ) : null}

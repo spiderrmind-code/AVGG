@@ -120,7 +120,7 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-8 flex flex-col gap-3">
-      <span className="inline-flex w-fit items-center rounded-full border border-[#ff007f]/20 bg-[#ff007f]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#ff007f]">
+      <span className="inline-flex w-fit items-center rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-700">
         {eyebrow}
       </span>
       <h2 className="text-2xl font-black tracking-[-0.02em] text-neutral-950 sm:text-3xl">
@@ -159,13 +159,13 @@ function ProductCard({
   const rating = clampRating(product.rating);
 
   return (
-    <article className="group rounded-[1.75rem] border border-neutral-200/80 bg-white p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(0,0,0,0.12)]">
+    <article className="group rounded-[1.75rem] border border-slate-200/80 bg-slate-50 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(0,0,0,0.12)]">
       <Link href={`/product/${product._id}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-[1.35rem] bg-neutral-100">
           {discount > 0 ? (
             <div className="absolute left-3 top-3 z-10 flex flex-col gap-2">
-              <span className="rounded-full bg-[#ff007f] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow">Oferta</span>
-              <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-[#ff007f]">-{discount}%</span>
+              <span className="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow">Oferta</span>
+              <span className="rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-slate-700">-{discount}%</span>
             </div>
           ) : null}
           {product.stock != null ? (
@@ -194,11 +194,11 @@ function ProductCard({
           </div>
           <button
             onClick={() => onToggleWishlist(product._id)}
-            className="rounded-full border border-neutral-200 p-2 transition hover:border-[#ff007f] hover:bg-[#ff007f]/5"
+            className="rounded-full border border-slate-200 bg-white/80 p-2 transition hover:border-slate-300 hover:bg-slate-100"
             aria-label={isWishlisted ? 'Quitar de favoritos' : 'Agregar a favoritos'}
           >
             <Heart
-              className={isWishlisted ? 'fill-[#ff007f] text-[#ff007f]' : 'text-neutral-700'}
+              className={isWishlisted ? 'fill-slate-700 text-slate-700' : 'text-slate-700'}
               size={16}
             />
           </button>
@@ -230,7 +230,7 @@ function ProductCard({
 
           <button
             onClick={() => onAddToCart(product)}
-            className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#ff007f] px-4 py-2 text-sm font-semibold text-black transition hover:-translate-y-0.5 hover:bg-[#ff007f]/90"
+            className="inline-flex min-h-10 items-center justify-center rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-slate-700"
           >
             Agregar
           </button>
@@ -251,7 +251,7 @@ function BenefitCard({
 }) {
   return (
     <div className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
-      <div className="inline-flex rounded-2xl bg-[#ff007f]/10 p-3 text-[#ff007f]">
+      <div className="inline-flex rounded-2xl bg-slate-200 p-3 text-slate-700">
         <Icon size={20} />
       </div>
       <h3 className="mt-4 text-base font-bold text-neutral-950">{title}</h3>
@@ -280,7 +280,7 @@ function CategoryCard({ category }: { category: CategoryDTO }) {
           <h3 className="text-sm font-semibold text-neutral-950">{category.name}</h3>
           <p className="text-xs text-neutral-500">{category.productCount ?? 0} productos</p>
         </div>
-        <ArrowRight size={18} className="text-[#ff007f] transition-transform group-hover:translate-x-1" />
+        <ArrowRight size={18} className="text-slate-700 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>
   );
@@ -367,7 +367,7 @@ export default function HomeClient({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,0,127,0.06),_transparent_28%),linear-gradient(180deg,_#fcfaf7_0%,_#f5f2eb_100%)] text-neutral-900">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.16),_transparent_28%),linear-gradient(180deg,_#f5f6f8_0%,_#eef1f4_100%)] text-neutral-900">
       <div className="mx-auto max-w-[1600px] px-4 pb-20 pt-4 sm:px-6 lg:px-8">
         {notice ? (
           <div className="fixed right-4 top-4 z-[60] rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm shadow-lg">
@@ -389,7 +389,7 @@ export default function HomeClient({
           </div>
 
           <div className="absolute right-6 top-6 hidden items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/85 backdrop-blur sm:flex">
-            <span className="h-2 w-2 rounded-full bg-[#ff007f]" />
+            <span className="h-2 w-2 rounded-full bg-slate-700" />
             Marketplace premium
           </div>
 
@@ -408,7 +408,7 @@ export default function HomeClient({
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="#destacados"
-                  className="inline-flex items-center justify-center rounded-full bg-[#ff007f] px-6 py-3.5 text-sm font-bold text-black transition hover:-translate-y-0.5 hover:bg-[#ff007f]/90"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-800 px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-slate-700"
                 >
                   Comprar ahora
                 </Link>
@@ -438,7 +438,7 @@ export default function HomeClient({
                       {heroBanner?.title || 'Las mejores ofertas'}
                     </h2>
                   </div>
-                  <div className="rounded-2xl bg-[#ff007f] p-3 text-black">
+                  <div className="rounded-2xl bg-slate-800 p-3 text-white">
                     <BadgePercent size={22} />
                   </div>
                 </div>
@@ -624,7 +624,7 @@ export default function HomeClient({
                 </p>
                 <Link
                   href="#newsletter"
-                  className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#ff007f] px-5 py-3 text-sm font-bold text-black transition hover:gap-3"
+                  className="mt-8 inline-flex items-center gap-2 rounded-full bg-slate-800 px-5 py-3 text-sm font-bold text-white transition hover:gap-3"
                 >
                   Aprovechar ahora <ArrowRight size={16} />
                 </Link>
@@ -660,9 +660,9 @@ export default function HomeClient({
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   placeholder="tu@email.com"
-                  className="min-h-12 flex-1 rounded-full border border-neutral-300 bg-white px-4 text-sm outline-none transition focus:border-[#ff007f]"
+                  className="min-h-12 flex-1 rounded-full border border-slate-300 bg-white px-4 text-sm outline-none transition focus:border-slate-500"
                 />
-                <button className="inline-flex items-center justify-center rounded-full bg-[#ff007f] px-6 py-3 text-sm font-bold text-black transition hover:bg-[#ff007f]/90">
+                <button className="inline-flex items-center justify-center rounded-full bg-slate-800 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-700">
                   Suscribirme
                 </button>
               </form>
@@ -673,14 +673,14 @@ export default function HomeClient({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-3xl bg-neutral-950 p-5 text-white">
-                <Zap className="text-[#ff007f]" />
+                <Zap className="text-slate-700" />
                 <h3 className="mt-4 font-bold">Ofertas exclusivas</h3>
                 <p className="mt-2 text-sm text-white/70">
                   Promociones y lanzamientos primero para los suscriptores.
                 </p>
               </div>
               <div className="rounded-3xl bg-neutral-100 p-5 text-neutral-950">
-                <ShieldCheck className="text-[#ff007f]" />
+                <ShieldCheck className="text-slate-700" />
                 <h3 className="mt-4 font-bold">Datos seguros</h3>
                 <p className="mt-2 text-sm text-neutral-600">
                   Una experiencia clara, simple y confiable desde el primer paso.

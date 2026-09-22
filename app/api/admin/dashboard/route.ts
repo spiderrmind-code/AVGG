@@ -45,7 +45,7 @@ export async function GET() {
       orders.countDocuments({ fulfillmentStatus: { $in: ["ready", "reserved", "creating", "created", "requesting", "submitted", "processing"] } }),
       orders.countDocuments({ $or: [{ status: "shipped" }, { fulfillmentStatus: "shipped" }] }),
       orders.countDocuments({ $or: [{ status: "delivered" }, { fulfillmentStatus: "delivered" }] }),
-      orders.countDocuments({ $or: [{ fulfillmentStatus: "unknown" }, { trackingStatus: "exception" }, { cjValidationStatus: "ineligible" }] }),
+      orders.countDocuments({ $or: [{ fulfillmentStatus: "unknown" }, { trackingStatus: "exception" }] }),
       products.countDocuments({ active: { $ne: false } }),
       products.countDocuments({ $or: [{ stock: false }, { stockQuantity: { $lte: 0 } }, { supplierStock: { $lte: 0 } }] }),
       products.countDocuments({ $or: [{ stockQuantity: { $gt: 0, $lte: 3 } }, { supplierStock: { $gt: 0, $lte: 3 } }] }),

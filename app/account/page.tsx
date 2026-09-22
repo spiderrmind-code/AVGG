@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface AccountProfile {
   name?: string;
@@ -15,10 +16,24 @@ interface AccountProfile {
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [profile, setProfile] = useState<AccountProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", province: "", postalCode: "" });
   const [message, setMessage] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await signOut({ redirect: false });
+      router.push("/");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -64,6 +79,14 @@ export default function AccountPage() {
           <div className="flex flex-wrap gap-3">
             <Link href="/account/orders" className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800">Ver pedidos</Link>
             <Link href="/wishlist" className="rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-white">Favoritos</Link>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="rounded-full border border-neutral-300 bg-white/80 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-zinc-900/70 dark:text-white dark:hover:bg-zinc-800"
+            >
+              {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+            </button>
           </div>
         </div>
 

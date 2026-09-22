@@ -10,5 +10,5 @@
 - [ ] `/api/health` responde 200.
 - [ ] `/api/readiness` responde 200.
 - [ ] Compra sandbox y webhook validados con HTTPS público.
-- [ ] Primer pedido CJ controlado validado antes de automatizar fulfillment.
+- [ ] Primer pedido del proveedor actual validado antes de automatizar fulfillment.
 - [ ] Plan de rollback y acceso a logs de Vercel confirmados.

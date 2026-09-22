@@ -8,7 +8,7 @@ import { resolveAuthSecret } from "@/lib/auth-secret";
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const authSecret = resolveAuthSecret();
-  const isSensitiveApi = pathname.startsWith("/api/admin/") || pathname.startsWith("/api/cj/") || pathname === "/api/suppliers";
+  const isSensitiveApi = pathname.startsWith("/api/admin/") || pathname === "/api/suppliers";
   const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
 
   if (isSensitiveApi) {
@@ -37,5 +37,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/cj/:path*", "/api/suppliers"],
+  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/suppliers"],
 };

@@ -2,7 +2,7 @@ import mongoose, { Schema, model, Model } from "mongoose";
 
 export interface ISupplier {
   name: string;
-  platform: "AliExpress" | "CJ Dropshipping" | "Local" | "Otro";
+  platform: "AliExpress" | "Dropsheable" | "Local" | "Otro";
   email?: string;
   contact?: string;
   notes?: string;

@@ -12,9 +12,9 @@ const nextConfig = {
       "form-action 'self'",
       "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://accounts.google.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https://cf.cjdropshipping.com https://oss-cf.cjdropshipping.com https://images.unsplash.com https://lh3.googleusercontent.com",
+      "img-src 'self' data: https://images.unsplash.com https://lh3.googleusercontent.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://api.mercadopago.com https://developers.cjdropshipping.com https://accounts.google.com",
+      "connect-src 'self' https://api.mercadopago.com https://accounts.google.com",
       "frame-src https://www.mercadopago.com https://www.mercadopago.com.ar",
     ].join("; ");
     const headers = [
@@ -30,12 +30,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "cf.cjdropshipping.com",
-      },
-      {
-        protocol: "https",
-        hostname: "oss-cf.cjdropshipping.com",
+        protocol: "http",
+        hostname: "http2.mlstatic.com",
       },
       {
         protocol: "https",
@@ -44,6 +40,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "dcdn-us.mitiendanube.com",
       },
     ],
   },

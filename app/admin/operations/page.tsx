@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import CjFulfillmentPanel from "../components/CjFulfillmentPanel";
 
 interface OrderRow {
   _id: string;
@@ -22,7 +21,6 @@ export default function OperationsPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [trackingMap, setTrackingMap] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
-  const [cjOrderId, setCjOrderId] = useState<string | null>(null);
   const [retryingId, setRetryingId] = useState<string | null>(null);
 
   const loadOrders = async () => {
@@ -140,8 +138,6 @@ export default function OperationsPage() {
                     <td className="px-4 py-4 text-sm text-neutral-700">
                       {order.stockIssue ? <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><strong>Incidencia de stock:</strong> {order.stockIssueReason ?? "Sin información"}<br />{order.stockIssueAt ? new Date(order.stockIssueAt).toLocaleString("es-AR") : "Fecha no disponible"}<button type="button" disabled={retryingId !== null} onClick={() => retryStock(order._id)} className="ui-button-primary mt-2 min-h-0 px-3 py-2 disabled:opacity-50">{retryingId === order._id ? "Reintentando…" : "Reintentar aplicación de stock"}</button></div> : null}
                       <button type="button" onClick={() => saveTracking(order._id)} className="ui-button-primary min-h-0 px-3 py-2">Guardar</button>
-                      <button type="button" onClick={() => setCjOrderId((current) => current === order._id ? null : order._id)} className="ui-button-secondary ml-2 min-h-0 px-3 py-2">CJ</button>
-                      {cjOrderId === order._id ? <CjFulfillmentPanel orderId={order._id} /> : null}
                     </td>
                   </tr>
                 ))}

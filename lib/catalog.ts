@@ -26,6 +26,33 @@ export function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+export function sanitizeProductImage(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  if (trimmed.startsWith("data:")) {
+    const dataUrl = trimmed.toLowerCase();
+    const isImageDataUrl = /^data:image\/[a-z0-9.+-]+(?:;[a-z0-9-!#$%&'*+.^_`|~]+=[a-z0-9-!#$%&'*+.^_`|~]+)*;?(?:base64)?,[a-z0-9!#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~%\s]*$/i.test(trimmed);
+    if (isImageDataUrl && dataUrl.includes(",") && dataUrl.includes("image/")) {
+      return trimmed;
+    }
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return trimmed;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
 export function getStockStatus(product: ProductRecord) {
   const quantityValue = product.stockQuantity ?? product.quantity;
   const stockQuantity = typeof quantityValue === "number" && Number.isFinite(quantityValue) ? Math.max(0, Math.floor(quantityValue)) : undefined;
@@ -39,10 +66,7 @@ export function getStockStatus(product: ProductRecord) {
 }
 
 function publicDescription(value: unknown) {
-  if (typeof value !== "string") return "";
-  // Algunos registros históricos importados conservan este marcador operativo.
-  // Nunca debe alcanzar el catálogo ni los metadatos públicos.
-  return value.replace(/\s*producto\s+importado\s+desde\s+cj\s+dropshipping\.?\s*/gi, " ").replace(/\s{2,}/g, " ").trim();
+  return typeof value === "string" ? value.replace(/\s{2,}/g, " ").trim() : "";
 }
 
 export function normalizePublicProduct(product: ProductRecord): PublicProduct | null {
@@ -51,9 +75,13 @@ export function normalizePublicProduct(product: ProductRecord): PublicProduct | 
   const price = typeof product.price === "number" ? product.price : Number(product.price);
   if (!id || typeof rawName !== "string" || !rawName.trim() || !Number.isFinite(price) || price <= 0) return null;
 
-  const rawImages = Array.isArray(product.images) ? product.images.filter((image): image is string => typeof image === "string" && image.trim().length > 0) : [];
-  const image = typeof product.image === "string" && product.image.trim() ? product.image : rawImages[0];
-  const images = image && !rawImages.includes(image) ? [image, ...rawImages] : rawImages;
+  const rawImages = Array.isArray(product.images)
+    ? product.images
+        .map((image) => sanitizeProductImage(image))
+        .filter((image): image is string => typeof image === "string" && image.length > 0)
+    : [];
+  const image = sanitizeProductImage(product.image) ?? rawImages[0];
+  const images = [...new Set([...(image ? [image] : []), ...rawImages])];
   const comparePrice = typeof product.comparePrice === "number" ? product.comparePrice : Number(product.comparePrice);
   const category = typeof product.category === "string" ? product.category.trim() : "";
   const slug = typeof product.slug === "string" && product.slug.trim() ? normalizeCatalogSlug(product.slug) : null;

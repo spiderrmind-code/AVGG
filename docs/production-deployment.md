@@ -24,7 +24,7 @@ Conectá el dominio principal en Vercel, configurá los DNS que Vercel indique y
 - MongoDB Atlas: permitir la conectividad de Vercel y configurar `MONGODB_URI` y `MONGODB_DB`.
 - Mercado Pago: registrar `https://DOMINIO/api/webhooks/mercadopago`; las URLs de éxito, fallo y pendiente se derivan de la URL pública.
 - Google: registrar el callback anterior en Google Cloud.
-- CJ: conservar `CJ_API_KEY` sólo en servidor. No habilita fulfillment automático.
+- Dropsheable: conservar `DROPSHEABLE_API_KEY` sólo en servidor. La API documentada no habilita fulfillment automático.
 
 ## Verificación posterior al deploy
 

@@ -270,8 +270,8 @@ export default function Header() {
   }
 
   const headerBg = scrolled
-    ? 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_10px_30px_rgba(17,17,17,0.08)] backdrop-blur-2xl'
-    : 'border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_2px_14px_rgba(17,17,17,0.04)] backdrop-blur-xl';
+    ? 'border-[color:var(--color-border)] bg-white/80 shadow-[0_14px_38px_rgba(15,23,42,0.08)] backdrop-blur-2xl'
+    : 'border-[color:var(--color-border)] bg-white/80 shadow-[0_2px_16px_rgba(15,23,42,0.04)] backdrop-blur-xl';
   const headerText = 'text-neutral-900 dark:text-zinc-100';
   const logoBoxSize = scrolled ? 'h-11 w-11' : 'h-[3.125rem] w-[3.125rem]';
   const logoTextSize = scrolled ? 'text-sm' : 'text-[0.9375rem]';
@@ -287,22 +287,21 @@ export default function Header() {
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
-        <div className="marketplace-topline border-b border-white/15 bg-[linear-gradient(90deg,#0756e8,#1677ff_54%,#ff5a1f)] text-white">
-          <div className="mx-auto flex h-7 max-w-7xl items-center justify-center gap-3 overflow-hidden px-4 text-[10px] font-bold uppercase tracking-[0.12em] sm:justify-between sm:text-[11px]">
+        <div className="marketplace-topline text-white">
+          <div className="mx-auto flex h-7 max-w-7xl items-center justify-center gap-3 overflow-hidden px-4 text-[10px] font-bold uppercase tracking-[0.16em] sm:justify-between sm:text-[11px]">
             <span>Compra protegida</span><span className="hidden sm:inline">Pago seguro</span><span>Envios con seguimiento</span>
           </div>
         </div>
         <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 md:h-[82px] lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6">
-            {/* LEFT: logo + nav */}
             <div className="flex items-center gap-4 sm:gap-6">
               <Link href="/" className="flex items-center gap-3" aria-label="Ir al inicio">
-                <div className={`${logoBoxSize} flex items-center justify-center rounded-[1.15rem] border border-black/10 bg-white/90 shadow-[0_4px_16px_rgba(0,0,0,0.05)] transition-all duration-300 dark:border-white/10 dark:bg-zinc-900/80`}>
+                <div className={`${logoBoxSize} flex items-center justify-center rounded-[1.1rem] border border-black/10 bg-white/90 shadow-[0_6px_16px_rgba(15,23,42,0.08)] transition-all duration-300 dark:border-white/10 dark:bg-zinc-900/80`}>
                   <LogoSVG />
                 </div>
                 <div className="hidden flex-col leading-none sm:flex">
-                  <span className={`font-semibold tracking-[-0.02em] ${logoTextSize} ${headerText}`}>AVG CONNECTS</span>
-                  <small className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.24em] text-neutral-500">Tech & more</small>
+                  <span className={`font-semibold tracking-[-0.03em] ${logoTextSize} ${headerText}`}>AVG CONNECTS</span>
+                  <small className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.22em] text-neutral-500">Tech & more</small>
                 </div>
               </Link>
 
@@ -348,7 +347,7 @@ export default function Header() {
                     value={search}
                     onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder="Buscar productos"
-                    className="marketplace-search ui-input h-11 w-full rounded-full py-2.5 pl-10 pr-12 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+                    className="marketplace-search ui-input h-11 w-full rounded-full py-2.5 pl-10 pr-12 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
                     aria-autocomplete="list"
                     aria-controls="search-suggestions"
                     aria-label="Buscar productos"

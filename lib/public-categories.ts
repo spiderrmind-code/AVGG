@@ -18,10 +18,20 @@ function toStoredCategory(record: CategoryRecord) {
   const name = typeof record.name === "string" ? record.name.trim() : "";
   const slug = normalizeCatalogSlug(typeof record.slug === "string" ? record.slug : name);
   if (!name || !slug) return null;
+  const children = Array.isArray(record.children)
+    ? record.children.flatMap((child): Array<{ name: string; slug: string }> => {
+      if (!child || typeof child !== "object") return [];
+      const value = child as Record<string, unknown>;
+      const childName = typeof value.name === "string" ? value.name.trim() : "";
+      const childSlug = normalizeCatalogSlug(typeof value.slug === "string" ? value.slug : childName);
+      return childName && childSlug ? [{ name: childName, slug: childSlug }] : [];
+    })
+    : [];
   return {
     _id: String(record._id ?? slug), name, slug,
     ...(typeof record.description === "string" && record.description.trim() ? { description: record.description.trim() } : {}),
     ...(typeof record.image === "string" && record.image.trim() ? { image: record.image.trim() } : {}),
+    children,
   };
 }
 
@@ -38,13 +48,26 @@ async function readPublicCategories(): Promise<PublicCategory[]> {
     const productCategories = new Map<string, { name: string; count: number }>();
     for (const document of productDocuments) {
       const product = normalizePublicProduct(document);
-      if (!product?.inStock || !product.categorySlug || !product.category) continue;
-      const current = productCategories.get(product.categorySlug);
-      productCategories.set(product.categorySlug, { name: current?.name ?? product.category, count: (current?.count ?? 0) + 1 });
+      if (!product?.inStock) continue;
+      const categoryName = typeof document.category === "string" && document.category.trim() ? document.category.trim() : undefined;
+      const categorySlug = typeof product.categorySlug === "string" && product.categorySlug.trim() ? product.categorySlug : (categoryName ? normalizeCatalogSlug(categoryName) : null);
+      if (!categoryName || !categorySlug) continue;
+      const current = productCategories.get(categorySlug);
+      productCategories.set(categorySlug, { name: current?.name ?? categoryName, count: (current?.count ?? 0) + 1 });
     }
-    return Array.from(productCategories, ([slug, category]) => {
+    const slugs = new Set([...storedBySlug.keys(), ...productCategories.keys()]);
+    return Array.from(slugs, (slug) => {
       const stored = storedBySlug.get(slug);
-      return { _id: stored?._id ?? slug, name: stored?.name ?? category.name, slug, ...(stored?.description ? { description: stored.description } : {}), ...(stored?.image ? { image: stored.image } : {}), productCount: category.count, children: [] };
+      const derived = productCategories.get(slug);
+      return {
+        _id: stored?._id ?? slug,
+        name: stored?.name ?? derived?.name ?? slug,
+        slug,
+        ...(stored?.description ? { description: stored.description } : {}),
+        ...(stored?.image ? { image: stored.image } : {}),
+        productCount: derived?.count ?? 0,
+        children: stored?.children ?? [],
+      };
     }).sort((left, right) => left.name.localeCompare(right.name, "es"));
   } catch {
     return [];
