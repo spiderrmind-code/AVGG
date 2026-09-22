@@ -87,6 +87,7 @@ export default function Header() {
 
   async function handleSignOut() {
     await signOut({ redirect: false });
+    router.push('/');
     router.refresh();
   }
 
@@ -471,6 +472,16 @@ export default function Header() {
                 <span>{isAuthenticated ? "Mi cuenta" : "Login"}</span>
               </Link>
 
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="order-5 hidden min-h-11 rounded-full border border-black/10 bg-white/80 px-4 text-sm font-semibold text-neutral-700 transition hover:border-[color:var(--color-accent)] hover:bg-[color:var(--color-accent-soft)] hover:text-[color:var(--color-accent-strong)] md:inline-flex md:items-center dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                >
+                  Cerrar sesión
+                </button>
+              ) : null}
+
               {isAuthenticated && session?.user?.role === "admin" ? (
                 <Link href="/admin" className="hidden rounded-full border border-neutral-200 bg-neutral-950 px-3 py-2 text-sm font-semibold text-white md:inline-flex">
                   Admin
@@ -552,6 +563,15 @@ export default function Header() {
                 </div>
 
                 <Link href={isAuthenticated ? "/account" : "/login"} className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200">{isAuthenticated ? "Mi cuenta" : "Login"}</Link>
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="rounded-[1rem] border border-black/10 bg-white/70 px-3 py-3 text-left text-sm font-medium text-neutral-800 transition hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-zinc-200"
+                  >
+                    Cerrar sesión
+                  </button>
+                ) : null}
                 {isAuthenticated && session?.user?.role === "admin" ? (
                   <Link href="/admin" className="hidden">Panel admin</Link>
                 ) : null}
