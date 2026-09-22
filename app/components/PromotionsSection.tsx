@@ -16,12 +16,12 @@ const limit = 12;
 
 function unique(products: Product[]) { return [...new Map(products.map((product) => [product._id, product])).values()]; }
 
-function CommercialCard({ product, tone }: { product: Product; tone: "offer" | "discovery" | "category" }) {
+function CommercialCard({ product, tone, duplicate = false }: { product: Product; tone: "offer" | "discovery" | "category"; duplicate?: boolean }) {
   const title = product.title ?? product.name ?? "Producto";
   const image = product.image?.trim() || product.images?.find(Boolean) || PLACEHOLDER_IMAGE;
   const offer = getPublicOffer({ price: product.price, comparePrice: product.comparePrice, inStock: product.inStock === true });
-  return <article className={`avg-commerce-card avg-commerce-card-${tone} snap-start`}>
-    <Link href={`/product/${product._id}`} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]">
+  return <article aria-hidden={duplicate || undefined} className={`avg-commerce-card avg-commerce-card-${tone} snap-start`}>
+    <Link tabIndex={duplicate ? -1 : undefined} href={`/product/${product._id}`} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)]">
       <div className="relative aspect-[4/3] overflow-hidden rounded-[calc(var(--radius-lg)-0.2rem)] bg-[color:var(--color-surface-muted)]">
         <Image src={image} alt={title} fill sizes="(max-width: 639px) 78vw, (max-width: 1023px) 38vw, 260px" className="object-contain transition duration-300 group-hover:scale-[1.04]" loading="lazy" />
         {offer ? <span className="avg-commerce-badge">-{offer.discountPercent}%</span> : null}
@@ -31,16 +31,71 @@ function CommercialCard({ product, tone }: { product: Product; tone: "offer" | "
   </article>;
 }
 
-function Slider({ id, products, tone, empty, loading }: { id: string; products: Product[]; tone: "offer" | "discovery" | "category"; empty: string; loading?: boolean }) {
+function Slider({ id, products, tone, empty, loading, autoPlay = false }: { id: string; products: Product[]; tone: "offer" | "discovery" | "category"; empty: string; loading?: boolean; autoPlay?: boolean }) {
   const viewport = useRef<HTMLDivElement>(null);
-  const move = (direction: number) => viewport.current?.scrollBy({ left: direction * Math.max(260, viewport.current.clientWidth * 0.75), behavior: "smooth" });
+  const [isPaused, setIsPaused] = useState(false);
+  const reducedMotion = useRef(false);
+
+  useEffect(() => {
+    reducedMotion.current = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  const move = (direction: number) => {
+    const current = viewport.current;
+    if (!current) return;
+    const firstCard = current.querySelector<HTMLElement>(".avg-commerce-card");
+    const step = firstCard ? firstCard.getBoundingClientRect().width + 12 : Math.max(260, current.clientWidth * 0.75);
+    current.scrollBy({ left: direction * step, behavior: reducedMotion.current ? "auto" : "smooth" });
+  };
+
+  useEffect(() => {
+    if (!autoPlay || products.length < 2 || reducedMotion.current || isPaused) return;
+
+    let frame = 0;
+    let lastTime = performance.now();
+    const speed = 42;
+
+    const animate = (time: number) => {
+      const current = viewport.current;
+      if (!current) return;
+      const elapsed = Math.min(time - lastTime, 64);
+      lastTime = time;
+      const cards = current.querySelectorAll<HTMLElement>(".avg-commerce-card");
+      const loopWidth = cards.length > products.length ? cards[products.length].offsetLeft - cards[0].offsetLeft : 0;
+      current.scrollLeft += (speed * elapsed) / 1000;
+      if (loopWidth > 0 && current.scrollLeft >= loopWidth) current.scrollLeft -= loopWidth;
+      frame = window.requestAnimationFrame(animate);
+    };
+
+    frame = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frame);
+  }, [autoPlay, isPaused, products.length]);
+
   if (loading) return <div className="avg-commerce-skeletons" aria-busy="true"><span /><span /><span /></div>;
   if (!products.length) return <p className="avg-commerce-empty">{empty}</p>;
-  return <div className="relative"><div ref={viewport} id={id} className="avg-commerce-slider" tabIndex={0}>{products.map((product) => <CommercialCard key={product._id} product={product} tone={tone} />)}</div><div className="avg-commerce-arrows" aria-label="Controles del carrusel"><button type="button" aria-label="Ver productos anteriores" onClick={() => move(-1)}><ChevronLeft aria-hidden="true" /></button><button type="button" aria-label="Ver más productos" onClick={() => move(1)}><ChevronRight aria-hidden="true" /></button></div></div>;
+
+  return (
+    <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)} onFocus={() => setIsPaused(true)} onBlur={() => setIsPaused(false)}>
+      <div
+        ref={viewport}
+        id={id}
+        className="avg-commerce-slider"
+        tabIndex={0}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+      >
+        {[...products, ...products].map((product, index) => <CommercialCard key={`${product._id}-${index}`} product={product} tone={tone} duplicate={index >= products.length} />)}
+      </div>
+      <div className="avg-commerce-arrows" aria-label="Controles del carrusel">
+        <button type="button" aria-label="Ver productos anteriores" onClick={() => move(-1)}><ChevronLeft aria-hidden="true" /></button>
+        <button type="button" aria-label="Ver más productos" onClick={() => move(1)}><ChevronRight aria-hidden="true" /></button>
+      </div>
+    </div>
+  );
 }
 
 export default function PromotionsSection({ products, categories }: { products: Product[]; categories: Category[] }) {
-  const offers = products.filter((product) => getPublicOffer({ price: product.price, comparePrice: product.comparePrice, inStock: product.inStock === true }) !== null).slice(0, limit);
+  const offers = products.filter((product) => getPublicOffer({ price: product.price, comparePrice: product.comparePrice, inStock: product.inStock === true }) !== null);
   const featured = unique(products.filter((product) => product.featured && product.inStock === true).concat(products.filter((product) => product.inStock === true))).filter((product) => !offers.some((offer) => offer._id === product._id)).slice(0, limit);
   const discovery = unique(products.filter((product) => product.inStock === true).filter((product) => !offers.some((offer) => offer._id === product._id) && !featured.some((item) => item._id === product._id))).slice(0, limit);
   const visibleCategories = categories.filter((category) => category.slug).slice(0, 8);
@@ -59,7 +114,7 @@ export default function PromotionsSection({ products, categories }: { products: 
   const maxDiscount = offers.reduce((max, product) => Math.max(max, getPublicOffer({ price: product.price, comparePrice: product.comparePrice, inStock: product.inStock === true })?.discountPercent ?? 0), 0);
 
   return <section id="ofertas" className="avg-commerce ui-shell ui-section" aria-label="Descubrimiento y ofertas">
-    {offers.length ? <div className="avg-commerce-feature avg-commerce-offers"><div className="avg-commerce-heading"><div><p className="section-label text-[color:var(--color-offer)]">Oportunidades verificadas</p><h2>Ofertas que se explican solas</h2><p>Descuentos reales, precios claros y productos disponibles.</p></div><div className="flex items-center gap-3"><a href="#ofertas" className="ui-button-secondary">Ver ofertas</a><span className="avg-commerce-highlight">Hasta {maxDiscount}% OFF</span></div></div><Slider id="offers-slider" products={offers} tone="offer" empty="No hay ofertas verificables en este momento." /></div> : null}
+    {offers.length ? <div className="avg-commerce-feature avg-commerce-offers"><div className="avg-commerce-heading"><div><p className="section-label text-[color:var(--color-offer)]">Oportunidades verificadas</p><h2>Ofertas que se explican solas</h2><p>Descuentos reales, precios claros y productos disponibles.</p></div><div className="flex items-center gap-3"><a href="#ofertas" className="ui-button-secondary">Ver ofertas</a><span className="avg-commerce-highlight">Hasta {maxDiscount}% OFF</span></div></div><Slider id="offers-slider" products={offers} tone="offer" empty="No hay ofertas verificables en este momento." autoPlay={true} /></div> : null}
     <div className="avg-commerce-feature avg-commerce-discovery"><div className="avg-commerce-heading"><div><p className="section-label text-[color:var(--color-accent-strong)]">Selección AVG</p><h2>Para descubrir ahora</h2><p>Productos destacados y disponibles del catálogo actual.</p></div><Sparkles className="h-8 w-8 text-[color:var(--color-accent)]" aria-hidden="true" /></div><Slider id="featured-slider" products={featured} tone="discovery" empty="No hay productos destacados disponibles." /></div>
     {visibleCategories.length ? <div className="avg-commerce-feature avg-commerce-categories"><div className="avg-commerce-heading"><div><p className="section-label text-[color:var(--color-success)]">Explorá por colección</p><h2>Encontrá tu próxima elección</h2><p>Cada colección se carga sólo cuando decidís recorrerla.</p></div></div><div className="avg-commerce-tabs" role="tablist" aria-label="Categorías de productos">{visibleCategories.map((category) => <button key={category.slug} type="button" role="tab" aria-selected={activeCategory === category.slug} onClick={() => selectCategory(category.slug)} className={activeCategory === category.slug ? "is-active" : ""}>{category.name}</button>)}</div><div className="mt-5" role="tabpanel" aria-busy={categoryState?.loading ?? false}>{categoryState?.error ? <div className="avg-commerce-empty">No pudimos cargar esta colección.<button type="button" className="ui-button-secondary ml-3" onClick={() => void loadCategory(activeCategory, true)}>Reintentar</button></div> : <Slider id="category-slider" products={categoryState?.products ?? []} tone="category" loading={categoryState?.loading} empty="Elegí una colección para ver productos disponibles." />}</div></div> : null}
     {discovery.length ? <div className="avg-commerce-feature avg-commerce-continuous"><div className="avg-commerce-heading"><div><p className="section-label">Seguí explorando</p><h2>Más para vos, sin repetir lo mismo</h2><p>Una selección adicional de productos disponibles.</p></div><Link href="/#destacados" className="ui-button-secondary">Ver catálogo</Link></div><Slider id="continuous-slider" products={discovery} tone="discovery" empty="No hay más productos para explorar." /></div> : null}
