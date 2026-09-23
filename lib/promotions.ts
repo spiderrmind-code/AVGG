@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import type { PromotionStatus, PromotionType } from "@/models/Promotion";
+import type { PromotionKind, PromotionStatus, PromotionType } from "@/models/Promotion";
 
 export type PromotionProduct = {
   _id: ObjectId | string;
@@ -15,10 +15,13 @@ export type PromotionInput = {
   basePrice?: unknown;
   promotionalPrice: unknown;
   type: unknown;
+  kind?: unknown;
   startsAt: unknown;
   endsAt: unknown;
   status?: unknown;
 };
+
+export type PromotionAction = "activate" | "pause" | "cancel";
 
 export type ValidatedPromotion = {
   productId: ObjectId;
@@ -26,6 +29,7 @@ export type ValidatedPromotion = {
   promotionalPrice: number;
   discountPercent: number;
   type: PromotionType;
+  kind: PromotionKind;
   startsAt: Date;
   endsAt: Date;
   status: PromotionStatus;
@@ -60,6 +64,7 @@ export function validatePromotionInput(input: PromotionInput, product: Promotion
   const startsAt = new Date(String(input.startsAt ?? ""));
   const endsAt = new Date(String(input.endsAt ?? ""));
   const type = input.type === "percentage" || input.type === "fixed" ? input.type : null;
+  const kind: PromotionKind = input.kind === "flash_sale" || input.kind === "daily_offer" || input.kind === "temporal_offer" ? input.kind : "temporal_offer";
   if (!productId || basePrice === null || promotionalPrice === null || !type || Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime()) || endsAt <= startsAt || promotionalPrice >= basePrice) return null;
 
   const discountPercent = Math.round(((basePrice - promotionalPrice) / basePrice) * 10000) / 100;
@@ -67,9 +72,13 @@ export function validatePromotionInput(input: PromotionInput, product: Promotion
 
   const requestedStatus = input.status === "draft" || input.status === "paused" ? input.status : null;
   const status: PromotionStatus = requestedStatus ?? (endsAt <= now ? "expired" : startsAt > now ? "scheduled" : promotionCanBeActive(product, { basePrice, promotionalPrice, startsAt, endsAt }, now) ? "active" : "draft");
-  return { productId, basePrice, promotionalPrice, discountPercent, type, startsAt, endsAt, status };
+  return { productId, basePrice, promotionalPrice, discountPercent, type, kind, startsAt, endsAt, status };
 }
 
 export function isPublicPromotion(promotion: Pick<ValidatedPromotion, "status" | "startsAt" | "endsAt">, now = new Date()) {
   return promotion.status === "active" && promotion.startsAt <= now && promotion.endsAt > now;
+}
+
+export function promotionStatusForAction(action: PromotionAction): PromotionStatus {
+  return action === "activate" ? "active" : action === "pause" ? "paused" : "cancelled";
 }

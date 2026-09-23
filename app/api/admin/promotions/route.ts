@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { authOptions } from "@/auth";
 import { getDb } from "@/lib/mongo";
 import { validatePromotionInput } from "@/lib/promotions";
+import { ensurePromotionIndexes } from "@/lib/promotions-engine";
 
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
@@ -19,7 +20,7 @@ export async function GET() {
       { $sort: { createdAt: -1 } },
       { $lookup: { from: "products", localField: "productId", foreignField: "_id", as: "product" } },
       { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
-      { $project: { productId: 1, basePrice: 1, promotionalPrice: 1, discountPercent: 1, type: 1, startsAt: 1, endsAt: 1, status: 1, createdAt: 1, updatedAt: 1, product: { _id: 1, name: 1, title: 1, price: 1, stock: 1, stockQuantity: 1, active: 1 } } },
+      { $project: { productId: 1, basePrice: 1, promotionalPrice: 1, discountPercent: 1, type: 1, kind: 1, startsAt: 1, endsAt: 1, status: 1, createdAt: 1, updatedAt: 1, product: { _id: 1, name: 1, title: 1, price: 1, stock: 1, stockQuantity: 1, active: 1 } } },
     ]).toArray();
     return NextResponse.json({ success: true, promotions });
   } catch (error) {
@@ -37,14 +38,19 @@ export async function POST(request: Request) {
     const productId = typeof candidate?.productId === "string" && ObjectId.isValid(candidate.productId) ? new ObjectId(candidate.productId) : null;
     if (!productId) return NextResponse.json({ success: false, message: "Producto inválido" }, { status: 400 });
     const db = await getDb();
+    const promotions = db.collection("promotions");
+    await ensurePromotionIndexes(promotions);
     const product = await db.collection("products").findOne({ _id: productId });
     if (!product) return NextResponse.json({ success: false, message: "Producto no encontrado" }, { status: 404 });
-    const promotion = validatePromotionInput({ productId, promotionalPrice: candidate?.promotionalPrice, type: candidate?.type, startsAt: candidate?.startsAt, endsAt: candidate?.endsAt, status: candidate?.status }, product as { _id: ObjectId; price: unknown; active?: unknown; stock?: unknown; stockQuantity?: unknown });
+    const promotion = validatePromotionInput({ productId, basePrice: candidate?.basePrice, promotionalPrice: candidate?.promotionalPrice, type: candidate?.type, kind: candidate?.kind, startsAt: candidate?.startsAt, endsAt: candidate?.endsAt, status: candidate?.status }, product as { _id: ObjectId; price: unknown; comparePrice?: unknown; active?: unknown; stock?: unknown; stockQuantity?: unknown });
     if (!promotion) return NextResponse.json({ success: false, message: "Promoción inválida para el precio o stock actual" }, { status: 400 });
+    const conflict = await promotions.findOne({ productId, status: { $in: ["active", "scheduled"] } });
+    if (conflict) return NextResponse.json({ success: false, message: "El producto ya tiene una promoción abierta" }, { status: 409 });
     const now = new Date();
-    const result = await db.collection("promotions").insertOne({ ...promotion, createdAt: now, updatedAt: now });
+    const result = await promotions.insertOne({ ...promotion, createdAt: now, updatedAt: now });
     return NextResponse.json({ success: true, promotion: { _id: result.insertedId, ...promotion } }, { status: 201 });
   } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === 11000) return NextResponse.json({ success: false, message: "El producto ya tiene una promoción abierta" }, { status: 409 });
     console.error("ERROR CREATE PROMOTION:", error);
     return NextResponse.json({ success: false, message: "Error creando promoción" }, { status: 500 });
   }

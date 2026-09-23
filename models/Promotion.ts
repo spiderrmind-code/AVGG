@@ -1,7 +1,8 @@
 import mongoose, { Schema, model, Model } from "mongoose";
 
 export type PromotionType = "percentage" | "fixed";
-export type PromotionStatus = "draft" | "scheduled" | "active" | "paused" | "expired";
+export type PromotionKind = "flash_sale" | "daily_offer" | "temporal_offer";
+export type PromotionStatus = "draft" | "scheduled" | "active" | "paused" | "expired" | "cancelled";
 
 export interface IPromotion {
   productId: mongoose.Types.ObjectId;
@@ -9,6 +10,7 @@ export interface IPromotion {
   promotionalPrice: number;
   discountPercent: number;
   type: PromotionType;
+  kind: PromotionKind;
   startsAt: Date;
   endsAt: Date;
   status: PromotionStatus;
@@ -23,9 +25,10 @@ const PromotionSchema: Schema<IPromotion> = new Schema(
     promotionalPrice: { type: Number, required: true, min: 0 },
     discountPercent: { type: Number, required: true, min: 0, max: 100 },
     type: { type: String, enum: ["percentage", "fixed"], required: true },
+    kind: { type: String, enum: ["flash_sale", "daily_offer", "temporal_offer"], required: true, default: "temporal_offer" },
     startsAt: { type: Date, required: true, index: true },
     endsAt: { type: Date, required: true, index: true },
-    status: { type: String, enum: ["draft", "scheduled", "active", "paused", "expired"], required: true, index: true },
+    status: { type: String, enum: ["draft", "scheduled", "active", "paused", "expired", "cancelled"], required: true, index: true },
   },
   { timestamps: true },
 );

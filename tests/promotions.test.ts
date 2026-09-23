@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ObjectId } from "mongodb";
-import { isPublicPromotion, promotionCanBeActive, validatePromotionInput } from "../lib/promotions";
+import { isPublicPromotion, promotionCanBeActive, promotionStatusForAction, validatePromotionInput } from "../lib/promotions";
 import { maintainAutomaticPromotions, promotionTarget } from "../lib/promotions-engine";
 
 const now = new Date("2026-09-22T12:00:00.000Z");
@@ -81,4 +81,10 @@ test("automatic maintenance leaves the target empty when no products are eligibl
   const result = await maintainAutomaticPromotions(memoryCollection([{ ...product, stockQuantity: 0 }]), memoryCollection(), now, { NODE_ENV: "test", PROMOTIONS_TARGET_ACTIVE: "20" });
   assert.equal(result.created, 0);
   assert.equal(result.activeAfter, 0);
+});
+
+test("promotion actions map to controlled lifecycle states", () => {
+  assert.equal(promotionStatusForAction("activate"), "active");
+  assert.equal(promotionStatusForAction("pause"), "paused");
+  assert.equal(promotionStatusForAction("cancel"), "cancelled");
 });
