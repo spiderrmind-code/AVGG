@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, ShoppingBag, Sparkles, X } from "lucide-react";
+import { MessageCircle, Mic, Send, ShoppingBag, Sparkles, Square, Volume2, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { formatARS } from "@/lib/currency";
@@ -33,6 +33,25 @@ const initialMessage: ChatMessage = {
   role: "assistant",
   content: "Dale, decime qué estás buscando y te ayudo a encontrarlo.",
 };
+
+type SpeechRecognitionEventLike = Event & { results: { [index: number]: { [index: number]: { transcript: string } } }; resultIndex: number };
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: Event & { error?: string }) => void) | null;
+  onend: (() => void) | null;
+};
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+function speechRecognitionConstructor() {
+  const speechWindow = window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor };
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -72,9 +91,13 @@ export default function AvgAiChat() {
   const [loading, setLoading] = useState(false);
   const [conversation, setConversation] = useState<AiConversationState>({});
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
+  const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
   const scrollTargetRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messageIdRef = useRef(0);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   function nextMessageId(prefix: string) {
     messageIdRef.current += 1;
@@ -88,6 +111,11 @@ export default function AvgAiChat() {
   useEffect(() => {
     scrollTargetRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading, open]);
+
+  useEffect(() => () => {
+    recognitionRef.current?.abort();
+    window.speechSynthesis?.cancel();
+  }, []);
 
   async function sendMessage(rawMessage: string, selectionProductId?: string) {
     const content = rawMessage.trim();
@@ -170,6 +198,66 @@ export default function AvgAiChat() {
     void sendMessage(`Me gusta ${product.name}.`, product._id);
   }
 
+  function stopListening() {
+    recognitionRef.current?.stop();
+    setListening(false);
+  }
+
+  function startListening() {
+    if (loading || listening) return;
+    const Recognition = speechRecognitionConstructor();
+    if (!Recognition) {
+      setVoiceError("Tu navegador no permite dictado por voz. Podés escribir tu mensaje.");
+      return;
+    }
+    setVoiceError("");
+    const recognition = new Recognition();
+    recognition.lang = "es-AR";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.resultIndex]?.[0]?.transcript?.trim();
+      if (transcript) void sendMessage(transcript);
+      else setVoiceError("No llegué a escuchar nada. Probá de nuevo.");
+    };
+    recognition.onerror = (event) => {
+      const messagesByError: Record<string, string> = {
+        "not-allowed": "No tengo permiso para usar el micrófono.",
+        "service-not-allowed": "El reconocimiento de voz no está disponible ahora.",
+        "no-speech": "No detecté voz. Probá de nuevo.",
+        aborted: "",
+      };
+      setVoiceError(messagesByError[event.error ?? ""] ?? "No pude reconocer tu voz. Probá de nuevo.");
+    };
+    recognition.onend = () => setListening(false);
+    recognitionRef.current = recognition;
+    setListening(true);
+    try {
+      recognition.start();
+    } catch {
+      setListening(false);
+      setVoiceError("No pude iniciar el micrófono. Probá de nuevo.");
+    }
+  }
+
+  function speakMessage(message: ChatMessage) {
+    if (!("speechSynthesis" in window)) {
+      setVoiceError("Tu navegador no permite reproducir respuestas por voz.");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    if (speakingId === message.id) {
+      setSpeakingId(null);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(message.content);
+    utterance.lang = "es-AR";
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => { setSpeakingId(null); setVoiceError("No pude reproducir esa respuesta."); };
+    setSpeakingId(message.id);
+    window.speechSynthesis.speak(utterance);
+  }
+
   return (
     <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-[60] sm:bottom-5 sm:right-5">
       {open ? (
@@ -202,7 +290,7 @@ export default function AvgAiChat() {
                   <div className={message.role === "user"
                     ? "max-w-[85%] rounded-[1.1rem] rounded-br-sm bg-[color:var(--color-accent-strong)] px-3.5 py-2.5 text-sm leading-5 text-white dark:bg-white dark:text-neutral-950"
                     : "max-w-[92%] rounded-[1.1rem] rounded-bl-sm bg-[color:var(--color-surface-muted)] px-3.5 py-2.5 text-sm leading-5 text-[color:var(--color-text)]"}>
-                    {message.content}
+                    <div className="flex items-start gap-2"><span className="min-w-0 flex-1">{message.content}</span>{message.role === "assistant" ? <button type="button" onClick={() => speakMessage(message)} className="shrink-0 text-[color:var(--color-text-muted)]" aria-label={speakingId === message.id ? "Detener respuesta por voz" : "Escuchar respuesta"}>{speakingId === message.id ? <Square className="h-3.5 w-3.5" aria-hidden="true" /> : <Volume2 className="h-4 w-4" aria-hidden="true" />}</button> : null}</div>
                   </div>
                 </div>
               ))}
@@ -253,10 +341,14 @@ export default function AvgAiChat() {
               className="ui-input min-w-0 flex-1 rounded-full px-4"
               aria-label="Mensaje para AVG AI"
             />
+            <button type="button" onClick={listening ? stopListening : startListening} disabled={loading} className={`ui-icon-button h-11 min-h-11 w-11 min-w-11 rounded-full ${listening ? "bg-[color:var(--color-danger)] text-white" : ""}`} aria-label={listening ? "Detener dictado" : "Hablar con AVG AI"} aria-pressed={listening}>
+              {listening ? <Square className="h-4 w-4" aria-hidden="true" /> : <Mic className="h-4 w-4" aria-hidden="true" />}
+            </button>
             <button type="submit" disabled={loading || !draft.trim()} className="ui-button-primary h-11 min-h-11 w-11 min-w-11 rounded-full p-0" aria-label="Enviar mensaje">
               <Send className="h-4 w-4" aria-hidden="true" />
             </button>
           </form>
+          {voiceError ? <p role="status" className="shrink-0 px-4 pb-3 text-xs text-[color:var(--color-text-muted)]">{voiceError}</p> : null}
         </section>
       ) : null}
 
