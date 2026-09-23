@@ -32,6 +32,16 @@ async function connectDB() {
   });
 }
 
+/**
+ * Server-only consumers can share the storefront connection without creating
+ * a second MongoClient in the same serverless invocation.
+ */
+export async function getPublicCatalogDb() {
+  await connectDB();
+  if (!mongoose.connection.db) throw new Error("MongoDB no est\u00e1 disponible");
+  return mongoose.connection.db;
+}
+
 export async function getPublicCatalog(
   options: GetPublicCatalogOptions = {}
 ) {

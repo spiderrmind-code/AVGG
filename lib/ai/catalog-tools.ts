@@ -175,10 +175,10 @@ function rankProduct(product: PublicProduct, document: Document, terms: string[]
 }
 
 async function getCatalogDb() {
-  // Keep the database connection lazy: intent-only requests and isolated tests
-  // must not open a MongoDB connection unless a catalogue lookup is needed.
-  const { getDb } = await import("@/lib/mongo");
-  return getDb();
+  // Load lazily so isolated engine tests never initialize MongoDB. In
+  // production this reuses the connection that already powers the storefront.
+  const { getPublicCatalogDb } = await import("@/lib/public-catalog");
+  return getPublicCatalogDb();
 }
 
 /**
