@@ -26,6 +26,8 @@ await mock.module("@/lib/mercadopago-orders", {
     },
   },
 });
+await mock.module("@/lib/mongo", { namedExports: { getDb: async () => ({ collection: () => ({}) }) } });
+await mock.module("@/lib/fulfillment/engine", { namedExports: { processPendingFulfillment: async () => ({ processed: 0, submitted: 0, blocked: 0, failed: 0 }) } });
 await mock.module("@/lib/mercadopago-webhook-signature", {
   namedExports: {
     verifyMercadoPagoWebhookSignature: ({ signature }: { signature: string | null }) => signature === "valid" ? { valid: true as const } : { valid: false as const, reason: "invalid_signature" as const },

@@ -47,6 +47,7 @@ const ACCENT_VARIANTS: Record<string, string> = {
 export type SearchProductsInput = {
   query?: string;
   keywords?: string[];
+  excludedKeywords?: string[];
   category?: string;
   maxPrice?: number;
   limit?: number;
@@ -55,6 +56,7 @@ export type SearchProductsInput = {
 type SanitizedSearchInput = {
   query?: string;
   keywords: string[];
+  excludedKeywords: string[];
   category?: string;
   maxPrice?: number;
   limit: number;
@@ -120,6 +122,15 @@ function sanitizeSearchInput(input: SearchProductsInput = {}): SanitizedSearchIn
     .map((keyword) => text(keyword, MAX_KEYWORD_LENGTH))
     .filter((keyword): keyword is string => Boolean(keyword))))
     .slice(0, MAX_KEYWORDS);
+  const sourceExcludedKeywords = Array.isArray(record.excludedKeywords)
+    ? record.excludedKeywords
+    : typeof record.excludedKeywords === "string"
+      ? [record.excludedKeywords]
+      : [];
+  const excludedKeywords = Array.from(new Set(sourceExcludedKeywords
+    .map((keyword) => text(keyword, MAX_KEYWORD_LENGTH))
+    .filter((keyword): keyword is string => Boolean(keyword))))
+    .slice(0, MAX_KEYWORDS);
   const category = text(record.category, MAX_CATEGORY_LENGTH);
   const maxPrice = numberInRange(record.maxPrice, 1_000_000_000);
   const requestedLimit = numberInRange(record.limit, MAX_LIMIT);
@@ -127,6 +138,7 @@ function sanitizeSearchInput(input: SearchProductsInput = {}): SanitizedSearchIn
   return {
     ...(query ? { query } : {}),
     keywords,
+    excludedKeywords,
     ...(category ? { category } : {}),
     ...(maxPrice !== undefined ? { maxPrice } : {}),
     limit: requestedLimit === undefined ? DEFAULT_LIMIT : Math.max(1, Math.floor(requestedLimit)),
@@ -197,6 +209,7 @@ export async function searchProducts(input: SearchProductsInput = {}): Promise<P
     ...(safe.query ? searchTerms(safe.query) : []),
     ...safe.keywords.flatMap(searchTerms),
   ])).slice(0, MAX_KEYWORDS);
+  const excludedTerms = safe.excludedKeywords.flatMap(searchTerms);
 
   const filter: Filter<Document> = { active: { $ne: false } };
   const clauses = [
@@ -216,7 +229,8 @@ export async function searchProducts(input: SearchProductsInput = {}): Promise<P
   return documents
     .flatMap((document) => {
       const product = normalizePublicProduct(document);
-      if (!product || !product.inStock || (safe.maxPrice !== undefined && product.price > safe.maxPrice)) return [];
+      const searchable = `${document.name ?? ""} ${document.title ?? ""} ${document.description ?? ""} ${document.category ?? ""} ${document.features ?? ""} ${document.benefits ?? ""} ${document.tags ?? ""}`;
+      if (!product || !product.inStock || (safe.maxPrice !== undefined && product.price > safe.maxPrice) || excludedTerms.some((term) => normalizedText(searchable).includes(term))) return [];
       return [{ product, score: rankProduct(product, document, terms, safe.category, safe.query) }];
     })
     .sort((left, right) => right.score - left.score || Number(right.product.featured) - Number(left.product.featured) || left.product.price - right.product.price || left.product.name.localeCompare(right.product.name, "es"))

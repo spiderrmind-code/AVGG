@@ -103,6 +103,7 @@ function createClientPromise() {
       },
       (error) => {
         clearTimeout(timeout);
+        void client.close();
         reject(error);
       },
     );
@@ -113,24 +114,24 @@ function createClientPromise() {
   });
 }
 
-let clientPromise: Promise<MongoClient>;
+let clientPromise: Promise<MongoClient> | undefined;
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    global._mongoClientPromise = createClientPromise();
+export function getClient() {
+  if (process.env.NODE_ENV === "development") {
+    if (!global._mongoClientPromise) {
+      global._mongoClientPromise = createClientPromise();
+    }
+    return global._mongoClientPromise;
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  clientPromise = createClientPromise();
+  if (!clientPromise) clientPromise = createClientPromise();
+  return clientPromise;
 }
 
-export default clientPromise;
-
 export async function getDb() {
-  const client = await clientPromise;
+  const client = await getClient();
   return client.db(dbName);
 }

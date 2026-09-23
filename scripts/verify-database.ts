@@ -39,13 +39,13 @@ async function main() {
     });
     process.exit(1);
   }, 12_000);
-  const { default: clientPromise, getDb } = await import("../lib/mongo");
+  const { getClient, getDb } = await import("../lib/mongo");
   const { findDuplicateGroups, regularIndexes, uniqueIndexCandidates } = await import("./database-integrity");
-  let client: Awaited<typeof clientPromise> | undefined;
+  let client: Awaited<ReturnType<typeof getClient>> | undefined;
 
   try {
     const db = await getDb();
-    client = await clientPromise;
+    client = await getClient();
     const connectionMs = Math.round(performance.now() - startedAt);
     console.log(`conexion MongoDB: OK (${connectionMs} ms)`);
     console.log(`base seleccionada: ${db.databaseName}`);

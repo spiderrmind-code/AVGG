@@ -9,9 +9,12 @@ export type AiChatMessage = {
 
 export type AiSearchCriteria = {
   terms: string[];
+  excludedTerms?: string[];
   maxPrice?: number;
   category?: string;
   color?: string;
+  recipient?: string;
+  occasion?: string;
 };
 
 /**
@@ -26,9 +29,12 @@ export type AiConversationState = {
 
 export type AiProviderIntent = {
   keywords?: string[];
+  excludedKeywords?: string[];
   category?: string;
   color?: string;
   maxPrice?: number;
+  recipient?: string;
+  occasion?: string;
   action?: "search" | "alternative" | "checkout" | "cart";
 };
 

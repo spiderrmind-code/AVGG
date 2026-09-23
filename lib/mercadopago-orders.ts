@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import clientPromise, { getDb } from "@/lib/mongo";
+import { getClient, getDb } from "@/lib/mongo";
 import type { VerifiedMercadoPagoPayment } from "@/lib/mercadopago";
 import { canTransitionMercadoPagoPaymentStatus, getMercadoPagoOrderStatus, normalizeMercadoPagoPaymentStatus, type MercadoPagoPaymentStatus } from "@/lib/mercadopago-payment-status";
 import { notifyOperationalAlert } from "@/lib/alerts";
@@ -48,7 +48,7 @@ export async function applyPaidOrderStock(orderId: string): Promise<ApplyPaidOrd
     if (order.stockApplied === true) return { success: true, outcome: "already_applied", orderId };
     return { success: false, outcome: order.paymentStatus === "approved" ? "processing_conflict" : "payment_not_approved", orderId };
   }
-  const client = await clientPromise;
+  const client = await getClient();
   const session = client.startSession();
   try {
     await session.withTransaction(async () => {

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import clientPromise, { getDb } from "../lib/mongo";
+import { getClient, getDb } from "../lib/mongo";
 import { findDuplicateGroups, regularIndexes, uniqueIndexCandidates } from "./database-integrity";
 
 type IndexContext = {
@@ -61,7 +61,7 @@ async function main() {
       console.log(`✓ ${index.name}`);
     }
   } finally {
-    await (await clientPromise).close();
+    await (await getClient()).close();
   }
 }
 

@@ -23,10 +23,12 @@ const GENERIC_TERMS = new Set([
   "algo", "buscar", "busco", "buscame", "buscame", "comprar", "compra", "conseguir", "dale",
   "de", "del", "el", "ella", "en", "es", "esta", "este", "la", "las", "le", "lo", "los",
   "me", "mi", "mis", "para", "por", "que", "quiero", "regalar", "regalo", "regalos", "si",
-  "tengo", "un", "una", "uno", "unos", "unas", "ver", "verme", "vos", "y",
+  "tengo", "un", "una", "uno", "unos", "unas", "ver", "verme", "vos", "y", "che", "hacerle", "pero", "estoy", "necesito", "gustan", "mas", "no",
 ]);
 
 const BUDGET_TERMS = new Set(["ars", "k", "luca", "lucas", "mil", "peso", "pesos", "presupuesto"]);
+const RECIPIENT_TERMS = new Set(["novia", "novio", "pareja", "amiga", "amigo", "mama", "madre", "papa", "padre", "hermana", "hermano"]);
+const GIFT_CONTEXT_TERMS = new Set(["blanco", "convence", "detalle", "especial", "ocasion", "regalo", "regalos"]);
 
 const TERM_EXPANSIONS: Record<string, string[]> = {
   auricular: ["auriculares", "headset", "headphone"],
@@ -74,6 +76,16 @@ function toTerms(value: string) {
     .map((term) => term.trim())
     .filter((term) => term.length >= 2 && term.length <= MAX_TERM_LENGTH)
     .filter((term) => !GENERIC_TERMS.has(term) && !BUDGET_TERMS.has(term) && !/^\d+$/.test(term));
+}
+
+function localExcludedTerms(message: string) {
+  const normalized = normalizeText(message);
+  const matches = normalized.matchAll(/\b(?:no quiero|sin|nada)\s+(?:algo\s+)?([\p{L}\p{N}]{2,48})/gu);
+  return uniqueTerms([...matches].map((match) => match[1]));
+}
+
+function localRecipient(message: string) {
+  return toTerms(message).find((term) => RECIPIENT_TERMS.has(term));
 }
 
 function uniqueTerms(values: string[]) {
@@ -149,11 +161,19 @@ function sanitizeCriteria(value: unknown): AiSearchCriteria {
     : undefined;
   const category = safeOptionalText(criteria.category);
   const color = safeOptionalText(criteria.color);
+  const excludedTerms = Array.isArray(criteria.excludedTerms)
+    ? uniqueTerms(criteria.excludedTerms.filter((term): term is string => typeof term === "string"))
+    : [];
+  const recipient = safeOptionalText(criteria.recipient);
+  const occasion = safeOptionalText(criteria.occasion);
   return {
     terms,
+    ...(excludedTerms.length ? { excludedTerms } : {}),
     ...(maxPrice ? { maxPrice } : {}),
     ...(category ? { category } : {}),
     ...(color ? { color } : {}),
+    ...(recipient ? { recipient } : {}),
+    ...(occasion ? { occasion } : {}),
   };
 }
 
@@ -179,11 +199,15 @@ export function sanitizeConversation(value: unknown): AiConversationState {
 
 function mergeCriteria(previous: AiSearchCriteria, message: string, providerIntent: AiProviderIntent): AiSearchCriteria {
   const localBudget = parseBudget(message);
-  const localTerms = toTerms(message);
+  const locallyExcluded = localExcludedTerms(message);
+  const localTerms = toTerms(message).filter((term) => !RECIPIENT_TERMS.has(term) && !GIFT_CONTEXT_TERMS.has(term) && !locallyExcluded.includes(term));
   const providerTerms = Array.isArray(providerIntent.keywords) ? providerIntent.keywords : [];
   const terms = expandTerms(uniqueTerms([...previous.terms, ...localTerms, ...providerTerms]));
   const category = safeOptionalText(providerIntent.category) ?? previous.category;
   const color = safeOptionalText(providerIntent.color) ?? previous.color;
+  const excludedTerms = uniqueTerms([...(previous.excludedTerms ?? []), ...locallyExcluded, ...(providerIntent.excludedKeywords ?? [])]);
+  const recipient = safeOptionalText(providerIntent.recipient) ?? localRecipient(message) ?? previous.recipient;
+  const occasion = safeOptionalText(providerIntent.occasion) ?? previous.occasion;
   const providerBudget = typeof providerIntent.maxPrice === "number" && Number.isFinite(providerIntent.maxPrice) && providerIntent.maxPrice > 0
     ? Math.min(MAX_PRICE, Math.floor(providerIntent.maxPrice))
     : undefined;
@@ -192,7 +216,18 @@ function mergeCriteria(previous: AiSearchCriteria, message: string, providerInte
     ...(localBudget ?? providerBudget ?? previous.maxPrice ? { maxPrice: localBudget ?? providerBudget ?? previous.maxPrice } : {}),
     ...(category ? { category } : {}),
     ...(color ? { color } : {}),
+    ...(excludedTerms.length ? { excludedTerms } : {}),
+    ...(recipient ? { recipient } : {}),
+    ...(occasion ? { occasion } : {}),
   };
+}
+
+function isAmbiguousGift(message: string, criteria: AiSearchCriteria, previousProducts: PublicProduct[]) {
+  if (previousProducts.length || criteria.maxPrice !== undefined) return false;
+  const normalized = normalizeText(message);
+  const mentionsGift = /\b(regalo|regalar|detalle|blanco|no tengo idea)\b/.test(normalized);
+  const hasConcreteTaste = criteria.terms.some((term) => !GIFT_CONTEXT_TERMS.has(term) && !RECIPIENT_TERMS.has(term));
+  return mentionsGift && !hasConcreteTaste;
 }
 
 function hasUsefulCriteria(criteria: AiSearchCriteria) {
@@ -342,6 +377,14 @@ export async function runAiChat(input: EngineInput, dependencies: EngineDependen
   }
   const criteria = mergeCriteria(previousCriteria, message, providerIntent);
 
+  if (isAmbiguousGift(message, criteria, previousProducts)) {
+    return {
+      reply: "Obvio, te ayudo. ¿Es por alguna ocasión especial o simplemente querés tener un detalle?",
+      products: [],
+      conversation: { criteria, productIds: productIds(previousProducts) },
+    };
+  }
+
   if (wantsCart(message) || providerIntent.action === "cart") {
     return {
       reply: "Dale, te llevo al carrito para que veas lo que tenés agregado.",
@@ -368,6 +411,7 @@ export async function runAiChat(input: EngineInput, dependencies: EngineDependen
     const products = await findProducts({
       query: criteria.terms.join(" "),
       keywords: criteria.terms,
+      ...(criteria.excludedTerms?.length ? { excludedKeywords: criteria.excludedTerms } : {}),
       ...(criteria.category ? { category: criteria.category } : {}),
       ...(maxPrice !== undefined ? { maxPrice } : {}),
       limit: 4,
@@ -438,6 +482,7 @@ export async function runAiChat(input: EngineInput, dependencies: EngineDependen
   const products = await findProducts({
     query: criteria.terms.join(" "),
     keywords: criteria.terms,
+    ...(criteria.excludedTerms?.length ? { excludedKeywords: criteria.excludedTerms } : {}),
     ...(criteria.category ? { category: criteria.category } : {}),
     ...(criteria.maxPrice !== undefined ? { maxPrice: criteria.maxPrice } : {}),
     limit: 4,

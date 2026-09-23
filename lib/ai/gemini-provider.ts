@@ -44,8 +44,11 @@ function parseIntent(raw: string): AiProviderIntent {
       : undefined;
     return {
       ...(asTextList(value.keywords) ? { keywords: asTextList(value.keywords) } : {}),
+      ...(asTextList(value.excludedKeywords) ? { excludedKeywords: asTextList(value.excludedKeywords) } : {}),
       ...(asShortText(value.category) ? { category: asShortText(value.category) } : {}),
       ...(asShortText(value.color) ? { color: asShortText(value.color) } : {}),
+      ...(asShortText(value.recipient) ? { recipient: asShortText(value.recipient) } : {}),
+      ...(asShortText(value.occasion) ? { occasion: asShortText(value.occasion) } : {}),
       ...(maxPrice ? { maxPrice } : {}),
       ...(action ? { action } : {}),
     };
@@ -83,7 +86,7 @@ export class GeminiProvider implements AiProvider {
         body: JSON.stringify({
           systemInstruction: {
             parts: [{
-              text: "Sos el analizador conversacional de AVG Connects. Respondé exclusivamente JSON válido, sin markdown, con {keywords:string[], category?:string, color?:string, maxPrice?:number, action?:'search'|'alternative'|'checkout'|'cart'}. Usá el historial y criteria para conservar el contexto. action='alternative' si pide algo parecido, más barato o considera caro lo seleccionado; checkout si quiere pagar/finalizar; cart si pregunta o quiere ir al carrito; search para una búsqueda. Extraé sólo preferencias expresadas o inequívocamente implicadas. maxPrice debe estar en ARS entero. Nunca inventes productos, marcas, precios, stock o características. No incluyas saludos ni explicaciones.",
+              text: "Sos el analizador conversacional de AVG Connects. Respondé exclusivamente JSON válido, sin markdown, con {keywords:string[], excludedKeywords?:string[], recipient?:string, occasion?:string, category?:string, color?:string, maxPrice?:number, action?:'search'|'alternative'|'checkout'|'cart'}. Usá el historial y criteria para conservar contexto, destinatario, ocasión, gustos y rechazos. excludedKeywords contiene sólo preferencias explícitamente descartadas. action='alternative' si pide algo parecido, más barato o considera caro lo seleccionado; checkout si quiere pagar/finalizar; cart si pregunta o quiere ir al carrito; search para una búsqueda. Extraé sólo preferencias expresadas o inequívocamente implicadas. maxPrice debe estar en ARS entero. Nunca inventes productos, marcas, precios, stock o características. No incluyas saludos ni explicaciones.",
             }],
           },
           contents,

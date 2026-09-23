@@ -37,6 +37,30 @@ test("AVG AI preserves criteria, selects the second real product, and requires c
   assert.equal(added.cartProduct?._id, secondId);
 });
 
+test("AVG AI asks one useful question for an ambiguous gift and accumulates recipient, tastes, budget, and exclusions", async () => {
+  const provider = { extractIntent: async () => ({}) };
+  let captured: { keywords?: string[]; maxPrice?: number; excludedKeywords?: string[] } | undefined;
+  const search = async (input: { keywords?: string[]; maxPrice?: number; excludedKeywords?: string[] }) => {
+    captured = input;
+    return [first];
+  };
+  const getProduct = async (id: string) => id === firstId ? first : null;
+
+  const ambiguous = await runAiChat({ message: "Che, necesito hacerle un regalo a mi novia pero estoy en blanco." }, { provider, search, getProduct });
+  assert.match(ambiguous.reply, /ocasi.n especial/i);
+  assert.equal(ambiguous.products.length, 0);
+  assert.equal(ambiguous.conversation.criteria?.recipient, "novia");
+
+  const refined = await runAiChat({ message: "Le gustan los gatos, algo aesthetic y no quiero algo infantil. Tengo 50 lucas mÃ¡ximo.", conversation: ambiguous.conversation }, { provider, search, getProduct });
+  assert.deepEqual(refined.products.map(({ _id }) => _id), [firstId]);
+  assert.equal(refined.conversation.criteria?.maxPrice, 50_000);
+  assert.ok(refined.conversation.criteria?.terms.includes("gatos"));
+  assert.ok(refined.conversation.criteria?.terms.includes("aesthetic"));
+  assert.ok(refined.conversation.criteria?.excludedTerms?.includes("infantil"));
+  assert.equal(captured?.maxPrice, 50_000);
+  assert.ok(captured?.excludedKeywords?.includes("infantil"));
+});
+
 test("AVG AI does not add a pending option on an ambiguous want, rejects unavailable products, and supports checkout", async () => {
   const getProduct = async (id: string) => id === firstId ? first : null;
   const search = async () => [] as PublicProduct[];
