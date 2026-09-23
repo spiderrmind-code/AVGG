@@ -175,10 +175,16 @@ function rankProduct(product: PublicProduct, document: Document, terms: string[]
 }
 
 async function getCatalogDb() {
-  // Load lazily so isolated engine tests never initialize MongoDB. In
-  // production this reuses the connection that already powers the storefront.
-  const { getPublicCatalogDb } = await import("@/lib/public-catalog");
-  return getPublicCatalogDb();
+  const { default: mongoose } = await import("mongoose");
+  const uri = process.env.MONGODB_URI ?? process.env.MONGO_URI;
+  if (!uri) throw new Error("MongoDB no est\u00e1 configurado");
+  if (mongoose.connection.readyState === 0) {
+    await mongoose.connect(uri, { dbName: process.env.MONGODB_DB || undefined });
+  } else if (mongoose.connection.readyState === 2) {
+    await mongoose.connection.asPromise();
+  }
+  if (!mongoose.connection.db) throw new Error("MongoDB no est\u00e1 disponible");
+  return mongoose.connection.db;
 }
 
 /**
