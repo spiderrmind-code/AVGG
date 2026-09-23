@@ -9,6 +9,7 @@ const initialValues = {
   lastName: "",
   email: "",
   phone: "",
+  dni: "",
   address: "",
   city: "",
   province: "",
@@ -61,6 +62,7 @@ export default function CheckoutPage() {
     if (!form.lastName.trim()) nextErrors.lastName = "El apellido es obligatorio";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = "Email inválido";
     if (!form.phone.trim()) nextErrors.phone = "El teléfono es obligatorio";
+    if (!/^\d{6,10}$/.test(form.dni.replace(/[.\s]/g, ""))) nextErrors.dni = "El DNI debe tener entre 6 y 10 dígitos";
     if (!form.address.trim()) nextErrors.address = "La dirección es obligatoria";
     if (!form.city.trim()) nextErrors.city = "La ciudad es obligatoria";
     if (!form.province.trim()) nextErrors.province = "La provincia es obligatoria";
@@ -86,7 +88,7 @@ export default function CheckoutPage() {
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": attempt.idempotencyKey },
-        body: JSON.stringify({ customer: form, items: cart.map((item) => ({ _id: item._id, quantity: item.quantity })), guestAccessToken: attempt.guestAccessToken }),
+        body: JSON.stringify({ customer: { ...form, dni: form.dni.replace(/[.\s]/g, "") }, items: cart.map((item) => ({ _id: item._id, quantity: item.quantity })), guestAccessToken: attempt.guestAccessToken }),
       });
 
       if (!orderResponse.ok) throw new Error("No se pudo crear la orden");
@@ -128,7 +130,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="ui-page">
+    <main className="avg-checkout-page ui-page">
       <div className="mx-auto max-w-7xl">
         <div className="ui-page-header flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -152,10 +154,11 @@ export default function CheckoutPage() {
                 ["lastName", "Apellido"],
                 ["email", "Email"],
                 ["phone", "Teléfono"],
+                ["dni", "DNI"],
               ].map(([field, label]) => (
                 <div key={field}>
                   <label htmlFor={field} className="text-sm font-medium text-neutral-700">{label}</label>
-                  <input id={field} type={field === "email" ? "email" : field === "phone" ? "tel" : "text"} autoComplete={field === "firstName" ? "given-name" : field === "lastName" ? "family-name" : field === "email" ? "email" : "tel"} aria-invalid={Boolean(errors[field])} aria-describedby={errors[field] ? `${field}-error` : undefined} className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
+                  <input id={field} type={field === "email" ? "email" : field === "phone" ? "tel" : field === "dni" ? "text" : "text"} inputMode={field === "dni" ? "numeric" : undefined} autoComplete={field === "firstName" ? "given-name" : field === "lastName" ? "family-name" : field === "email" ? "email" : field === "phone" ? "tel" : "off"} aria-invalid={Boolean(errors[field])} aria-describedby={errors[field] ? `${field}-error` : undefined} className="premium-input mt-2" value={form[field as keyof typeof form]} onChange={(e) => updateField(field as keyof typeof initialValues, e.target.value)} />
                   {errors[field] && <p id={`${field}-error`} role="alert" className="mt-1 text-sm text-red-500">{errors[field]}</p>}
                 </div>
               ))}

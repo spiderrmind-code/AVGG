@@ -110,7 +110,7 @@ export default async function ProductPage({
 
   if (!product) {
     if (!unavailable) notFound();
-    return <main className="min-h-screen p-10"><h1 className="text-3xl font-bold">No pudimos cargar este producto</h1><p className="mt-3 text-neutral-600">Intentá nuevamente en unos minutos.</p><Link href="/" className="mt-5 inline-block underline">Volver a la tienda</Link></main>;
+    return <main className="avg-product-page min-h-screen p-10"><h1 className="text-3xl font-bold">No pudimos cargar este producto</h1><p className="mt-3 text-neutral-600">Intentá nuevamente en unos minutos.</p><Link href="/" className="mt-5 inline-block underline">Volver a la tienda</Link></main>;
   }
 
 
@@ -157,7 +157,7 @@ export default async function ProductPage({
 
 
     <main
-      className="
+      className="avg-product-page
       min-h-screen
       bg-transparent
       px-5

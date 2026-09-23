@@ -37,7 +37,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-16 sm:px-6 lg:px-8">
+    <main className="avg-auth-page min-h-screen px-4 py-16 sm:px-6 lg:px-8">
       <div className="ui-surface mx-auto max-w-3xl p-8 sm:p-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Registro</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Crear tu cuenta en AVG Connects</h1>

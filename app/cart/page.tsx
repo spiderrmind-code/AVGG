@@ -24,13 +24,13 @@ export default function CartPage() {
 
 
   if (!hydrated) {
-    return <main className="ui-page"><div className="ui-surface mx-auto max-w-5xl p-8 text-center">Cargando carrito...</div></main>;
+    return <main className="avg-cart-page ui-page"><div className="ui-surface mx-auto max-w-5xl p-8 text-center">Cargando carrito...</div></main>;
   }
 
   if (cart.length === 0) {
 
     return (
-      <main className="ui-page flex items-center">
+      <main className="avg-cart-page ui-page flex items-center">
         <div className="ui-surface mx-auto max-w-5xl p-8 text-center sm:p-10">
           <h1 className="text-3xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">Tu carrito está vacío</h1>
           <p className="mt-3 text-neutral-600 dark:text-zinc-300">Agrega productos para empezar tu compra.</p>
@@ -44,7 +44,7 @@ export default function CartPage() {
 
   return (
 
-    <main className="ui-page">
+    <main className="avg-cart-page ui-page">
 
       <div className="mx-auto max-w-7xl min-w-0">
 

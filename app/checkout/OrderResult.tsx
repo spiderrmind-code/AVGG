@@ -33,7 +33,7 @@ export default function OrderResult({ kind }: { kind: ResultKind }) {
       .finally(() => setLoading(false));
   }, [orderId, sessionStatus]);
 
-  return <main className="min-h-screen px-4 py-16 sm:px-6 lg:px-8"><div className="ui-surface mx-auto max-w-2xl p-8 text-center">
+  return <main className="avg-payment-result min-h-screen px-4 py-16 sm:px-6 lg:px-8"><div className="ui-surface mx-auto max-w-2xl p-8 text-center">
     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">{text.eyebrow}</p><h1 className="mt-4 text-3xl font-semibold">{text.title}</h1><p className="mt-4 text-neutral-600">{text.body}</p>
     {loading ? <p className="mt-6 text-sm text-neutral-500" aria-live="polite">Buscando tu pedido…</p> : null}
     {order ? <section className="ui-card mt-6 p-5 text-left"><p className="font-semibold">Pedido {order.orderNumber ?? order._id}</p><p className="mt-1 text-sm text-neutral-600">Estado: {order.paymentStatus}</p>{order.customerEmailMasked ? <p className="mt-1 text-sm text-neutral-600">{order.customerEmailMasked}</p> : null}<div className="mt-4 space-y-2 text-sm">{order.items.map((item) => <div className="flex justify-between gap-4" key={item._id}><span>{item.name} × {item.quantity}</span><span>{formatARS(item.price * item.quantity)}</span></div>)}</div><p className="mt-4 border-t pt-4 text-lg font-semibold">Total: {formatARS(order.total)}</p></section> : null}

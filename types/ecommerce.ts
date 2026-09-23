@@ -30,6 +30,7 @@ export interface CheckoutCustomer {
   lastName: string;
   email: string;
   phone: string;
+  dni: string;
   address: string;
   city: string;
   province: string;
@@ -51,7 +52,7 @@ export interface OrderDocument {
   preferenceId?: string;
   initPoint?: string;
   /** Estado del pedido en el proveedor, independiente del estado operativo de la tienda. */
-  fulfillmentStatus?: "pending" | "ready" | "processing" | "requesting" | "submitted" | "confirmed" | "preparing" | "shipped" | "in_transit" | "delivered" | "failed" | "blocked" | "cancelled" | "unknown";
+  fulfillmentStatus?: "pending" | "ready" | "processing" | "requesting" | "submitted" | "confirmed" | "preparing" | "shipped" | "in_transit" | "delivered" | "failed" | "blocked" | "cancelled" | "awaiting_tracking" | "unknown";
   fulfillmentProcessing?: boolean;
   fulfillmentRequestedAt?: Date;
   fulfillmentQueuedAt?: Date;

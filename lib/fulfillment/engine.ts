@@ -48,6 +48,12 @@ function resultUpdate(result: FulfillmentProviderResult, now: Date) {
   };
 }
 
+function missingOrderData(order: Document) {
+  const customer = order.customer as Record<string, unknown> | undefined;
+  const required = ["firstName", "lastName", "phone", "address", "city", "province", "postalCode"];
+  return required.filter((field) => typeof customer?.[field] !== "string" || !(customer[field] as string).trim());
+}
+
 export async function processPendingFulfillment(
   orders: Collection<Document>,
   provider: FulfillmentProvider = dropsheableProvider,
@@ -73,7 +79,10 @@ export async function processPendingFulfillment(
 
     summary.processed += 1;
     try {
-      const result = await provider.submitOrder(candidate);
+      const missing = missingOrderData(candidate);
+      const result = missing.length > 0
+        ? { success: false, errorCode: "FULFILLMENT_DATA_MISSING", error: `Datos obligatorios ausentes: ${missing.join(",")}`, retryable: false }
+        : await provider.submitOrder(candidate);
       const safeResult = result.success && !result.externalOrderId ? { success: false, errorCode: "PROVIDER_INVALID_RESPONSE", error: "El proveedor no devolvió un identificador externo", retryable: true } : result;
       await orders.updateOne({ _id: id, fulfillmentProcessing: true, externalOrderId: { $exists: false } }, resultUpdate(safeResult, new Date()));
       if (safeResult.success) summary.submitted += 1;

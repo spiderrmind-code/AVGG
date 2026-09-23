@@ -19,7 +19,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t" style={{ borderColor: "var(--color-border)", background: "linear-gradient(180deg, rgba(242,246,255,0.96) 0%, rgba(245,247,251,0.96) 100%)" }}>
+    <footer className="avg-site-footer mt-auto border-t" style={{ borderColor: "var(--color-border)", background: "var(--color-bg-strong)" }}>
       <div className="ui-shell py-12 sm:py-16">
         <div className="ui-surface grid gap-10 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.72fr_0.72fr] lg:gap-12 lg:p-10">
           <div>

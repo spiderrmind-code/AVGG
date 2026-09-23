@@ -33,7 +33,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <main className="ui-page bg-transparent">
+    <main className="avg-search-page ui-page bg-transparent">
       <div className="mx-auto max-w-7xl">
         <div className="ui-page-header">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-neutral-500">Búsqueda</p>

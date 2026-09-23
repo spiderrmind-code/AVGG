@@ -27,11 +27,11 @@ export default function AccountOrdersPage() {
   }, [status]);
 
   if (status === "loading" || loading) {
-    return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Cargando pedidos...</div></main>;
+    return <main className="avg-orders-page min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Cargando pedidos...</div></main>;
   }
 
   if (!session) {
-    return <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Debes iniciar sesión para ver tus pedidos.</div></main>;
+    return <main className="avg-orders-page min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(200,169,107,0.16),_transparent_35%),linear-gradient(180deg,_#f7f3ea_0%,_#f1ece4_100%)] px-4 py-16 sm:px-6 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_20px_80px_rgba(0,0,0,0.06)] backdrop-blur-xl">Debes iniciar sesión para ver tus pedidos.</div></main>;
   }
 
   function friendlyStatus(order: AccountOrder) {
@@ -50,7 +50,7 @@ export default function AccountOrdersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_35%),linear-gradient(180deg,_#f7f2ea_0%,_#efe7dd_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
+    <main className="avg-orders-page min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.12),_transparent_35%),linear-gradient(180deg,_#f7f2ea_0%,_#efe7dd_100%)] px-4 py-16 sm:px-6 lg:px-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(255,47,146,0.16),_transparent_30%),linear-gradient(180deg,_#07080d_0%,_#0d1018_100%)]">
       <div className="mx-auto max-w-5xl rounded-[2.2rem] border border-white/70 bg-white/80 p-8 shadow-[0_24px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl sm:p-10 dark:border-white/10 dark:bg-zinc-900/70 dark:shadow-[0_24px_90px_rgba(0,0,0,0.3)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

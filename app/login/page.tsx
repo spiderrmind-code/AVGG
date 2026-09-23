@@ -39,36 +39,36 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="ui-surface p-8 sm:p-10">
+    <main className="avg-auth-page min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="ui-surface p-6 sm:p-8 lg:p-10">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">Acceso seguro</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.02em] text-neutral-950 sm:text-4xl dark:text-white">Ingresá a tu espacio de compras.</h1>
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-neutral-950 sm:text-4xl dark:text-white">Ingresá a tu espacio de compras.</h1>
           <p className="mt-4 text-base leading-7 text-neutral-600 dark:text-zinc-300">Una experiencia simple, protegida y pensada para que cada sesión se sienta confiable desde el primer clic.</p>
           <div className="mt-8 space-y-3 text-sm text-neutral-700 dark:text-zinc-300">
-            <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-3 dark:border-white/10 dark:bg-white/10">Gestión centralizada de pedidos y datos.</div>
-            <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-3 dark:border-white/10 dark:bg-white/10">Compra más rápida con tu perfil listo.</div>
-            <div className="rounded-[1.2rem] border border-black/10 bg-white/80 p-3 dark:border-white/10 dark:bg-white/10">Seguridad y soporte con un solo acceso.</div>
+            <div className="rounded-[1.1rem] border border-black/10 bg-white/80 p-3 dark:border-white/10 dark:bg-white/10">Gestión centralizada de pedidos y datos.</div>
+            <div className="rounded-[1.1rem] border border-black/10 bg-white/80 p-3 dark:border-white/10 dark:bg-white/10">Compra más rápida con tu perfil listo.</div>
+            <div className="rounded-[1.1rem] border border-black/10 bg-white/80 p-3 dark:border-white/10 dark:bg-white/10">Seguridad y soporte con un solo acceso.</div>
           </div>
         </div>
 
-        <div className="ui-surface p-8 sm:p-10">
+        <div className="ui-surface p-5 sm:p-8 lg:p-10">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-neutral-700">Email</label>
-              <input type="email" placeholder="tu@email.com" value={email} onChange={(event) => setEmail(event.target.value)} required className="premium-input mt-2" />
+              <input type="email" placeholder="tu@email.com" value={email} onChange={(event) => setEmail(event.target.value)} required className="premium-input mt-2 h-12" />
             </div>
             <div>
               <label className="text-sm font-medium text-neutral-700">Contraseña</label>
-              <input type="password" placeholder="Ingresá tu contraseña" value={password} onChange={(event) => setPassword(event.target.value)} required className="premium-input mt-2" />
+              <input type="password" placeholder="Ingresá tu contraseña" value={password} onChange={(event) => setPassword(event.target.value)} required className="premium-input mt-2 h-12" />
             </div>
-            <button type="submit" disabled={isSubmitting} className="ui-button-primary w-full py-3.5">{isSubmitting ? "Ingresando..." : "Ingresar"}</button>
+            <button type="submit" disabled={isSubmitting} className="ui-button-primary w-full h-12">{isSubmitting ? "Ingresando..." : "Ingresar"}</button>
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-neutral-200 dark:bg-white/10" />
               <span className="text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500 dark:text-zinc-400">o</span>
               <div className="h-px flex-1 bg-neutral-200 dark:bg-white/10" />
             </div>
-            <button type="button" onClick={handleGoogleLogin} className="flex w-full items-center justify-center gap-3 rounded-full border border-neutral-200 bg-white px-4 py-3.5 text-sm font-semibold text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">
+            <button type="button" onClick={handleGoogleLogin} className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-700 shadow-[0_10px_25px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/10 dark:text-zinc-100 dark:hover:bg-white/15">
               <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
                 <path fill="#4285F4" d="M21.6 12.23c0-.78-.07-1.53-.2-2.25H12v4.26h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.53Z" />
                 <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.62-2.43l-3.24-2.5c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z" />

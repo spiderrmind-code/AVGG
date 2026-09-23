@@ -11,7 +11,7 @@ import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { maskOrderEmail } from "@/lib/order-presentation";
 import { calculateOrderFinancials } from "@/lib/order-financials";
 
-type Customer = { firstName: string; lastName: string; email: string; phone: string; address: string; city: string; province: string; postalCode: string; countryCode: string };
+type Customer = { firstName: string; lastName: string; email: string; phone: string; dni: string; address: string; city: string; province: string; postalCode: string; countryCode: string };
 type OrderItem = { _id: string; name: string; price: number; quantity: number; image?: string; _internal: { supplier: unknown; supplierId: unknown; costPrice: unknown; sku: unknown; shippingDays: unknown; margin: unknown } };
 type CheckoutOrder = Record<string, unknown>;
 
@@ -23,11 +23,13 @@ function secureEqual(left: string, right: string) { const a = Buffer.from(left);
 function parseCustomer(value: unknown): Customer | null {
   const body = object(value);
   const firstName = text(body?.firstName, 80); const lastName = text(body?.lastName, 80); const phone = text(body?.phone, 40);
+  const dniRaw = typeof body?.dni === "string" ? body.dni.replace(/[.\s]/g, "") : "";
+  const dni = /^\d{6,10}$/.test(dniRaw) ? dniRaw : null;
   const address = text(body?.address, 200); const city = text(body?.city, 100); const province = text(body?.province, 100); const postalCode = text(body?.postalCode, 20);
   const countryCode = typeof body?.countryCode === "string" ? body.countryCode.trim().toUpperCase() : "";
   const email = typeof body?.email === "string" ? normalizeEmail(body.email) : "";
-  if (!firstName || !lastName || !phone || !address || !city || !province || !postalCode || !/^[A-Z]{2}$/.test(countryCode) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return null;
-  return { firstName, lastName, email, phone, address, city, province, postalCode, countryCode };
+  if (!firstName || !lastName || !phone || !dni || !address || !city || !province || !postalCode || !/^[A-Z]{2}$/.test(countryCode) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return null;
+  return { firstName, lastName, email, phone, dni, address, city, province, postalCode, countryCode };
 }
 
 function readIdempotencyKey(request: Request) {

@@ -7,11 +7,11 @@
     },
     {
       "path": "/api/cron/fulfillment",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 4 * * *"
     },
     {
       "path": "/api/cron/reconcile-orders",
-      "schedule": "0 * * * *"
+      "schedule": "30 4 * * *"
     },
     {
       "path": "/api/cron/promotions",
@@ -19,3 +19,6 @@
     }
   ]
 }
+
+
+

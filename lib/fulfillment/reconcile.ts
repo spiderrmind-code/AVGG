@@ -1,5 +1,7 @@
 import type { Collection, Document } from "mongodb";
 import { notifyOperationalAlert } from "@/lib/alerts";
+import { dropsheableProvider } from "./dropsheable";
+import type { FulfillmentProvider } from "./provider";
 
 export type ReconciliationIncident = {
   code: string;
@@ -19,7 +21,7 @@ export function inspectFulfillmentOrder(order: Document, now = Date.now()): Reco
 
   if (paymentStatus === "approved" && fulfillmentStatus === "pending" && queuedAt > 0 && now - queuedAt > STALE_PENDING_MS) incidents.push({ code: "PAYMENT_WITHOUT_FULFILLMENT", message: "Pago aprobado con fulfillment pendiente fuera de SLA", retryable: true });
   if (["submitted", "confirmed", "preparing"].includes(fulfillmentStatus) && !order.externalOrderId) incidents.push({ code: "SUBMITTED_WITHOUT_EXTERNAL_ID", message: "Fulfillment marcado como enviado sin ID externo", retryable: false });
-  if (fulfillmentStatus === "shipped" && !order.trackingNumber && !order.tracking) incidents.push({ code: "SHIPPED_WITHOUT_TRACKING", message: "Pedido enviado sin tracking", retryable: true });
+  if (["submitted", "confirmed", "preparing", "shipped", "in_transit"].includes(fulfillmentStatus) && !order.trackingNumber && !order.tracking) incidents.push({ code: "AWAITING_TRACKING", message: "Pedido sin tracking confirmado por el proveedor", retryable: true });
   if ((order.trackingNumber || order.tracking) && !["shipped", "in_transit", "delivered"].includes(fulfillmentStatus)) incidents.push({ code: "TRACKING_STATE_MISMATCH", message: "Existe tracking con estado local incompatible", retryable: false });
   if (["refunded", "partially_refunded", "charged_back", "cancelled", "rejected"].includes(paymentStatus) && ["pending", "processing", "submitted", "confirmed", "preparing"].includes(fulfillmentStatus)) incidents.push({ code: "TERMINAL_PAYMENT_PENDING_FULFILLMENT", message: "Pago terminal con fulfillment todavía activo", retryable: false });
   if (order.stockIssue === true || order.stockIssueReason) incidents.push({ code: "STOCK_INSUFFICIENT", message: "La orden tiene una incidencia de stock", retryable: true });
@@ -28,7 +30,7 @@ export function inspectFulfillmentOrder(order: Document, now = Date.now()): Reco
   return incidents;
 }
 
-export async function reconcileFulfillmentOrders(orders: Collection<Document>, limit = 100) {
+export async function reconcileFulfillmentOrders(orders: Collection<Document>, limit = 100, provider: FulfillmentProvider = dropsheableProvider) {
   const candidates = await orders.find({ paymentStatus: { $exists: true }, fulfillmentStatus: { $exists: true } }).sort({ updatedAt: 1 }).limit(limit).toArray();
   let inspected = 0;
   let incidents = 0;
@@ -38,6 +40,20 @@ export async function reconcileFulfillmentOrders(orders: Collection<Document>, l
   for (const order of candidates) {
     if (!order._id) continue;
     inspected += 1;
+    if (typeof order.externalOrderId === "string" && order.externalOrderId && ["submitted", "confirmed", "preparing", "shipped", "in_transit"].includes(String(order.fulfillmentStatus))) {
+      const status = await provider.getOrderStatus(order.externalOrderId);
+      if (status.success) {
+        const update: Record<string, unknown> = { lastTrackingSyncAt: now, updatedAt: now };
+        if (status.status) update.fulfillmentStatus = status.status;
+        if (status.trackingNumber) { update.trackingNumber = status.trackingNumber; update.tracking = status.trackingNumber; }
+        if (status.trackingUrl) update.trackingUrl = status.trackingUrl;
+        if (status.carrier) update.carrier = status.carrier;
+        await orders.updateOne({ _id: order._id }, { $set: update });
+      }
+    }
+    if (["submitted", "confirmed", "preparing", "shipped", "in_transit"].includes(String(order.fulfillmentStatus)) && !order.trackingNumber && !order.tracking && order.shippingStatus !== "awaiting_tracking") {
+      await orders.updateOne({ _id: order._id }, { $set: { shippingStatus: "awaiting_tracking", lastTrackingSyncAt: now, updatedAt: now } });
+    }
     const found = inspectFulfillmentOrder(order, now.getTime());
     for (const incident of found) {
       incidents += 1;

@@ -6,9 +6,11 @@ import Link from "next/link";
 interface OrderRow {
   _id: string;
   orderNumber: string;
-  customer?: { firstName?: string; lastName?: string; email?: string };
+  customer?: { firstName?: string; lastName?: string; email?: string; phone?: string; dni?: string; address?: string; city?: string; province?: string; postalCode?: string };
+  items?: { name?: string; quantity?: number }[];
   status?: string;
   paymentStatus?: string;
+  fulfillmentStatus?: string;
   total?: number;
   tracking?: string;
   stockIssue?: boolean;
@@ -17,11 +19,61 @@ interface OrderRow {
   createdAt?: string;
 }
 
+const FULFILLMENT_LABELS: Record<string, string> = {
+  pending: "Pendiente de envío a proveedor",
+  processing: "Enviando a proveedor…",
+  blocked: "Bloqueado (falta contrato/datos)",
+  failed: "Falló el envío al proveedor",
+  submitted: "Enviado al proveedor",
+  confirmed: "Confirmado por proveedor",
+  preparing: "Proveedor preparando",
+  shipped: "Enviado",
+  in_transit: "En tránsito",
+  delivered: "Entregado",
+  cancelled: "Cancelado",
+};
+
+// Arma el texto para pegar en Dropsheable → Venta Externa → Nueva Venta Manual.
+function buildDropsheableClipboardText(order: OrderRow) {
+  const customer = order.customer ?? {};
+  const items = order.items ?? [];
+  const lines = [
+    `Pedido AVG: ${order.orderNumber}`,
+    "",
+    "Producto(s):",
+    ...(items.length ? items.map((item) => `- ${item.name ?? "Producto"} x${item.quantity ?? 1}`) : ["- (sin items registrados)"]),
+    "",
+    `Nombre: ${customer.firstName ?? ""}`,
+    `Apellido: ${customer.lastName ?? ""}`,
+    `DNI: ${customer.dni ?? "<<COMPLETAR - pedido anterior al alta del campo DNI>>"}`,
+    `Teléfono: ${customer.phone ?? ""}`,
+    `Email: ${customer.email ?? ""}`,
+    `Dirección: ${customer.address ?? ""}`,
+    `Localidad: ${customer.city ?? ""}`,
+    `Provincia: ${customer.province ?? ""}`,
+    `Código Postal: ${customer.postalCode ?? ""}`,
+    `Observaciones: Pedido AVG ${order.orderNumber} — pago aprobado`,
+  ];
+  return lines.join("\n");
+}
+
 export default function OperationsPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [trackingMap, setTrackingMap] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [retryingId, setRetryingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyForDropsheable = async (order: OrderRow) => {
+    try {
+      await navigator.clipboard.writeText(buildDropsheableClipboardText(order));
+      setCopiedId(order._id);
+      setMessage("Datos copiados. Pegalos en Dropsheable → Venta Externa → Nueva Venta Manual.");
+      setTimeout(() => setCopiedId((current) => (current === order._id ? null : current)), 3000);
+    } catch {
+      setMessage("No se pudo copiar. Copiá los datos manualmente desde el pedido.");
+    }
+  };
 
   const loadOrders = async () => {
     try {
@@ -107,6 +159,7 @@ export default function OperationsPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Pedido</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Cliente</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Estado</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Proveedor</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Tracking</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Acciones</th>
                 </tr>
@@ -131,6 +184,14 @@ export default function OperationsPage() {
                         <option value="delivered">Entregado</option>
                         <option value="cancelled">Cancelado</option>
                       </select>
+                    </td>
+                    <td className="px-4 py-4 text-sm text-neutral-700">
+                      <div className="mb-2 text-xs font-medium text-neutral-600">{FULFILLMENT_LABELS[order.fulfillmentStatus ?? ""] ?? (order.fulfillmentStatus ?? "—")}</div>
+                      {order.paymentStatus === "approved" ? (
+                        <button type="button" onClick={() => copyForDropsheable(order)} className="ui-button-secondary min-h-0 px-3 py-2 text-xs">
+                          {copiedId === order._id ? "Copiado ✓" : "Copiar para Dropsheable"}
+                        </button>
+                      ) : null}
                     </td>
                     <td className="px-4 py-4 text-sm text-neutral-700">
                       <input className="w-full px-3 py-2" value={trackingMap[order._id] ?? order.tracking ?? ""} onChange={(event) => setTrackingMap((prev) => ({ ...prev, [order._id]: event.target.value }))} placeholder="Tracking" />

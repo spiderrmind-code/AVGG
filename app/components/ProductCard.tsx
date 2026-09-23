@@ -234,8 +234,8 @@ export default function ProductCard({
 
 
         <div className="flex w-full flex-col gap-2 sm:w-auto">
-          <button type="button" data-testid={`product-card-add-${product._id}`} onClick={handleAddCart} disabled={product.inStock !== true} aria-label={`Agregar ${title} al carrito`} className="ui-button-primary">{product.inStock === true ? "Añadir" : "Sin stock"}</button>
-          <button type="button" onClick={handleBuyNow} disabled={product.inStock !== true} aria-label={`Comprar ${title} ahora`} className="ui-button-secondary">Comprar ahora</button>
+          <button type="button" data-testid={`product-card-add-${product._id}`} onClick={handleAddCart} disabled={product.inStock !== true} aria-label={`Agregar ${title} al carrito`} className="ui-button-primary min-h-[2.45rem] px-3 text-[0.72rem] sm:text-sm">{product.inStock === true ? "Añadir" : "Sin stock"}</button>
+          <button type="button" onClick={handleBuyNow} disabled={product.inStock !== true} aria-label={`Comprar ${title} ahora`} className="ui-button-secondary min-h-[2.45rem] px-3 text-[0.72rem] sm:text-sm">Comprar ahora</button>
         </div>
 
 

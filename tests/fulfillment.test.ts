@@ -28,6 +28,18 @@ test("fulfillment lock prevents a duplicate attempt", async () => {
   assert.equal(updateCalls, 3);
 });
 
+test("missing shipping data blocks fulfillment before provider call", async () => {
+  let providerCalls = 0;
+  const orders = {
+    find: () => ({ sort: () => ({ limit: () => ({ toArray: async () => [{ _id: "order-2", paymentStatus: "approved", stockApplied: true, fulfillmentStatus: "pending", customer: { firstName: "Cliente" } }] }) }) }),
+    updateOne: async () => ({ matchedCount: 1, modifiedCount: 1 }),
+  } as never;
+  const provider = { submitOrder: async () => { providerCalls += 1; return { success: true, externalOrderId: "never" }; }, getOrderStatus: async () => ({ success: false }) };
+  const result = await processPendingFulfillment(orders, provider);
+  assert.equal(result.blocked, 1);
+  assert.equal(providerCalls, 0);
+});
+
 test("reconciliation detects stale payment, missing tracking and terminal conflicts", () => {
   const now = Date.now();
   const incidents = inspectFulfillmentOrder({
@@ -43,7 +55,7 @@ test("reconciliation detects stale payment, missing tracking and terminal confli
     fulfillmentStatus: "shipped",
     fulfillmentSubmittedAt: new Date(now),
   }, now);
-  assert.deepEqual(trackingIncidents.map((incident) => incident.code), ["SHIPPED_WITHOUT_TRACKING"]);
+  assert.deepEqual(trackingIncidents.map((incident) => incident.code), ["AWAITING_TRACKING"]);
 
   const terminalIncident = inspectFulfillmentOrder({
     paymentStatus: "charged_back",
@@ -51,5 +63,5 @@ test("reconciliation detects stale payment, missing tracking and terminal confli
     externalOrderId: "external-1",
     fulfillmentSubmittedAt: new Date(now - 61 * 60 * 1000),
   }, now);
-  assert.deepEqual(terminalIncident.map((incident) => incident.code), ["TERMINAL_PAYMENT_PENDING_FULFILLMENT", "FULFILLMENT_CONFIRMATION_STALE"]);
+  assert.deepEqual(terminalIncident.map((incident) => incident.code), ["AWAITING_TRACKING", "TERMINAL_PAYMENT_PENDING_FULFILLMENT", "FULFILLMENT_CONFIRMATION_STALE"]);
 });

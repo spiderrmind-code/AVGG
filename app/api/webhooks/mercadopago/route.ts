@@ -3,6 +3,8 @@ import { extractMercadoPagoPaymentId, getMercadoPagoPayment, MercadoPagoProvider
 import { applyPaidOrderStock, processVerifiedMercadoPagoPayment } from "@/lib/mercadopago-orders";
 import { canAllowUnsignedMercadoPagoWebhook, verifyMercadoPagoWebhookSignature } from "@/lib/mercadopago-webhook-signature";
 import { logServerError, logServerEvent } from "@/lib/logger";
+import { processPendingFulfillment } from "@/lib/fulfillment/engine";
+import { getDb } from "@/lib/mongo";
 
 function isIrrelevantNotification(body: unknown): boolean {
   if (!body || typeof body !== "object") return false;
@@ -41,7 +43,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, processed: !result.duplicate, ...(payment.status.toLowerCase() === "pending" || payment.status.toLowerCase() === "in_process" ? { paymentPending: true } : { paymentApproved: false }) });
       }
       const stock = await applyPaidOrderStock(result.orderId);
-      if (stock.success) { logServerEvent(stock.outcome === "applied" ? "stock.deducted" : "stock.skipped_already_processed", { orderId: result.orderId, paymentIdSuffix }); return NextResponse.json({ success: true, processed: stock.outcome === "applied", stockApplied: true, ...(stock.outcome === "already_applied" ? { duplicate: true } : {}) }); }
+      if (stock.success) {
+        logServerEvent(stock.outcome === "applied" ? "stock.deducted" : "stock.skipped_already_processed", { orderId: result.orderId, paymentIdSuffix });
+        const fulfillment = await processPendingFulfillment((await getDb()).collection("orders"), undefined, 1);
+        return NextResponse.json({ success: true, processed: stock.outcome === "applied", stockApplied: true, fulfillment: { processed: fulfillment.processed, submitted: fulfillment.submitted, blocked: fulfillment.blocked, failed: fulfillment.failed }, ...(stock.outcome === "already_applied" ? { duplicate: true } : {}) });
+      }
       if (stock.outcome === "database_error") return NextResponse.json({ success: false, message: "El inventario no pudo procesarse temporalmente" }, { status: 503 });
       if (stock.outcome === "processing_conflict") return NextResponse.json({ success: true, processed: false, duplicate: true, stockApplied: false });
       if (stock.outcome === "invalid_items" || stock.outcome === "product_not_found" || stock.outcome === "insufficient_stock") return NextResponse.json({ success: true, processed: true, stockApplied: false, stockIssue: true });

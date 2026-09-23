@@ -287,7 +287,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
+      <header className={`avg-site-header fixed inset-x-0 top-0 z-50 border-b transition-[background,box-shadow,transform] duration-300 ${headerBg}`} role="banner" aria-label="Header principal">
         <div className="marketplace-topline text-white">
           <div className="mx-auto flex h-7 max-w-7xl items-center justify-center gap-3 overflow-hidden px-4 text-[10px] font-bold uppercase tracking-[0.16em] sm:justify-between sm:text-[11px]">
             <span>Compra protegida</span><span className="hidden sm:inline">Pago seguro</span><span>Envios con seguimiento</span>
@@ -430,7 +430,7 @@ export default function Header() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
                       onMouseEnter={() => setCartOpen(true)}
-                      className="absolute right-0 z-50 mt-2 w-[min(88vw,320px)] rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.12)] backdrop-blur-xl"
+                      className="avg-cart-popover absolute right-0 z-50 mt-2 w-[min(88vw,320px)] rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.12)] backdrop-blur-xl"
                     >
                       <div className="p-4">
                         <h4 className="font-semibold text-sm">Carrito ({cartCount})</h4>
@@ -534,7 +534,7 @@ export default function Header() {
         {mobileOpen && (
           <MotionAside initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-4/5 max-w-sm overflow-auto border-l border-black/10 bg-white/95 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/95">
+            <div className="avg-mobile-drawer absolute right-0 top-0 bottom-0 w-4/5 max-w-sm overflow-auto border-l border-black/10 bg-white/95 p-6 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/95">
               <div className="mb-6 flex items-center justify-between">
                 <Link href="/" className="text-lg font-semibold text-neutral-950 dark:text-white">AVG CONNECTS</Link>
                 <button onClick={() => setMobileOpen(false)} className="rounded-full p-2 text-neutral-700 transition hover:bg-neutral-100 dark:text-zinc-200 dark:hover:bg-zinc-800">
