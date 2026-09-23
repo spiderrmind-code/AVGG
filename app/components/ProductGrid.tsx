@@ -1,4 +1,7 @@
+"use client";
+
 import ProductCard, { Product } from "./ProductCard";
+import { useEffect, useRef } from "react";
 
 
 interface ProductGridProps {
@@ -9,6 +12,88 @@ interface ProductGridProps {
 export default function ProductGrid({
   products,
 }: ProductGridProps) {
+  const railRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let animationFrame = 0;
+    let lastTime = performance.now();
+    let resumeTimer: number | undefined;
+    let paused = false;
+    let autoScrolling = false;
+    let position = rail.scrollLeft;
+    const previousScrollBehavior = rail.style.scrollBehavior;
+    const previousScrollSnapType = rail.style.scrollSnapType;
+    rail.style.scrollBehavior = "auto";
+    rail.style.scrollSnapType = "none";
+
+    const getLoopWidth = () => {
+      const items = rail.querySelectorAll<HTMLElement>(".marketplace-product-card");
+      const duplicate = items[products.length];
+      return duplicate ? duplicate.offsetLeft - items[0].offsetLeft : 0;
+    };
+
+    const pauseTemporarily = () => {
+      paused = true;
+      autoScrolling = false;
+      position = rail.scrollLeft;
+      rail.style.scrollSnapType = "x mandatory";
+      scheduleResume();
+    };
+
+    const scheduleResume = () => {
+      window.clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => {
+        position = rail.scrollLeft;
+        paused = false;
+        lastTime = performance.now();
+        rail.style.scrollSnapType = "none";
+      }, 2800);
+    };
+
+    const move = (time: number) => {
+      const elapsed = Math.min(time - lastTime, 64);
+      lastTime = time;
+      const loopWidth = getLoopWidth();
+      if (!paused && loopWidth > 0) {
+        position += (elapsed * 24) / 1000;
+        if (position >= loopWidth) position -= loopWidth;
+        autoScrolling = true;
+        rail.scrollLeft = position;
+        autoScrolling = false;
+      }
+      animationFrame = window.requestAnimationFrame(move);
+    };
+
+    const handleScroll = () => {
+      if (!autoScrolling) position = rail.scrollLeft;
+    };
+
+    rail.addEventListener("pointerdown", pauseTemporarily);
+    rail.addEventListener("touchstart", pauseTemporarily, { passive: true });
+    rail.addEventListener("wheel", pauseTemporarily, { passive: true });
+    rail.addEventListener("keydown", pauseTemporarily);
+    rail.addEventListener("pointerup", scheduleResume);
+    rail.addEventListener("mouseleave", scheduleResume);
+    rail.addEventListener("scroll", handleScroll, { passive: true });
+    animationFrame = window.requestAnimationFrame(move);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(resumeTimer);
+      rail.style.scrollBehavior = previousScrollBehavior;
+      rail.style.scrollSnapType = previousScrollSnapType;
+      rail.removeEventListener("pointerdown", pauseTemporarily);
+      rail.removeEventListener("touchstart", pauseTemporarily);
+      rail.removeEventListener("wheel", pauseTemporarily);
+      rail.removeEventListener("keydown", pauseTemporarily);
+      rail.removeEventListener("pointerup", scheduleResume);
+      rail.removeEventListener("mouseleave", scheduleResume);
+      rail.removeEventListener("scroll", handleScroll);
+    };
+  }, [products.length]);
 
   if (!products?.length) {
     return (
@@ -33,9 +118,16 @@ export default function ProductGrid({
           Disponible ahora
         </div>
       </div>
-      <div className="marketplace-product-grid-inner grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5 xl:gap-6">
-        {products.map((product) => (
-          <ProductCard key={product._id} product={product} />
+      <div
+        ref={railRef}
+        className="marketplace-product-grid-inner flex gap-3 sm:gap-4 lg:gap-5 xl:gap-6"
+        onMouseEnter={() => railRef.current?.dispatchEvent(new PointerEvent("pointerdown"))}
+        onMouseLeave={() => railRef.current?.dispatchEvent(new PointerEvent("pointerup"))}
+        onPointerUp={() => railRef.current?.dispatchEvent(new PointerEvent("pointerup"))}
+        onTouchEnd={() => railRef.current?.dispatchEvent(new PointerEvent("pointerup"))}
+      >
+        {[...products, ...products].map((product, index) => (
+          <ProductCard key={`${product._id}-${index}`} product={product} />
         ))}
       </div>
     </section>
