@@ -212,7 +212,7 @@ export default function AvgAiChat() {
                   {message.products.map((product) => (
                     <article key={product._id} className="ui-card flex gap-3 p-2.5">
                       <Link href={`/product/${encodeURIComponent(product._id)}`} className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-[0.8rem] bg-[color:var(--color-surface-muted)]" aria-label={`Ver ${product.name}`}>
-                        <Image src={productImage(product)} alt="" fill sizes="72px" className="object-cover" unoptimized />
+                        <Image src={productImage(product)} alt="" fill sizes="72px" className="object-cover" />
                       </Link>
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 text-xs font-semibold leading-4 text-[color:var(--color-text)]">{product.name}</p>
