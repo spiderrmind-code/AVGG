@@ -1391,3 +1391,173 @@ html.dark .avg-site-footer a {
   .avg-site-footer .ui-shell { max-width: calc(100% - 1.5rem); }
   .avg-cart-page .ui-card { padding: .75rem; }
 }
+
+/* Final polish: make catalog surfaces easier to scan without changing behavior. */
+.marketplace-product-card {
+  gap: 0;
+  border-radius: .85rem;
+  padding: .7rem;
+  box-shadow: 0 1px 1px rgba(20, 43, 61, .03), 0 10px 24px rgba(20, 43, 61, .055);
+}
+
+.marketplace-product-card .ui-product-image {
+  aspect-ratio: 1 / 1;
+  border-radius: .68rem;
+}
+
+.marketplace-product-card .ui-product-image img {
+  object-fit: contain;
+  padding: .55rem;
+  transition: transform 180ms ease;
+}
+
+.marketplace-product-card:hover .ui-product-image img {
+  transform: scale(1.035);
+}
+
+.marketplace-product-card > a > div:nth-child(2) {
+  margin-top: .75rem;
+}
+
+.marketplace-product-card h3 {
+  min-height: 2.5rem;
+  margin-top: .45rem;
+  font-size: .92rem;
+  line-height: 1.28;
+}
+
+.marketplace-product-card h3 + p {
+  display: -webkit-box;
+  min-height: 2.45rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-top: .4rem;
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+.marketplace-product-card > div:last-child {
+  gap: .65rem;
+  margin-top: .85rem;
+  padding-top: .7rem;
+  border-top: 1px solid var(--avg-line);
+}
+
+.marketplace-product-card .ui-price {
+  font-size: clamp(1.15rem, 1.5vw, 1.42rem);
+}
+
+.marketplace-product-card .ui-button-primary,
+.marketplace-product-card .ui-button-secondary {
+  min-height: 2.45rem;
+  border-radius: .62rem;
+  padding-inline: .75rem;
+  font-size: .72rem;
+}
+
+.marketplace-product-card .ui-offer-badge,
+.marketplace-product-card > a > div:first-child > div:nth-child(3) {
+  border-radius: .4rem;
+  font-size: .6rem;
+  letter-spacing: .08em;
+}
+
+.marketplace-product-grid-inner > .marketplace-product-card {
+  flex-basis: min(19rem, calc((100% - 3rem) / 4));
+}
+
+/* Header controls read as one system across desktop and touch layouts. */
+.avg-site-header .marketplace-search {
+  min-height: 2.9rem;
+  border-radius: .72rem;
+  background: color-mix(in srgb, var(--color-input) 94%, white);
+  box-shadow: 0 1px 0 rgba(255,255,255,.7), 0 6px 18px rgba(20,43,61,.045);
+}
+
+.avg-site-header .marketplace-search:focus {
+  background: var(--color-surface-strong);
+  box-shadow: 0 0 0 3px var(--color-focus), 0 8px 22px rgba(20,43,61,.08);
+}
+
+.avg-site-header .ui-icon-button {
+  border: 1px solid var(--avg-line);
+  background: var(--avg-paper);
+  box-shadow: 0 4px 12px rgba(20,43,61,.05);
+}
+
+.avg-site-header .ui-icon-button:hover {
+  border-color: color-mix(in srgb, var(--avg-blue) 34%, var(--avg-line));
+  background: var(--avg-blue-soft);
+  color: var(--avg-ink);
+}
+
+.avg-site-header nav button[aria-expanded="true"] {
+  background: var(--avg-blue-soft);
+  color: var(--avg-ink);
+}
+
+.avg-site-header .avg-cart-popover {
+  border-radius: .85rem;
+  padding: .35rem;
+}
+
+.avg-site-header .avg-cart-popover > div {
+  padding: .85rem;
+}
+
+/* Consistent empty/loading treatment for existing states. */
+.ui-page .ui-surface.text-center,
+.ui-page [class*="Cargando"],
+.avg-cart-page .ui-surface.text-center,
+.avg-account-page > div,
+.avg-orders-page > div {
+  box-shadow: var(--avg-shadow);
+}
+
+.avg-cart-page .ui-button-primary,
+.avg-account-page .ui-button-primary,
+.avg-orders-page .ui-button-primary {
+  min-height: 2.8rem;
+}
+
+@media (max-width: 639px) {
+  .marketplace-product-card {
+    padding: .58rem;
+  }
+
+  .marketplace-product-card .ui-product-image img {
+    padding: .35rem;
+  }
+
+  .marketplace-product-card h3 {
+    min-height: 2.3rem;
+    font-size: .82rem;
+  }
+
+  .marketplace-product-card h3 + p {
+    min-height: 2.15rem;
+    font-size: .68rem;
+  }
+
+  .marketplace-product-card > div:last-child {
+    margin-top: .65rem;
+    padding-top: .55rem;
+  }
+
+  .marketplace-product-card .ui-button-primary,
+  .marketplace-product-card .ui-button-secondary {
+    min-height: 2.35rem;
+    font-size: .68rem;
+  }
+
+  .marketplace-product-grid-inner > .marketplace-product-card {
+    flex-basis: calc((100% - .75rem) / 2.15);
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .marketplace-product-grid-inner > .marketplace-product-card {
+    flex-basis: calc((100% - 2rem) / 3);
+  }
+}
