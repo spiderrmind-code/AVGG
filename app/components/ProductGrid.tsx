@@ -75,6 +75,7 @@ export default function ProductGrid({
     rail.addEventListener("touchstart", pauseTemporarily, { passive: true });
     rail.addEventListener("wheel", pauseTemporarily, { passive: true });
     rail.addEventListener("keydown", pauseTemporarily);
+    rail.addEventListener("mouseenter", pauseTemporarily);
     rail.addEventListener("pointerup", scheduleResume);
     rail.addEventListener("mouseleave", scheduleResume);
     rail.addEventListener("scroll", handleScroll, { passive: true });
@@ -89,6 +90,7 @@ export default function ProductGrid({
       rail.removeEventListener("touchstart", pauseTemporarily);
       rail.removeEventListener("wheel", pauseTemporarily);
       rail.removeEventListener("keydown", pauseTemporarily);
+      rail.removeEventListener("mouseenter", pauseTemporarily);
       rail.removeEventListener("pointerup", scheduleResume);
       rail.removeEventListener("mouseleave", scheduleResume);
       rail.removeEventListener("scroll", handleScroll);
@@ -121,10 +123,6 @@ export default function ProductGrid({
       <div
         ref={railRef}
         className="marketplace-product-grid-inner flex gap-3 sm:gap-4 lg:gap-5 xl:gap-6"
-        onMouseEnter={() => railRef.current?.dispatchEvent(new PointerEvent("pointerdown"))}
-        onMouseLeave={() => railRef.current?.dispatchEvent(new PointerEvent("pointerup"))}
-        onPointerUp={() => railRef.current?.dispatchEvent(new PointerEvent("pointerup"))}
-        onTouchEnd={() => railRef.current?.dispatchEvent(new PointerEvent("pointerup"))}
       >
         {[...products, ...products].map((product, index) => (
           <ProductCard key={`${product._id}-${index}`} product={product} />
