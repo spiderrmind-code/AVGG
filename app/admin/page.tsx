@@ -10,6 +10,7 @@ interface ProductItem {
   name?: string;
   title?: string;
   price: number;
+  comparePrice?: number;
   costPrice?: number;
   category?: string;
   stock?: boolean;
@@ -38,6 +39,7 @@ export default function AdminPage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
+  const [comparePrice, setComparePrice] = useState("");
   const [costPrice, setCostPrice] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -63,6 +65,7 @@ export default function AdminPage() {
     setName("");
     setTitle("");
     setPrice("");
+    setComparePrice("");
     setCostPrice("");
     setCategory("");
     setDescription("");
@@ -98,13 +101,20 @@ export default function AdminPage() {
 
   const saveProduct = async (event: React.FormEvent) => {
     event.preventDefault();
+    const currentPrice = Number(price);
+    const referencePrice = comparePrice.trim() ? Number(comparePrice) : undefined;
+    if (referencePrice !== undefined && (!Number.isFinite(referencePrice) || referencePrice <= currentPrice)) {
+      setMessage("El precio de referencia debe ser real y mayor que el precio de venta.");
+      return;
+    }
     try {
       const payload = {
         name,
         title: title || name,
         description,
         shortDescription: description,
-        price: Number(price),
+        price: currentPrice,
+        ...(referencePrice !== undefined ? { comparePrice: referencePrice } : {}),
         costPrice: Number(costPrice) || Number(price),
         category,
         image,
@@ -137,6 +147,7 @@ export default function AdminPage() {
     setName(product.name ?? product.title ?? "");
     setTitle(product.title ?? product.name ?? "");
     setPrice(String(product.price ?? ""));
+    setComparePrice(String(product.comparePrice ?? ""));
     setCostPrice(String(product.costPrice ?? product.price ?? ""));
     setCategory(product.category ?? "");
     setDescription(product.description ?? "");
@@ -274,8 +285,10 @@ export default function AdminPage() {
               <textarea className="w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-zinc-400 dark:focus:border-white/20 dark:focus:ring-white/10" placeholder="Descripción comercial" value={description} onChange={(event) => setDescription(event.target.value)} />
               <div className="grid gap-4 md:grid-cols-2">
                 <input className="w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-zinc-400 dark:focus:border-white/20 dark:focus:ring-white/10" placeholder="Precio de venta" type="number" value={price} onChange={(event) => setPrice(event.target.value)} required />
+                <input className="w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-zinc-400 dark:focus:border-white/20 dark:focus:ring-white/10" placeholder="Precio de referencia real (opcional)" title="Solo ingresá un precio de referencia comercial real y respaldado" type="number" min="0" step="0.01" value={comparePrice} onChange={(event) => setComparePrice(event.target.value)} />
                 <input className="w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-zinc-400 dark:focus:border-white/20 dark:focus:ring-white/10" placeholder="Costo proveedor" type="number" value={costPrice} onChange={(event) => setCostPrice(event.target.value)} />
               </div>
+              <p className="text-xs text-neutral-500 dark:text-zinc-400">Precio de referencia real y respaldado. No se genera automáticamente ni modifica el precio de venta.</p>
               <div className="grid gap-4 md:grid-cols-2">
                 <input className="w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-zinc-400 dark:focus:border-white/20 dark:focus:ring-white/10" placeholder="SKU" value={sku} onChange={(event) => setSku(event.target.value)} />
                 <input className="w-full rounded-2xl border border-neutral-200 bg-white/80 px-3 py-3 text-sm text-neutral-950 outline-none transition focus:border-neutral-300 focus:ring-2 focus:ring-neutral-200 dark:border-white/10 dark:bg-white/10 dark:text-white dark:placeholder:text-zinc-400 dark:focus:border-white/20 dark:focus:ring-white/10" placeholder="Margen %" type="number" value={margin} onChange={(event) => setMargin(event.target.value)} />
@@ -310,8 +323,10 @@ export default function AdminPage() {
               <textarea className="w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="Descripción comercial" value={description} onChange={(event) => setDescription(event.target.value)} />
               <div className="grid gap-4 md:grid-cols-2">
                 <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="Precio de venta" type="number" value={price} onChange={(event) => setPrice(event.target.value)} required />
+                <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="Precio de referencia real (opcional)" title="Solo ingresá un precio de referencia comercial real y respaldado" type="number" min="0" step="0.01" value={comparePrice} onChange={(event) => setComparePrice(event.target.value)} />
                 <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="Costo proveedor" type="number" value={costPrice} onChange={(event) => setCostPrice(event.target.value)} />
               </div>
+              <p className="text-xs text-neutral-500">Precio de referencia real y respaldado. No se genera automáticamente ni modifica el precio de venta.</p>
               <div className="grid gap-4 md:grid-cols-2">
                 <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="SKU" value={sku} onChange={(event) => setSku(event.target.value)} />
                 <input className="w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="Margen %" type="number" value={margin} onChange={(event) => setMargin(event.target.value)} />
