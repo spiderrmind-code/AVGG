@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { PLACEHOLDER_IMAGE } from "@/app/constants/placeholder";
 import { formatARS } from "@/lib/currency";
 import type { Product } from "./ProductCard";
@@ -37,9 +38,22 @@ export default function Hero({ products }: Props) {
     ...products.filter((product) => !prioritizedProducts.has(product)),
   ];
 
-  const visibleProducts = orderedProducts.slice(0, 8);
-  const leadProduct = visibleProducts[0];
-  const secondaryProducts = visibleProducts.slice(1);
+  const visibleProducts = orderedProducts.slice(0, 4);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (visibleProducts.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const interval = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % visibleProducts.length);
+    }, 2000);
+
+    return () => window.clearInterval(interval);
+  }, [visibleProducts.length]);
+
+  const leadProduct = visibleProducts[activeIndex % visibleProducts.length];
+  const secondaryProducts = visibleProducts.filter((_, index) => index !== activeIndex);
+  const composition = activeIndex % 3;
 
   if (!leadProduct) return null;
 
@@ -53,18 +67,18 @@ export default function Hero({ products }: Props) {
       aria-label="Ofertas destacadas"
     >
       <div className="ui-shell py-3 sm:py-4 lg:py-5">
-        <div className="marketplace-hero hero-future-surface relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-4 py-5 shadow-[var(--shadow-strong)] sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div className={`marketplace-hero hero-future-surface hero-composition-${composition} relative isolate overflow-hidden rounded-[var(--radius-xl)] border border-white/20 px-4 py-5 shadow-[var(--shadow-strong)] sm:px-6 sm:py-6 lg:px-8 lg:py-8`}>
           <div className="marketplace-hero-sun" aria-hidden="true" />
           <div className="marketplace-hero-grid" aria-hidden="true" />
 
           <div className="home-hero-header relative z-10 mb-4 flex items-end justify-between gap-3 sm:mb-6">
             <div className="min-w-0">
-              <p className="home-hero-kicker ui-eyebrow text-white/75">Descubrí oportunidades reales</p>
+              <p className="home-hero-kicker ui-eyebrow text-white/75">Descubrí. Elegí. Comprá inteligente.</p>
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <h1 className="home-hero-title text-[1.9rem] font-bold tracking-[-0.065em] text-white sm:text-3xl lg:text-5xl">
-                  Ofertas HOT
+                  AVG CONNECTS
                 </h1>
-                <span className="ui-offer-badge text-[0.62rem] sm:text-[0.7rem]">Precios reales</span>
+                <span className="ui-offer-badge text-[0.62rem] sm:text-[0.7rem]">Productos reales</span>
               </div>
             </div>
 
@@ -77,7 +91,7 @@ export default function Hero({ products }: Props) {
           </div>
 
           <div className="relative z-10 grid gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.55fr)] lg:gap-5">
-            <article className="home-hero-focus group relative overflow-hidden rounded-[var(--radius-xl)] border border-white/15 bg-white/10 p-3 backdrop-blur-sm sm:p-5">
+            <article key={String(leadProduct._id)} className="home-hero-focus animate-[heroSlideIn_500ms_ease-out] group relative overflow-hidden rounded-[var(--radius-xl)] border border-white/15 bg-white/10 p-3 backdrop-blur-sm sm:p-5">
               <Link href={leadHref} className="block">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[calc(var(--radius-xl)-0.35rem)] bg-[color:var(--color-surface-strong)]">
                   <Image
@@ -221,6 +235,13 @@ export default function Hero({ products }: Props) {
               <span>Compra segura</span>
               <span>Envío con seguimiento</span>
               <span>Soporte real</span>
+            </div>
+
+            <div className="hero-scene-status" aria-live="polite">
+              <span>{String(composition + 1).padStart(2, "0")} / 03</span>
+              <span className="hero-scene-progress" aria-hidden="true">
+                <span key={activeIndex} className="hero-scene-progress-fill" />
+              </span>
             </div>
 
             <Link
