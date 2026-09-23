@@ -5,7 +5,6 @@ import BenefitsSection from "./components/BenefitsSection";
 import Hero from "./components/Hero";
 import CategoriesSection from "./components/CategoriesSection";
 import PromotionsSection from "./components/PromotionsSection";
-import Link from "next/link";
 import { getPublicCategories } from "@/lib/public-categories";
 import { getPublicCatalog } from "@/lib/public-catalog";
 import type { Product } from "./components/ProductCard";
@@ -50,61 +49,12 @@ export default async function Home() {
 
       <CategoriesSection categories={categories} />
 
-      <section className="ui-shell py-3 sm:py-5">
-        <div className="marketplace-discovery-strip">
-          <span className="marketplace-strip-dot" aria-hidden="true" />
-
-          <p>
-            <strong>Descubri mas por menos.</strong> Productos seleccionados,
-            precios claros y compra protegida.
-          </p>
-
-          <Link href="/#destacados">Explorar ahora</Link>
-        </div>
-      </section>
+      <ProductGrid products={products} />
 
       <PromotionsSection
         products={products}
         categories={categories}
       />
-
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="premium-shell rounded-[var(--radius-xl)] border border-black/5 bg-white/80 p-6 shadow-[0_24px_90px_rgba(0,0,0,0.06)] backdrop-blur-xl sm:p-8 dark:border-white/10 dark:bg-zinc-900/70">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-neutral-500 dark:text-zinc-400">
-                Colección
-              </p>
-
-              <h3 className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-neutral-950 dark:text-white">
-                Una selección tecnológica pensada para comprar con confianza
-              </h3>
-            </div>
-
-            <Link
-              href="/search?q=destacados"
-              className="text-sm font-semibold text-neutral-700 transition hover:text-neutral-950 dark:text-zinc-300 dark:hover:text-white"
-            >
-              Ver más
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="ui-shell pb-7">
-        <div className="marketplace-discovery-strip marketplace-discovery-strip-alt">
-          <span className="marketplace-strip-dot" aria-hidden="true" />
-
-          <p>
-            <strong>Mas variedad para descubrir.</strong> Segui explorando
-            productos disponibles.
-          </p>
-
-          <Link href="/#destacados">Ver catalogo</Link>
-        </div>
-      </section>
-
-      <ProductGrid products={products} />
 
       <BenefitsSection />
     </main>

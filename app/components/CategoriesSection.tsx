@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import type { PublicCategory } from "@/lib/public-categories";
 
 export default function CategoriesSection({ categories }: { categories: PublicCategory[] }) {
+  const railRef = useRef<HTMLDivElement>(null);
   const seenSlugs = new Set<string>();
   const visibleCategories = categories.filter((category) => {
     const name = category.name.trim();
@@ -11,6 +15,56 @@ export default function CategoriesSection({ categories }: { categories: PublicCa
     seenSlugs.add(slug);
     return true;
   });
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let animationFrame = 0;
+    let lastTime = performance.now();
+    let lastInteraction = -Infinity;
+    let position = rail.scrollLeft;
+    const previousScrollBehavior = rail.style.scrollBehavior;
+    const previousScrollSnapType = rail.style.scrollSnapType;
+    rail.style.scrollBehavior = "auto";
+    rail.style.scrollSnapType = "none";
+
+    const pauseTemporarily = () => {
+      lastInteraction = performance.now();
+      position = rail.scrollLeft;
+      rail.style.scrollSnapType = "x mandatory";
+    };
+
+    const move = (time: number) => {
+      const elapsed = Math.min(time - lastTime, 64);
+      lastTime = time;
+      if (time - lastInteraction >= 2800) {
+        rail.style.scrollSnapType = "none";
+      }
+      if (time - lastInteraction >= 2800 && rail.scrollWidth > rail.clientWidth) {
+        position += (elapsed * 24) / 1000;
+        if (position >= rail.scrollWidth - rail.clientWidth - 1) position = 0;
+        rail.scrollLeft = position;
+      }
+      animationFrame = window.requestAnimationFrame(move);
+    };
+
+    rail.addEventListener("pointerdown", pauseTemporarily);
+    rail.addEventListener("touchstart", pauseTemporarily, { passive: true });
+    rail.addEventListener("wheel", pauseTemporarily, { passive: true });
+    rail.addEventListener("keydown", pauseTemporarily);
+    animationFrame = window.requestAnimationFrame(move);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      rail.style.scrollBehavior = previousScrollBehavior;
+      rail.style.scrollSnapType = previousScrollSnapType;
+      rail.removeEventListener("pointerdown", pauseTemporarily);
+      rail.removeEventListener("touchstart", pauseTemporarily);
+      rail.removeEventListener("wheel", pauseTemporarily);
+      rail.removeEventListener("keydown", pauseTemporarily);
+    };
+  }, []);
 
   if (visibleCategories.length === 0) return null;
 
@@ -23,9 +77,9 @@ export default function CategoriesSection({ categories }: { categories: PublicCa
         </div>
       </div>
 
-      <div className="marketplace-category-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+      <div ref={railRef} className="marketplace-category-grid grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
         {visibleCategories.map((cat) => (
-          <Link key={cat.slug} href={`/category/${cat.slug}`} aria-label={`Explorar categoría ${cat.name}`} className="ui-card ui-card-hover group overflow-hidden p-3.5">
+          <Link key={cat.slug} href={`/category/${cat.slug}`} aria-label={`Explorar categoría ${cat.name}`} className="marketplace-category-card ui-card ui-card-hover group overflow-hidden p-3.5">
             <div className="ui-product-image relative flex h-40 w-full items-end overflow-hidden bg-[color:var(--color-accent-soft)]">
               {cat.image?.trim() ? <Image src={cat.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" unoptimized className="object-cover transition duration-500 group-hover:scale-105" /> : null}
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_25%,rgba(15,23,42,.66))]" />

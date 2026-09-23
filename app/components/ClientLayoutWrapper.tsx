@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Footer from "./Footer";
+import AvgAiChat from "./AvgAiChat";
 import { CartProvider } from "@/context/CartContext";
 import { ThemeProvider } from "@/providers/theme-provider";
 
@@ -26,6 +27,7 @@ export default function ClientLayoutWrapper({
             {children}
           </main>
 
+          <AvgAiChat />
           <Footer />
         </CartProvider>
       </SessionProvider>
