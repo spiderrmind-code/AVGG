@@ -75,10 +75,13 @@ export default function ProductGrid({
     rail.addEventListener("touchstart", pauseTemporarily, { passive: true });
     rail.addEventListener("wheel", pauseTemporarily, { passive: true });
     rail.addEventListener("keydown", pauseTemporarily);
-    rail.addEventListener("mouseenter", pauseTemporarily);
     rail.addEventListener("pointerup", scheduleResume);
-    rail.addEventListener("mouseleave", scheduleResume);
     rail.addEventListener("scroll", handleScroll, { passive: true });
+    const desktopHover = window.matchMedia("(min-width: 1024px)").matches;
+    if (desktopHover) {
+      rail.addEventListener("mouseenter", pauseTemporarily);
+      rail.addEventListener("mouseleave", scheduleResume);
+    }
     animationFrame = window.requestAnimationFrame(move);
 
     return () => {
@@ -90,10 +93,12 @@ export default function ProductGrid({
       rail.removeEventListener("touchstart", pauseTemporarily);
       rail.removeEventListener("wheel", pauseTemporarily);
       rail.removeEventListener("keydown", pauseTemporarily);
-      rail.removeEventListener("mouseenter", pauseTemporarily);
       rail.removeEventListener("pointerup", scheduleResume);
-      rail.removeEventListener("mouseleave", scheduleResume);
       rail.removeEventListener("scroll", handleScroll);
+      if (desktopHover) {
+        rail.removeEventListener("mouseenter", pauseTemporarily);
+        rail.removeEventListener("mouseleave", scheduleResume);
+      }
     };
   }, [products.length]);
 
