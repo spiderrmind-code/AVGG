@@ -40,7 +40,10 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ success: true, ...result });
   } catch (error) {
-    console.error("AVG AI chat failed", { errorType: error instanceof Error ? error.name : "unknown" });
+    console.error("AVG AI chat failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+      errorMessage: error instanceof Error ? error.message : "unknown",
+    });
     return NextResponse.json(
       { success: false, message: "No pude consultar el catálogo ahora. Intentá de nuevo en unos minutos." },
       { status: 503 },
