@@ -1083,3 +1083,311 @@ footer .ui-surface { background: var(--color-surface-strong); }
 @media (max-width: 1023px) {
   .hero-scene-status { display: none; }
 }
+
+/* AVG platform language: restrained product surfaces, clear hierarchy, quiet depth. */
+:root {
+  --avg-ink: #142b3d;
+  --avg-blue: #245d87;
+  --avg-blue-soft: #e8f0f5;
+  --avg-line: rgba(20, 43, 61, .12);
+  --avg-paper: #fbfcfb;
+  --avg-wash: #f1f4f3;
+  --avg-radius: .9rem;
+  --avg-shadow: 0 14px 34px rgba(20, 43, 61, .07);
+}
+
+html,
+body {
+  font-family: "Avenir Next", "Segoe UI Variable", "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+body {
+  color: var(--color-text);
+  background: linear-gradient(180deg, #f7f9f8 0%, var(--color-bg) 42%, #eef2f1 100%);
+}
+
+body h1,
+body h2,
+body h3,
+body h4,
+body button,
+body input,
+body select,
+body textarea {
+  font-family: inherit;
+}
+
+body h1,
+body h2,
+body h3,
+body h4 {
+  color: var(--color-text);
+  text-wrap: balance;
+}
+
+.ui-shell { max-width: min(100% - 2rem, 96rem); }
+.ui-section { padding-block: clamp(3.25rem, 5vw, 6rem); }
+.ui-card,
+.ui-surface,
+.ui-commerce-panel,
+.ui-subtle-panel,
+.ui-popover {
+  border-radius: var(--avg-radius);
+  border-color: var(--avg-line);
+}
+
+.ui-card {
+  background: var(--avg-paper);
+  box-shadow: var(--avg-shadow);
+}
+
+.ui-card-hover:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--avg-blue) 36%, var(--avg-line));
+  box-shadow: 0 20px 42px rgba(20, 43, 61, .11);
+}
+
+.ui-button,
+.ui-button-primary,
+.ui-button-secondary,
+.theme-btn,
+.premium-button,
+.theme-btn-secondary,
+.premium-button-secondary {
+  min-height: 2.7rem;
+  border-radius: .7rem;
+  font-size: .84rem;
+  font-weight: 700;
+  letter-spacing: .005em;
+}
+
+.ui-button-primary,
+.theme-btn,
+.premium-button {
+  background: var(--avg-ink);
+  box-shadow: 0 8px 18px rgba(20, 43, 61, .16);
+}
+
+.ui-button-primary:hover,
+.theme-btn:hover,
+.premium-button:hover {
+  background: #0d2030;
+  box-shadow: 0 12px 24px rgba(20, 43, 61, .2);
+}
+
+.ui-button-secondary,
+.theme-btn-secondary,
+.premium-button-secondary {
+  background: transparent;
+  border-color: var(--avg-line);
+}
+
+.ui-button-secondary:hover,
+.theme-btn-secondary:hover,
+.premium-button-secondary:hover {
+  background: var(--avg-blue-soft);
+  border-color: color-mix(in srgb, var(--avg-blue) 36%, var(--avg-line));
+  color: var(--avg-ink);
+}
+
+.ui-product-card {
+  border-radius: var(--avg-radius);
+  padding: .8rem;
+  background: var(--avg-paper);
+}
+
+.marketplace-product-card {
+  border-color: var(--avg-line);
+  background: var(--avg-paper);
+  box-shadow: 0 8px 24px rgba(20, 43, 61, .055);
+}
+
+.marketplace-product-card .ui-product-image,
+.ui-product-card .ui-product-image {
+  border-radius: .72rem;
+  background: var(--avg-wash);
+}
+
+.marketplace-product-card h3,
+.ui-product-card h3 {
+  font-size: .96rem;
+  line-height: 1.25;
+  letter-spacing: -.018em;
+}
+
+.marketplace-product-card .ui-price,
+.ui-product-card .ui-price {
+  color: var(--avg-ink);
+  font-size: 1.35rem;
+  letter-spacing: -.045em;
+}
+
+.ui-badge,
+.ui-offer-badge {
+  min-height: 1.65rem;
+  border-radius: .45rem;
+  letter-spacing: .09em;
+}
+
+.section-label,
+.ui-eyebrow {
+  color: var(--avg-blue);
+  font-size: .64rem;
+  letter-spacing: .2em;
+}
+
+.section-title,
+.ui-title {
+  letter-spacing: -.052em;
+}
+
+/* Header: one quiet platform bar with a clear search anchor. */
+.avg-site-header {
+  border-color: var(--avg-line) !important;
+}
+
+.avg-site-header .marketplace-topline {
+  background: var(--avg-ink);
+  letter-spacing: .14em;
+}
+
+.avg-site-header .marketplace-search {
+  min-height: 2.85rem;
+  border-color: var(--avg-line);
+  background: rgba(255, 255, 255, .9);
+}
+
+.avg-site-header .ui-icon-button {
+  min-height: 2.7rem;
+  min-width: 2.7rem;
+}
+
+.avg-site-header nav button,
+.avg-site-header nav a,
+.avg-site-header > div a {
+  letter-spacing: .005em;
+}
+
+.avg-site-header .ui-popover,
+.avg-site-header .avg-cart-popover,
+.avg-site-header .avg-mobile-drawer {
+  border-radius: var(--avg-radius);
+  box-shadow: 0 24px 60px rgba(20, 43, 61, .16);
+}
+
+/* Internal commerce pages inherit one consistent frame without changing their markup. */
+.ui-page,
+.avg-account-page,
+.avg-orders-page,
+.avg-cart-page {
+  background: transparent !important;
+}
+
+.ui-page > div,
+.avg-account-page > div,
+.avg-orders-page > div {
+  max-width: 96rem;
+}
+
+.ui-page h1,
+.avg-account-page h1,
+.avg-orders-page h1,
+.avg-cart-page h1 {
+  letter-spacing: -.052em;
+}
+
+.ui-page .ui-surface,
+.avg-account-page > div,
+.avg-orders-page > div,
+.avg-cart-page .ui-card,
+.avg-cart-page .ui-commerce-panel {
+  border-color: var(--avg-line);
+  box-shadow: var(--avg-shadow);
+}
+
+.avg-account-page > div,
+.avg-orders-page > div {
+  border-radius: var(--avg-radius) !important;
+  background: var(--avg-paper) !important;
+  backdrop-filter: none;
+}
+
+.avg-account-page > div > div:first-child,
+.avg-orders-page > div > div:first-child {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--avg-line);
+}
+
+.avg-account-page form input,
+.avg-account-page form textarea,
+.avg-account-page .premium-input,
+.avg-orders-page .premium-input {
+  border-radius: .7rem;
+  background: #fff;
+}
+
+.avg-cart-page .ui-commerce-panel {
+  background: var(--avg-paper);
+}
+
+/* Footer: make the site feel maintained, navigable and operational. */
+.avg-site-footer {
+  background: #e8eeec !important;
+  border-color: var(--avg-line) !important;
+}
+
+.avg-site-footer .ui-surface {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.avg-site-footer h3 {
+  color: var(--avg-ink);
+  font-size: .66rem;
+  letter-spacing: .2em;
+}
+
+.avg-site-footer a:hover {
+  color: var(--avg-blue);
+}
+
+html.dark body {
+  background: linear-gradient(180deg, #0d1419 0%, var(--color-bg) 46%, #0a0d10 100%);
+}
+
+html.dark .ui-card,
+html.dark .ui-surface,
+html.dark .ui-commerce-panel,
+html.dark .ui-subtle-panel,
+html.dark .avg-account-page > div,
+html.dark .avg-orders-page > div {
+  background: #151d23 !important;
+  border-color: rgba(255,255,255,.1);
+}
+
+html.dark .avg-site-footer {
+  background: #11191f !important;
+}
+
+html.dark .avg-site-footer h3,
+html.dark .avg-site-footer p,
+html.dark .avg-site-footer a {
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 1536px) {
+  .ui-shell { max-width: min(100% - 4rem, 104rem); }
+  .ui-section { padding-block: 6.5rem; }
+}
+
+@media (max-width: 640px) {
+  .ui-shell { max-width: calc(100% - 1.5rem); }
+  .ui-section { padding-block: 3rem; }
+  .ui-page { padding-top: 2rem; padding-bottom: 3rem; }
+  .avg-site-footer .ui-shell { max-width: calc(100% - 1.5rem); }
+  .avg-cart-page .ui-card { padding: .75rem; }
+}
