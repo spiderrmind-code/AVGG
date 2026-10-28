@@ -4,9 +4,17 @@ import { getToken } from "next-auth/jwt";
 import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { resolveAuthSecret } from "@/lib/auth-secret";
+import { isStudioRouteAllowed } from "@/lib/studio-routes";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  if (process.env.STUDIO_DEPLOYMENT === "true" && !isStudioRouteAllowed(pathname)) {
+    return new NextResponse(null, { status: 404 });
+  }
+  if (process.env.STUDIO_DEPLOYMENT === "true" && pathname === "/admin") {
+    return NextResponse.redirect(new URL("/admin/turnos", req.url));
+  }
+
   const authSecret = resolveAuthSecret();
   const isSensitiveApi = pathname.startsWith("/api/admin/") || pathname === "/api/suppliers";
   const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
@@ -37,5 +45,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*", "/api/suppliers"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

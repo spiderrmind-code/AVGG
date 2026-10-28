@@ -3,10 +3,10 @@ import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
 import { authOptions } from "@/auth";
 import { isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentTime } from "@/lib/appointments";
-import { getDb } from "@/lib/mongo";
+import { getStudioDb } from "@/lib/studio-mongo";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 async function requireAdmin() { const session = await getServerSession(authOptions); if (!session?.user?.email) return NextResponse.json({ message: "No autenticado" }, { status: 401 }); return session.user.role === "admin" ? null : NextResponse.json({ message: "No autorizado" }, { status: 403 }); }
-export async function GET() { const denied = await requireAdmin(); if (denied) return denied; try { const appointments = await (await getDb()).collection("appointments").find({}, { projection: { fingerprint: 0 } }).sort({ preferredDate: 1, preferredTime: 1, createdAt: -1 }).toArray(); return NextResponse.json({ appointments }); } catch { return NextResponse.json({ message: "No se pudieron cargar los turnos." }, { status: 500 }); } }
+export async function GET() { const denied = await requireAdmin(); if (denied) return denied; try { const appointments = await (await getStudioDb()).collection("appointments").find({}, { projection: { fingerprint: 0 } }).sort({ preferredDate: 1, preferredTime: 1, createdAt: -1 }).toArray(); return NextResponse.json({ appointments }); } catch { return NextResponse.json({ message: "No se pudieron cargar los turnos." }, { status: 500 }); } }
 export async function PATCH(request: Request) {
 	const denied = await requireAdmin();
 	if (denied) return denied;
@@ -17,7 +17,7 @@ export async function PATCH(request: Request) {
 		const validStatuses = ["requested", "confirmed", "rejected", "completed", "cancelled"];
 		if (!body.id || !ObjectId.isValid(body.id) || !validStatuses.includes(body.status ?? "")) return NextResponse.json({ message: "Datos inválidos" }, { status: 400 });
 
-		const db = await getDb();
+		const db = await getStudioDb();
 		const appointments = db.collection("appointments");
 		const appointmentId = new ObjectId(body.id);
 		const appointment = await appointments.findOne({ _id: appointmentId });

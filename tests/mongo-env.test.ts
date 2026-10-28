@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { resolveMongoConfig } from "../lib/mongo";
+import { resolveStudioMongoConfig } from "../lib/studio-mongo";
 
 test("resolveMongoConfig prefers valid env values and ignores stale shell values", () => {
   const resolved = resolveMongoConfig(
@@ -42,4 +43,19 @@ test("resolveMongoConfig keeps valid process env values when present", () => {
 
   assert.equal(resolved.uri, "mongodb://localhost:27017/app");
   assert.equal(resolved.dbName, "shop");
+});
+
+test("Studio Mongo requires its own URI and rejects the AVG database", () => {
+  assert.throws(
+    () => resolveStudioMongoConfig({ MONGODB_URI: "mongodb://localhost/shop", MONGODB_DB: "shop" }),
+    /STUDIO_MONGODB_URI/
+  );
+  assert.throws(
+    () => resolveStudioMongoConfig({ STUDIO_MONGODB_URI: "mongodb://localhost", STUDIO_MONGODB_DB: "AVGCONNECTS" }),
+    /base exclusiva/
+  );
+  assert.deepEqual(
+    resolveStudioMongoConfig({ STUDIO_MONGODB_URI: "mongodb://localhost", STUDIO_MONGODB_DB: "13_studio_tattoo" }),
+    { uri: "mongodb://localhost", dbName: "13_studio_tattoo" }
+  );
 });

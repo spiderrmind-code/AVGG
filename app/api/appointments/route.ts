@@ -3,7 +3,7 @@ import type { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { checkAppointmentRateLimit, isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentTime } from "@/lib/appointments";
 import { requireAuthSecret } from "@/lib/auth-secret";
-import { getDb } from "@/lib/mongo";
+import { getStudioDb, isStudioMongoConfigured } from "@/lib/studio-mongo";
 import { requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { recordStudioEvent } from "@/lib/studio-analytics";
@@ -11,8 +11,9 @@ function field(value: unknown, max: number) { return typeof value === "string" &
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return NextResponse.json({ message: "Origen no permitido" }, { status: 403 });
   if (!hasJsonContentType(request)) return NextResponse.json({ message: "Content-Type inválido" }, { status: 415 });
+  if (!isStudioMongoConfigured()) return NextResponse.json({ message: "La agenda en línea no está disponible. Escribinos por WhatsApp para consultar." }, { status: 503 });
   try {
-    const db = await getDb();
+    const db = await getStudioDb();
     const rateLimit = await checkAppointmentRateLimit(db, `appointment:${requestIdentifier(request)}`, requireAuthSecret());
     if (!rateLimit.allowed) return NextResponse.json({ message: "Esperá unos minutos antes de volver a intentar." }, { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } });
     const rawBody = await request.text();

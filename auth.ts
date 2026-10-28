@@ -2,7 +2,7 @@ import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
-import { getDb } from "@/lib/mongo";
+import { getStudioDb } from "@/lib/studio-mongo";
 import { normalizeEmail, normalizeRole } from "@/lib/auth-validation";
 import { getGoogleAuthConfig } from "@/lib/auth-config";
 import { resolveSafeAuthRedirect } from "@/lib/auth-redirect";
@@ -13,7 +13,16 @@ const configuredSecret = resolveAuthSecret();
 if (!configuredSecret && process.env.NODE_ENV === "production") throw new Error("Missing authentication secret");
 const authSecret = configuredSecret ?? "local-development-secret";
 const google = getGoogleAuthConfig();
-const adminEmail = process.env.ADMIN_EMAIL ? normalizeEmail(process.env.ADMIN_EMAIL) : "";
+const configuredAdminEmail = process.env.STUDIO_DEPLOYMENT === "true"
+  ? process.env.STUDIO_ADMIN_EMAIL
+  : process.env.ADMIN_EMAIL;
+const adminEmail = configuredAdminEmail ? normalizeEmail(configuredAdminEmail) : "";
+
+async function getAuthDb() {
+  if (process.env.STUDIO_DEPLOYMENT === "true") return getStudioDb();
+  const { getDb } = await import("@/lib/mongo");
+  return getDb();
+}
 
 function roleForEmail(email: string | null | undefined, storedRole?: string) {
   return adminEmail && email && normalizeEmail(email) === adminEmail ? "admin" : normalizeRole(storedRole);
@@ -31,7 +40,7 @@ export const authOptions: AuthOptions = {
         const email = normalizeEmail(emailValue);
         const limit = await checkRateLimitDistributed(`login:${email}`, 10, 15 * 60 * 1000);
         if (!limit.allowed) return null;
-        const user = await (await getDb()).collection("users").findOne({ email });
+        const user = await (await getAuthDb()).collection("users").findOne({ email });
         if (!user || typeof user.password !== "string" || !(await bcrypt.compare(password, user.password))) return null;
         return { id: String(user._id), email, name: typeof user.name === "string" ? user.name : "", role: roleForEmail(email, typeof user.role === "string" ? user.role : undefined) };
       },
@@ -45,7 +54,7 @@ export const authOptions: AuthOptions = {
     async signIn({ user, account }) {
       if (account?.provider !== "google" || !user.email) return true;
       const email = normalizeEmail(user.email);
-      const users = (await getDb()).collection("users");
+      const users = (await getAuthDb()).collection("users");
       const existing = await users.findOne({ email });
       const role = roleForEmail(email, typeof existing?.role === "string" ? existing.role : undefined);
       if (!existing) await users.insertOne({ email, name: user.name ?? "", image: user.image ?? null, password: null, role, provider: "google", createdAt: new Date(), updatedAt: new Date() });

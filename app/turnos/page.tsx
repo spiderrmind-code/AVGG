@@ -11,17 +11,18 @@ export default function TurnosPage() {
 	const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "");
 	const whatsappMessage = savedRequest
 		? [
-			"Hola, envié una solicitud de turno en 13 Studio Tattoo.",
-			`Nombre: ${savedRequest.name}`,
+			"Hola, quiero consultar por una solicitud de turno en 13 Studio Tattoo.",
 			`Fecha preferida: ${savedRequest.preferredDate}`,
 			`Horario preferido: ${savedRequest.preferredTime}`,
 			`Estilo: ${savedRequest.style}`,
-			`Idea: ${savedRequest.idea}`,
-			"Quisiera conversar sobre disponibilidad y la seña.",
+			"Quisiera conversar sobre disponibilidad.",
 		].join("\n")
 		: "";
 	const whatsappHref = success && whatsappNumber && whatsappMessage
 		? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
+		: null;
+	const whatsappFallbackHref = whatsappNumber
+		? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hola, quisiera consultar con 13 Studio Tattoo.")}`
 		: null;
 
 	async function submit(event: FormEvent<HTMLFormElement>) {
@@ -72,6 +73,7 @@ export default function TurnosPage() {
 					<button disabled={sending} className="studio-primary wide">{sending ? "Enviando…" : "Enviar solicitud"} <i>↗</i></button>
 					{message ? <p className={`studio-form-message ${success ? "is-success" : "is-error"}`} role="status">{success ? "✓ " : "! "}{message}</p> : null}
 					{whatsappHref ? <a className="studio-book wide" href={whatsappHref} target="_blank" rel="noopener noreferrer">Continuar por WhatsApp <i>↗</i></a> : null}
+					{!success && message && whatsappFallbackHref ? <a className="studio-book wide" href={whatsappFallbackHref} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp <i>↗</i></a> : null}
 				</form>
 			</div>
 		</div>

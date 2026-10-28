@@ -1590,6 +1590,16 @@ html.dark .avg-site-footer a {
 .studio-cta .studio-primary:hover { border-color:var(--studio-pink); background:var(--studio-pink); color:var(--studio-black); }
 .studio-header .studio-book:focus-visible,.studio-header .studio-menu:focus-visible { outline:2px solid var(--studio-pink); outline-offset:4px; }
 
+.studio-admin-login { display:grid; place-items:center; background:var(--studio-black); color:var(--studio-white); }
+.studio-admin-login-panel { padding:2rem; border:1px solid var(--studio-graphite); background:var(--studio-carbon); }
+.studio-admin-login-panel h1 { margin:1.5rem 0 .5rem; font-size:2rem; font-weight:800; }
+.studio-admin-login-panel > p:not(.studio-kicker) { margin:0 0 2rem; color:var(--studio-muted); }
+.studio-admin-login-panel form { display:grid; gap:1rem; }
+.studio-admin-login-panel label { display:grid; gap:.5rem; color:var(--studio-muted); }
+.studio-admin-login-panel input { width:100%; border:1px solid var(--studio-graphite); background:var(--studio-black); color:var(--studio-white); padding:.85rem; }
+.studio-admin-login-panel input:focus-visible { outline:2px solid var(--studio-pink); outline-offset:1px; }
+.studio-admin-login-panel .studio-primary { cursor:pointer; }
+
 /* Local hero photo supplied for 13 Studio Tattoo. */
 .studio-hero-image {
   inset: 0;
