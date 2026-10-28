@@ -4,14 +4,15 @@ import { getToken } from "next-auth/jwt";
 import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { resolveAuthSecret } from "@/lib/auth-secret";
-import { isStudioRouteAllowed } from "@/lib/studio-routes";
+import { isStudioDeployment, isStudioRouteAllowed } from "@/lib/studio-routes";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (process.env.STUDIO_DEPLOYMENT === "true" && !isStudioRouteAllowed(pathname)) {
+  const studioDeployment = isStudioDeployment();
+  if (studioDeployment && !isStudioRouteAllowed(pathname)) {
     return new NextResponse(null, { status: 404 });
   }
-  if (process.env.STUDIO_DEPLOYMENT === "true" && pathname === "/admin") {
+  if (studioDeployment && pathname === "/admin") {
     return NextResponse.redirect(new URL("/admin/turnos", req.url));
   }
 
