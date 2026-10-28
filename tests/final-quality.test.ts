@@ -25,21 +25,15 @@ test("SEO público conserva metadata, robots, schema y datos privados fuera del 
   assert.equal(existsSync(`${root}/app/manifest.ts`), true);
 });
 
-test("páginas legales y de soporte existen sin datos de contacto inventados", () => {
-  const requiredPages = [
-    "terminos-y-condiciones", "politica-de-privacidad", "politica-de-cookies", "envios",
-    "cambios-y-devoluciones", "contacto", "ayuda", "preguntas-frecuentes",
-  ];
-  for (const page of requiredPages) assert.equal(existsSync(`${root}/app/${page}/page.tsx`), true, page);
+test("Studio no enlaza ni publica páginas comerciales incompletas", () => {
   const footer = read("app/components/Footer.tsx");
-  for (const href of requiredPages.map((page) => `/${page}`)) assert.ok(footer.includes(href), href);
-  const contact = read("app/contacto/page.tsx");
-  const terms = read("app/terminos-y-condiciones/page.tsx");
-  assert.ok(contact.includes("Información legal en actualización"));
-  assert.ok(terms.includes("información de identificación legal se encuentra en actualización"));
-  for (const placeholder of ["[RAZ", "[CUIT]", "[DOMICILIO LEGAL]", "[EMAIL DE CONTACTO]"]) {
-    assert.equal(contact.includes(placeholder) || terms.includes(placeholder), false, placeholder);
+  const routePolicy = read("lib/studio-routes.ts");
+  for (const href of ["/turnos", "/contacto", "/#galeria"]) assert.ok(footer.includes(href), href);
+  for (const page of ["terminos-y-condiciones", "politica-de-privacidad", "politica-de-cookies", "envios", "cambios-y-devoluciones", "ayuda", "preguntas-frecuentes"]) {
+    assert.equal(routePolicy.includes(`"/${page}"`), false, page);
   }
+  const contact = read("app/contacto/page.tsx");
+  for (const placeholder of ["[RAZ", "[CUIT]", "[DOMICILIO LEGAL]", "[EMAIL DE CONTACTO]", "Información legal en actualización"]) assert.equal(contact.includes(placeholder), false, placeholder);
   assert.equal(/(?:\+?54|\b11\s?\d{4}|@(?:gmail|outlook|yahoo)\.com)/i.test(contact), false);
 });
 
@@ -57,9 +51,9 @@ test("accesibilidad base mantiene idioma, navegación de salto y controles nombr
   assert.ok(css.includes("prefers-reduced-motion"));
   assert.equal(footer.includes('href="#"'), false);
   assert.ok(product.includes("alt={product.name}"));
-  assert.ok(header.includes('aria-label="Buscar productos"'));
-  assert.ok(header.includes('aria-label="Buscar"'));
-  for (const iconName of ["Favoritos", "Notificaciones", "Abrir men"]) assert.ok(header.includes(iconName), iconName);
+  assert.ok(header.includes('aria-label="Navegación principal"'));
+  assert.ok(header.includes('aria-label="Abrir menú"'));
+  assert.ok(header.includes('aria-label="Navegación móvil"'));
 });
 
 test("administración aplica paginación y las rutas sensibles no declaran caché pública", () => {
