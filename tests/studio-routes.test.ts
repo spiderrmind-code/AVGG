@@ -4,6 +4,8 @@ import { isStudioDeployment, isStudioRouteAllowed } from "../lib/studio-routes";
 
 test("Studio deployment flag accepts server and build-time public configuration", () => {
   assert.equal(isStudioDeployment({ STUDIO_DEPLOYMENT: "true" }), true);
+  assert.equal(isStudioDeployment({ STUDIO_DEPLOYMENT: "true\n" }), true);
+  assert.equal(isStudioDeployment({ STUDIO_DEPLOYMENT: "true\\n" }), true);
   assert.equal(isStudioDeployment({ NEXT_PUBLIC_STUDIO_DEPLOYMENT: "true" }), true);
   assert.equal(isStudioDeployment({}), false);
 });

@@ -8,8 +8,8 @@ type StudioMongoEnvironment = {
 };
 
 export function resolveStudioMongoConfig(environment: StudioMongoEnvironment = process.env) {
-  const uri = environment.STUDIO_MONGODB_URI?.trim();
-  const dbName = environment.STUDIO_MONGODB_DB?.trim();
+  const uri = environment.STUDIO_MONGODB_URI?.trim().replace(/\\[rn]+$/i, "");
+  const dbName = environment.STUDIO_MONGODB_DB?.trim().replace(/\\[rn]+$/i, "");
 
   if (!uri || !/^mongodb(\+srv)?:\/\//.test(uri)) {
     throw new Error('Falta una variable STUDIO_MONGODB_URI válida');

@@ -58,4 +58,8 @@ test("Studio Mongo requires its own URI and rejects the AVG database", () => {
     resolveStudioMongoConfig({ STUDIO_MONGODB_URI: "mongodb://localhost", STUDIO_MONGODB_DB: "13_studio_tattoo" }),
     { uri: "mongodb://localhost", dbName: "13_studio_tattoo" }
   );
+  assert.deepEqual(
+    resolveStudioMongoConfig({ STUDIO_MONGODB_URI: "mongodb://localhost\\n", STUDIO_MONGODB_DB: "13_studio_tattoo\\n" }),
+    { uri: "mongodb://localhost", dbName: "13_studio_tattoo" }
+  );
 });
