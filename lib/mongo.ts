@@ -64,17 +64,6 @@ if (!process.env.MONGODB_URI && process.env.MONGO_URI) {
   console.warn('Using deprecated MongoDB environment variable "MONGO_URI"; migrate to "MONGODB_URI".');
 }
 
-if (!configuredUri) {
-  throw new Error('Falta la variable de entorno "MONGODB_URI"');
-}
-
-if (!mongoUriDiagnostics(configuredUri).startsWithMongoScheme) {
-  const diagnostics = mongoUriDiagnostics(configuredUri);
-  throw new Error(`MONGODB_URI inválida: exists=${diagnostics.exists}; length=${diagnostics.length}; startsWithMongoScheme=${diagnostics.startsWithMongoScheme}`);
-}
-
-const uri = configuredUri;
-
 const dbName = resolvedMongo.dbName;
 const options: MongoClientOptions = {
   serverSelectionTimeoutMS: 8_000,
@@ -90,6 +79,15 @@ function connectionError(error: unknown) {
 }
 
 function createClientPromise() {
+  if (!configuredUri) {
+    throw new Error('Falta la variable de entorno "MONGODB_URI"');
+  }
+  if (!mongoUriDiagnostics(configuredUri).startsWithMongoScheme) {
+    const diagnostics = mongoUriDiagnostics(configuredUri);
+    throw new Error(`MONGODB_URI inválida: exists=${diagnostics.exists}; length=${diagnostics.length}; startsWithMongoScheme=${diagnostics.startsWithMongoScheme}`);
+  }
+
+  const uri = configuredUri;
   const client = new MongoClient(uri, options);
   const boundedConnection = new Promise<MongoClient>((resolve, reject) => {
     const timeout = setTimeout(() => {
