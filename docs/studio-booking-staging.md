@@ -6,7 +6,7 @@ No ejecutes estas pruebas con una URI de producción ni con datos personales rea
 
 1. Crea una base MongoDB desechable y un usuario con permisos limitados solo sobre esa base.
 2. En un `.env.local` de prueba, configura `STUDIO_MONGODB_URI` para esa instancia y `STUDIO_MONGODB_DB=13_studio_appointments_staging`. No uses `MONGODB_URI` ni la base `AVGCONNECTS`.
-3. Configura `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, `NEXTAUTH_URL=http://localhost:3000`, un `NEXTAUTH_SECRET` temporal y `STUDIO_ADMIN_EMAIL` para la cuenta autorizada. No copies credenciales de producción.
+3. Configura `STUDIO_DEPLOYMENT=true`, `NEXT_PUBLIC_STUDIO_DEPLOYMENT=true`, `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, `NEXTAUTH_URL=http://localhost:3000`, un `STUDIO_NEXTAUTH_SECRET` temporal y `STUDIO_ADMIN_EMAIL` para la cuenta autorizada. No copies credenciales de producción ni uses `NEXTAUTH_SECRET`.
 4. Crea la cuenta admin una sola vez con `STUDIO_ADMIN_EMAIL` y `STUDIO_ADMIN_PASSWORD` disponibles en el entorno local, ejecutando `node scripts/run-tsx.mjs scripts/create-studio-admin.ts`. La contraseña requiere al menos 14 caracteres; el script no sobrescribe usuarios existentes.
 5. Inicia el sitio con `npm run dev` y usa esa cuenta administrativa solo para esta base.
 
