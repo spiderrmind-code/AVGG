@@ -3,10 +3,31 @@ import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
 import { authOptions } from "@/auth";
 import { isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentTime } from "@/lib/appointments";
+import { logServerError } from "@/lib/logger";
 import { getStudioDb } from "@/lib/studio-mongo";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
-async function requireAdmin() { const session = await getServerSession(authOptions); if (!session?.user?.email) return NextResponse.json({ message: "No autenticado" }, { status: 401 }); return session.user.role === "admin" ? null : NextResponse.json({ message: "No autorizado" }, { status: 403 }); }
-export async function GET() { const denied = await requireAdmin(); if (denied) return denied; try { const appointments = await (await getStudioDb()).collection("appointments").find({}, { projection: { fingerprint: 0 } }).sort({ preferredDate: 1, preferredTime: 1, createdAt: -1 }).toArray(); return NextResponse.json({ appointments }); } catch { return NextResponse.json({ message: "No se pudieron cargar los turnos." }, { status: 500 }); } }
+import { isAuthorizedStudioAdmin, isStudioDeployment } from "@/lib/studio-routes";
+
+async function requireAdmin() {
+	if (!isStudioDeployment()) return NextResponse.json({ message: "No encontrado" }, { status: 404 });
+	const session = await getServerSession(authOptions);
+	if (!session?.user?.email) return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+	return isAuthorizedStudioAdmin(session.user.email, session.user.role)
+		? null
+		: NextResponse.json({ message: "No autorizado" }, { status: 403 });
+}
+
+export async function GET() {
+	const denied = await requireAdmin();
+	if (denied) return denied;
+	try {
+		const appointments = await (await getStudioDb()).collection("appointments").find({}, { projection: { fingerprint: 0 } }).sort({ preferredDate: 1, preferredTime: 1, createdAt: -1 }).toArray();
+		return NextResponse.json({ appointments }, { headers: { "Cache-Control": "no-store" } });
+	} catch (error) {
+		logServerError("studio_appointments_list_failed", { errorType: error instanceof Error ? error.name : "unknown" });
+		return NextResponse.json({ message: "No se pudieron cargar los turnos." }, { status: 500, headers: { "Cache-Control": "no-store" } });
+	}
+}
 export async function PATCH(request: Request) {
 	const denied = await requireAdmin();
 	if (denied) return denied;
@@ -108,7 +129,8 @@ export async function PATCH(request: Request) {
 		}
 		if (!activeStatuses.includes(status) && fingerprint) await submissionLocks.deleteOne({ _id: fingerprint, appointmentId });
 		return NextResponse.json({ success: true });
-	} catch {
+	} catch (error) {
+		logServerError("studio_appointment_update_failed", { errorType: error instanceof Error ? error.name : "unknown" });
 		return NextResponse.json({ message: "No se pudo actualizar el turno." }, { status: 500 });
 	}
 }

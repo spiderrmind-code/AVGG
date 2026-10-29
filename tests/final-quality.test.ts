@@ -29,9 +29,10 @@ test("Studio no enlaza ni publica páginas comerciales incompletas", () => {
   const footer = read("app/components/Footer.tsx");
   const routePolicy = read("lib/studio-routes.ts");
   for (const href of ["/turnos", "/contacto", "/#galeria"]) assert.ok(footer.includes(href), href);
-  for (const page of ["terminos-y-condiciones", "politica-de-privacidad", "politica-de-cookies", "envios", "cambios-y-devoluciones", "ayuda", "preguntas-frecuentes"]) {
+  for (const page of ["terminos-y-condiciones", "politica-de-cookies", "envios", "cambios-y-devoluciones", "ayuda", "preguntas-frecuentes"]) {
     assert.equal(routePolicy.includes(`"/${page}"`), false, page);
   }
+  assert.ok(routePolicy.includes('"/politica-de-privacidad"'));
   const contact = read("app/contacto/page.tsx");
   for (const placeholder of ["[RAZ", "[CUIT]", "[DOMICILIO LEGAL]", "[EMAIL DE CONTACTO]", "Información legal en actualización"]) assert.equal(contact.includes(placeholder), false, placeholder);
   assert.equal(/(?:\+?54|\b11\s?\d{4}|@(?:gmail|outlook|yahoo)\.com)/i.test(contact), false);

@@ -1,14 +1,19 @@
 import { createHash } from "crypto";
 import type { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
-import { checkAppointmentRateLimit, isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentTime } from "@/lib/appointments";
+import { checkAppointmentRateLimit, isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentPhone, isValidAppointmentStyle, isValidAppointmentTime, studioPrivacyNoticeVersion } from "@/lib/appointments";
 import { requireAuthSecret } from "@/lib/auth-secret";
+import { logServerError } from "@/lib/logger";
 import { getStudioDb, isStudioMongoConfigured } from "@/lib/studio-mongo";
 import { requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { recordStudioEvent } from "@/lib/studio-analytics";
+import { resolveStudioDeployment } from "@/lib/studio-routes";
 function field(value: unknown, max: number) { return typeof value === "string" && value.trim().length > 0 && value.trim().length <= max ? value.trim() : null; }
 export async function POST(request: Request) {
+  const deployment = resolveStudioDeployment();
+  if (!deployment.enabled) return NextResponse.json({ message: "No encontrado" }, { status: 404 });
+  if (!deployment.consistent) return NextResponse.json({ message: "La agenda en línea no está disponible por configuración." }, { status: 503 });
   if (!hasTrustedOrigin(request)) return NextResponse.json({ message: "Origen no permitido" }, { status: 403 });
   if (!hasJsonContentType(request)) return NextResponse.json({ message: "Content-Type inválido" }, { status: 415 });
   if (!isStudioMongoConfigured()) return NextResponse.json({ message: "La agenda en línea no está disponible. Escribinos por WhatsApp para consultar." }, { status: 503 });
@@ -27,11 +32,12 @@ export async function POST(request: Request) {
     const name = field(item.name, 100);
     const email = field(item.email, 254);
     const phone = field(item.phone, 40);
-    const style = field(item.style, 80);
+    const style = item.style;
     const idea = field(item.idea, 2000);
     const preferredDate = field(item.preferredDate, 10);
     const preferredTime = field(item.preferredTime, 5);
-    if (!name || !email || !phone || !style || !idea || !preferredDate || !preferredTime || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !isValidAppointmentDate(preferredDate) || !isValidAppointmentTime(preferredTime)) {
+    const privacyConsent = item.privacyConsent === "on" || item.privacyConsent === true;
+    if (!name || !email || !phone || !isValidAppointmentPhone(phone) || !isValidAppointmentStyle(style) || !idea || !preferredDate || !preferredTime || !privacyConsent || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !isValidAppointmentDate(preferredDate) || !isValidAppointmentTime(preferredTime)) {
       return NextResponse.json({ message: "Revisá los datos ingresados." }, { status: 400 });
     }
 
@@ -63,7 +69,7 @@ export async function POST(request: Request) {
 
     let insertedId;
     try {
-      const result = await appointments.insertOne({ name, email: normalizedEmail, phone, style, idea, preferredDate, preferredTime, fingerprint, status: "requested", createdAt: lockDate, updatedAt: lockDate });
+      const result = await appointments.insertOne({ name, email: normalizedEmail, phone, style, idea, preferredDate, preferredTime, fingerprint, privacyNoticeVersion: studioPrivacyNoticeVersion, privacyAcceptedAt: lockDate, status: "requested", createdAt: lockDate, updatedAt: lockDate });
       insertedId = result.insertedId;
     } catch (error) {
       await submissionLocks.deleteOne({ _id: fingerprint, createdAt: lockDate });
@@ -71,16 +77,17 @@ export async function POST(request: Request) {
     }
     try {
       await submissionLocks.updateOne({ _id: fingerprint, createdAt: lockDate }, { $set: { appointmentId: insertedId } });
-    } catch {
-      // The saved appointment remains authoritative for duplicate checks.
+    } catch (error) {
+      logServerError("studio_appointment_lock_link_failed", { errorType: error instanceof Error ? error.name : "unknown" });
     }
     try {
       await recordStudioEvent(db, "appointment_request_saved");
-    } catch {
-      // Analytics must not change the result of a saved request.
+    } catch (error) {
+      logServerError("studio_appointment_analytics_failed", { errorType: error instanceof Error ? error.name : "unknown" });
     }
     return NextResponse.json({ message: "Solicitud guardada. El estudio revisará tu idea y te contactará para confirmar el turno." }, { status: 201 });
-  } catch {
+  } catch (error) {
+    logServerError("studio_appointment_save_failed", { errorType: error instanceof Error ? error.name : "unknown" });
     return NextResponse.json({ message: "No pudimos guardar la solicitud. Intentá nuevamente." }, { status: 500 });
   }
 }

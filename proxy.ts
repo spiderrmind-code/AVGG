@@ -4,11 +4,12 @@ import { getToken } from "next-auth/jwt";
 import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { resolveAuthSecret } from "@/lib/auth-secret";
-import { isStudioDeployment, isStudioRouteAllowed } from "@/lib/studio-routes";
+import { isStudioRouteAllowed, resolveStudioDeployment } from "@/lib/studio-routes";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const studioDeployment = isStudioDeployment();
+  const deployment = resolveStudioDeployment();
+  const studioDeployment = deployment.enabled;
   if (studioDeployment && !isStudioRouteAllowed(pathname)) {
     return new NextResponse(null, { status: 404 });
   }
@@ -18,6 +19,10 @@ export async function proxy(req: NextRequest) {
 
   const authSecret = resolveAuthSecret();
   const isSensitiveApi = pathname.startsWith("/api/admin/") || pathname === "/api/suppliers";
+  const isAdminPage = pathname.startsWith("/admin");
+  if (studioDeployment && (isSensitiveApi || isAdminPage) && (!deployment.consistent || !authSecret)) {
+    return NextResponse.json({ success: false, message: "La administración no está configurada." }, { status: 503 });
+  }
   const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
 
   if (isSensitiveApi) {

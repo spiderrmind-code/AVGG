@@ -1,14 +1,14 @@
 "use client";
 import { FormEvent, useState } from "react";
-import { getStudioDate } from "@/lib/appointments";
-const styles = ["Sin preferencia", "Fine line", "Blackwork", "Color", "Ornamental", "Otro"];
+import Link from "next/link";
+import { getStudioDate, studioAppointmentStyles } from "@/lib/appointments";
+import { getStudioWhatsAppHref } from "@/lib/studio-contact";
 export default function TurnosPage() {
 	const [message, setMessage] = useState("");
 	const [sending, setSending] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [savedRequest, setSavedRequest] = useState<Record<string, string> | null>(null);
 	const today = getStudioDate();
-	const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "");
 	const whatsappMessage = savedRequest
 		? [
 			"Hola, quiero consultar por una solicitud de turno en 13 Studio Tattoo.",
@@ -18,12 +18,8 @@ export default function TurnosPage() {
 			"Quisiera conversar sobre disponibilidad.",
 		].join("\n")
 		: "";
-	const whatsappHref = success && whatsappNumber && whatsappMessage
-		? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
-		: null;
-	const whatsappFallbackHref = whatsappNumber
-		? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hola, quisiera consultar con 13 Studio Tattoo.")}`
-		: null;
+	const whatsappHref = success ? getStudioWhatsAppHref(whatsappMessage) : null;
+	const whatsappFallbackHref = getStudioWhatsAppHref("Hola, quisiera consultar con 13 Studio Tattoo.");
 
 	async function submit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -66,10 +62,14 @@ export default function TurnosPage() {
 					<label className="wide">Nombre y apellido<input required name="name" autoComplete="name" /></label>
 					<label>Email<input required name="email" autoComplete="email" type="email" /></label>
 					<label>WhatsApp<input required name="phone" autoComplete="tel" type="tel" /></label>
-					<label>Estilo<select name="style">{styles.map((style) => <option key={style}>{style}</option>)}</select></label>
+					<label>Estilo<select name="style">{studioAppointmentStyles.map((style) => <option key={style}>{style}</option>)}</select></label>
 					<label>Fecha preferida<input required min={today} name="preferredDate" type="date" /></label>
 					<label>Horario preferido<input required name="preferredTime" type="time" /></label>
 					<label className="wide">La idea<textarea required name="idea" placeholder="Idea, tamaño aproximado y zona del cuerpo" /></label>
+					<label className="wide studio-consent">
+						<input required name="privacyConsent" type="checkbox" />
+						<span>Leí la <Link href="/politica-de-privacidad" target="_blank" rel="noopener noreferrer">política de privacidad</Link> y autorizo el uso de mis datos para gestionar esta solicitud.</span>
+					</label>
 					<button disabled={sending} className="studio-primary wide">{sending ? "Enviando…" : "Enviar solicitud"} <i>↗</i></button>
 					{message ? <p className={`studio-form-message ${success ? "is-success" : "is-error"}`} role="status">{success ? "✓ " : "! "}{message}</p> : null}
 					{whatsappHref ? <a className="studio-book wide" href={whatsappHref} target="_blank" rel="noopener noreferrer">Continuar por WhatsApp <i>↗</i></a> : null}

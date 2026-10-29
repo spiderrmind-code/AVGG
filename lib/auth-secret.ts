@@ -1,4 +1,13 @@
-type AuthEnvironment = Partial<Pick<NodeJS.ProcessEnv, "NEXTAUTH_SECRET" | "AUTH_SECRET" | "NODE_ENV">>;
+import { isStudioDeployment } from "@/lib/studio-routes";
+
+type AuthEnvironment = Partial<Pick<NodeJS.ProcessEnv,
+  | "NEXTAUTH_SECRET"
+  | "AUTH_SECRET"
+  | "STUDIO_NEXTAUTH_SECRET"
+  | "STUDIO_DEPLOYMENT"
+  | "NEXT_PUBLIC_STUDIO_DEPLOYMENT"
+  | "NODE_ENV"
+>>;
 
 /**
  * Resolves the NextAuth signing secret consistently for the auth handler and
@@ -6,6 +15,10 @@ type AuthEnvironment = Partial<Pick<NodeJS.ProcessEnv, "NEXTAUTH_SECRET" | "AUTH
  * remains a backwards-compatible alias while existing deployments are migrated.
  */
 export function resolveAuthSecret(environment: AuthEnvironment = process.env): string | undefined {
+  if (isStudioDeployment(environment)) {
+    return environment.STUDIO_NEXTAUTH_SECRET?.trim() || undefined;
+  }
+
   const nextAuthSecret = environment.NEXTAUTH_SECRET?.trim();
   const authSecret = environment.AUTH_SECRET?.trim();
 

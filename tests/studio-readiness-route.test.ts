@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
+import test from "node:test";
+
+test("Studio readiness probes only Studio Mongo while AVG retains its own readiness check", () => {
+  const result = spawnSync(process.execPath, ["--experimental-test-module-mocks", "--import", "tsx", path.join(process.cwd(), "tests", "fixtures", "studio-readiness-route-harness.ts")], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+});

@@ -1599,6 +1599,9 @@ html.dark .avg-site-footer a {
 .studio-admin-login-panel input { width:100%; border:1px solid var(--studio-graphite); background:var(--studio-black); color:var(--studio-white); padding:.85rem; }
 .studio-admin-login-panel input:focus-visible { outline:2px solid var(--studio-pink); outline-offset:1px; }
 .studio-admin-login-panel .studio-primary { cursor:pointer; }
+.studio-consent { grid-template-columns:auto 1fr; align-items:start; text-transform:none; letter-spacing:normal; line-height:1.5; }
+.studio-form .studio-consent input[type="checkbox"] { width:1rem; height:1rem; margin:.1rem 0 0; padding:0; accent-color:var(--studio-pink); }
+.studio-consent a { color:var(--studio-lime); text-decoration:underline; text-underline-offset:.2em; }
 
 /* Local hero photo supplied for 13 Studio Tattoo. */
 .studio-hero-image {

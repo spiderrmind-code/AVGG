@@ -8,23 +8,28 @@ import { getGoogleAuthConfig } from "@/lib/auth-config";
 import { resolveSafeAuthRedirect } from "@/lib/auth-redirect";
 import { resolveAuthSecret } from "@/lib/auth-secret";
 import { checkRateLimitDistributed } from "@/lib/request-rate-limit";
+import { isAuthorizedStudioAdmin, isStudioDeployment } from "@/lib/studio-routes";
 
 const configuredSecret = resolveAuthSecret();
 if (!configuredSecret && process.env.NODE_ENV === "production") throw new Error("Missing authentication secret");
 const authSecret = configuredSecret ?? "local-development-secret";
 const google = getGoogleAuthConfig();
-const configuredAdminEmail = process.env.STUDIO_DEPLOYMENT === "true"
+const studioDeployment = isStudioDeployment();
+const configuredAdminEmail = studioDeployment
   ? process.env.STUDIO_ADMIN_EMAIL
   : process.env.ADMIN_EMAIL;
 const adminEmail = configuredAdminEmail ? normalizeEmail(configuredAdminEmail) : "";
 
 async function getAuthDb() {
-  if (process.env.STUDIO_DEPLOYMENT === "true") return getStudioDb();
+  if (studioDeployment) return getStudioDb();
   const { getDb } = await import("@/lib/mongo");
   return getDb();
 }
 
 function roleForEmail(email: string | null | undefined, storedRole?: string) {
+  if (studioDeployment) {
+    return isAuthorizedStudioAdmin(email, "admin") ? "admin" : "customer";
+  }
   return adminEmail && email && normalizeEmail(email) === adminEmail ? "admin" : normalizeRole(storedRole);
 }
 

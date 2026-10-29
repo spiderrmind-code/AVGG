@@ -8,6 +8,9 @@ const studioDate = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
+export const studioAppointmentStyles = ["Sin preferencia", "Fine line", "Blackwork", "Color", "Ornamental", "Otro"] as const;
+export const studioPrivacyNoticeVersion = "studio-booking-v1";
+
 export function getStudioDate(now = new Date()): string {
   return studioDate.format(now);
 }
@@ -21,6 +24,16 @@ export function isValidAppointmentDate(value: unknown, now = new Date(), allowPa
 
 export function isValidAppointmentTime(value: unknown): value is string {
   return typeof value === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+export function isValidAppointmentPhone(value: unknown): value is string {
+  if (typeof value !== "string" || value.trim().length > 40 || !/^\+?[\d\s().-]+$/.test(value.trim())) return false;
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 15;
+}
+
+export function isValidAppointmentStyle(value: unknown): value is (typeof studioAppointmentStyles)[number] {
+  return typeof value === "string" && studioAppointmentStyles.includes(value as (typeof studioAppointmentStyles)[number]);
 }
 
 export function isDuplicateKeyError(error: unknown): boolean {

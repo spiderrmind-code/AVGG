@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { appointmentRateLimitKey, getStudioDate, isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentTime } from "../lib/appointments";
+import { appointmentRateLimitKey, getStudioDate, isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentPhone, isValidAppointmentStyle, isValidAppointmentTime, studioAppointmentStyles, studioPrivacyNoticeVersion } from "../lib/appointments";
 import { isStudioAnalyticsEvent } from "../lib/studio-analytics";
 
 const now = new Date("2026-10-27T15:00:00-03:00");
@@ -17,6 +17,17 @@ test("appointment times must use a real 24-hour time", () => {
   assert.equal(isValidAppointmentTime("09:30"), true);
   assert.equal(isValidAppointmentTime("24:00"), false);
   assert.equal(isValidAppointmentTime("9:30"), false);
+});
+
+test("appointment phone, style, and privacy notice are validated", () => {
+  assert.equal(isValidAppointmentPhone("+54 221 220 3747"), true);
+  assert.equal(isValidAppointmentPhone("123"), false);
+  assert.equal(isValidAppointmentPhone("abcdefgh1234567"), false);
+  assert.equal(isValidAppointmentPhone("x".repeat(41)), false);
+  assert.equal(isValidAppointmentStyle("Blackwork"), true);
+  assert.equal(isValidAppointmentStyle("Unknown"), false);
+  assert.ok(studioAppointmentStyles.includes("Otro"));
+  assert.equal(studioPrivacyNoticeVersion, "studio-booking-v1");
 });
 
 test("duplicate Mongo keys are recognized without exposing details", () => {
