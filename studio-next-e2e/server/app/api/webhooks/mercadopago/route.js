@@ -1,0 +1,11 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/webhooks/mercadopago/route.js")
+R.c("server/chunks/lib_fulfillment_engine_ts_0yagx7j54cp6h._.js")
+R.c("server/chunks/lib_mongo_ts_0p7efzwu6o2xd._.js")
+R.c("server/chunks/[root-of-the-server]__1s78c0pb-itbm._.js")
+R.c("server/chunks/lib_mercadopago-orders_ts_14f-7a5xy7xpx._.js")
+R.c("server/chunks/_0yac-9ejj6xb0._.js")
+R.c("server/chunks/[root-of-the-server]__0ld-3rbaj1m8-._.js")
+R.c("server/chunks/node_modules_next_1zdbrneapig6o._.js")
+R.c("server/chunks/_next-internal_server_app_api_webhooks_mercadopago_route_actions_0ellk85h-32wo.js")
+R.m(71864)
+module.exports=R.m(71864).exports

@@ -1,0 +1,32 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/1-nbktyvk8qbp.js"
+3:"/_next/static/chunks/0f2nuu2i1sk5k.js"
+4:I[42468,["$2","$3"],"default"]
+5:I[39756,["$2","$3"],"default"]
+6:"/_next/static/chunks/30zxlnlqufroc.js"
+7:I[8821,["$2","$3","$6"],"default"]
+8:I[37457,["$2","$3"],"default"]
+9:I[22016,["$2","$3"],""]
+10:I[97367,["$2","$3"],"OutletBoundary"]
+11:"$Sreact.suspense"
+14:"ViewportBoundary"
+15:I[97367,["$2","$3"],"$14"]
+16:"MetadataBoundary"
+17:I[97367,["$2","$3"],"$16"]
+18:I[27201,["$2","$3"],"IconMark"]
+:HL["/_next/static/chunks/2p4-y04-4pfpw.css","style"]
+b:X
+e:X
+e:C
+f:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","section",null,{"className":"min-h-screen bg-[#050505] px-5 py-20 text-[#dedee3]","children":["$","div",null,{"className":"mx-auto max-w-3xl border border-[#2b2b31] bg-[var(--studio-carbon)] p-8","children":[["$","p",null,{"className":"text-xs font-bold uppercase tracking-[.3em] text-[#FF00A8]","children":"Contacto"}],["$","h1",null,{"className":"mt-4 text-5xl font-black","children":"HABLEMOS DE TU IDEA."}],["$","p",null,{"className":"mt-6 max-w-xl leading-7 text-[#a3a3ad]","children":"Contanos qué tenés en mente desde el formulario. Revisaremos tu solicitud y te contactaremos; enviarla no confirma un turno."}],["$","$L9",null,{"href":"/turnos","className":"studio-primary mt-8 inline-flex bg-[#B7FF00] px-6 py-3 font-bold text-[#050505]","children":"SOLICITAR TURNO"}],["$","a",null,{"href":"https://wa.me/542212203747?text=Hola%2C%20quisiera%20consultar%20con%2013%20Studio%20Tattoo.","target":"_blank","rel":"noopener noreferrer","className":"studio-book mt-4 inline-flex","children":["Escribinos por WhatsApp ",["$","i",null,{"children":"↗"}]]}]]}]}],null,["$","$L10",null,{"children":["$","$11",null,{"name":"Next.MetadataOutlet","children":"$@12"}]}]]}],"p":"$@13","v":null,"s":"$b"}}]]
+c:[["children",{"s":"contacto","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L5",null,{"parallelRouterKey":"children","template":["$","$L8",null,{}]}]]}],"p":"$@d","v":"$e","s":"$b"},"c":"$Qf"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/2p4-y04-4pfpw.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/1-nbktyvk8qbp.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/0f2nuu2i1sk5k.js","async":true}]],["$","html",null,{"lang":"es","suppressHydrationWarning":true,"children":["$","body",null,{"className":"flex min-h-screen flex-col bg-transparent text-black","children":[["$","script",null,{"type":"application/ld+json","dangerouslySetInnerHTML":{"__html":"{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Organization\",\"name\":\"13 Studio Tattoo\",\"url\":\"https://13-studio-tattoo.vercel.app\"},{\"@type\":\"TattooParlor\",\"name\":\"13 Studio Tattoo\",\"url\":\"https://13-studio-tattoo.vercel.app\"},{\"@type\":\"WebSite\",\"name\":\"13 Studio Tattoo\",\"url\":\"https://13-studio-tattoo.vercel.app\"}]}"}}],["$","$L4",null,{"children":["$","$L5",null,{"parallelRouterKey":"children","error":"$7","errorStyles":[],"errorScripts":[["$","script","script-0",{"src":"/_next/static/chunks/30zxlnlqufroc.js","async":true}]],"template":["$","$L8",null,{}],"notFound":[["$","main",null,{"className":"ui-page flex items-center","children":["$","section",null,{"className":"ui-surface mx-auto max-w-3xl p-8 text-center sm:p-12","children":[["$","p",null,{"className":"ui-eyebrow","children":"404"}],["$","h1",null,{"className":"ui-title","children":"Página no encontrada"}],["$","p",null,{"className":"ui-copy mx-auto","children":"La página que buscás no existe o fue movida."}],["$","$L9",null,{"className":"ui-button-primary mt-8","href":"/","children":"Volver a la tienda"}]]}]}],[]]}]}]]}]}]]}],"p":"$@a","v":null,"s":"$b"},"c":"$Qc"},"h":{"r":["$","$1","h",{"children":[null,["$","$L15",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L17",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$11",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Contacto | 13 Studio Tattoo"}],["$","meta","1",{"name":"description","content":"Contacto y solicitudes de turnos de 13 Studio Tattoo."}],["$","link","2",{"rel":"manifest","href":"/manifest.webmanifest"}],["$","meta","3",{"name":"robots","content":"index, follow"}],["$","link","4",{"rel":"canonical","href":"https://13-studio-tattoo.vercel.app"}],["$","meta","5",{"property":"og:title","content":"13 Studio Tattoo | Buenos Aires"}],["$","meta","6",{"property":"og:description","content":"Tatuajes personalizados y turnos online."}],["$","meta","7",{"property":"og:url","content":"https://13-studio-tattoo.vercel.app"}],["$","meta","8",{"property":"og:locale","content":"es_AR"}],["$","meta","9",{"property":"og:image","content":"https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&w=1200&h=630&q=85"}],["$","meta","10",{"property":"og:image:width","content":"1200"}],["$","meta","11",{"property":"og:image:height","content":"630"}],["$","meta","12",{"property":"og:image:alt","content":"Referencia de tatuaje blackwork"}],["$","meta","13",{"property":"og:type","content":"website"}],["$","meta","14",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","15",{"name":"twitter:title","content":"13 Studio Tattoo"}],["$","meta","16",{"name":"twitter:description","content":"Tatuajes personalizados y turnos online."}],["$","meta","17",{"name":"twitter:image","content":"https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&w=1200&h=630&q=85"}],["$","link","18",{"rel":"icon","href":"/favicon.ico?favicon.2vob68tjqpejf.ico","sizes":"256x256","type":"image/x-icon"}],["$","link","19",{"rel":"icon","href":"/icon.svg?icon.17hg7bhenpdqs.svg","sizes":"any","type":"image/svg+xml"}],["$","$L18","20",{}]]}]}],null]}],null]}],"p":"$@19","v":null,"s":"$b"}},"a":"$@1a","u":"$@1b","b":"abxteIk9XO4loNKvYCg01"}
+12:null
+b:300
+1b:true
+b:C
+1a:0
+d:"$undefined"
+a:"$undefined"
+19:"$undefined"
+13:"$undefined"

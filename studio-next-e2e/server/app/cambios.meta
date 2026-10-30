@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/cambios/layout,_N_T_/cambios/page,_N_T_/cambios"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/cambios/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/7d76fcd7f724e44c3e60fd2ee754753e90010b025df2fc4e4a6cc7a96e8c135b/$/cambios",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/cambios/page"
+    },
+    "isFallback": false
+  }
+}

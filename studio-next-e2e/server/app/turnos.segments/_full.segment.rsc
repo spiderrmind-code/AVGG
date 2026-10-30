@@ -1,0 +1,32 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/1-nbktyvk8qbp.js"
+3:"/_next/static/chunks/0f2nuu2i1sk5k.js"
+4:I[42468,["$2","$3"],"default"]
+5:I[39756,["$2","$3"],"default"]
+6:"/_next/static/chunks/30zxlnlqufroc.js"
+7:I[8821,["$2","$3","$6"],"default"]
+8:I[37457,["$2","$3"],"default"]
+9:I[22016,["$2","$3"],""]
+d:I[47257,["$2","$3"],"ClientPageRoot"]
+e:"/_next/static/chunks/0-be6zx47cvdv.js"
+f:I[8529,["$2","$3","$e"],"default"]
+12:I[97367,["$2","$3"],"OutletBoundary"]
+13:"$Sreact.suspense"
+15:"ViewportBoundary"
+16:I[97367,["$2","$3"],"$15"]
+18:"MetadataBoundary"
+19:I[97367,["$2","$3"],"$18"]
+1b:"/_next/static/chunks/0tuawfru26-vl.js"
+1c:I[53348,["$2","$3","$1b"],"default"]
+:HL["/_next/static/chunks/2p4-y04-4pfpw.css","style"]
+b:X
+c:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","$Ld",null,{"Component":"$f","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@10","$@11"]}}],[["$","script","script-0",{"src":"/_next/static/chunks/0-be6zx47cvdv.js","async":true,"nonce":"$undefined"}]],["$","$L12",null,{"children":["$","$13",null,{"name":"Next.MetadataOutlet","children":"$@14"}]}]]}],"p":false,"v":null}}]]
+a:[["children",{"s":"turnos","h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L5",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L8",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$b"},"c":"$Qc"}]]
+0:{"P":null,"c":["","turnos"],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/2p4-y04-4pfpw.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/_next/static/chunks/1-nbktyvk8qbp.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/_next/static/chunks/0f2nuu2i1sk5k.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"es","suppressHydrationWarning":true,"children":["$","body",null,{"className":"flex min-h-screen flex-col bg-transparent text-black","children":[["$","script",null,{"type":"application/ld+json","dangerouslySetInnerHTML":{"__html":"{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Organization\",\"name\":\"13 Studio Tattoo\",\"url\":\"https://13-studio-tattoo.vercel.app\"},{\"@type\":\"TattooParlor\",\"name\":\"13 Studio Tattoo\",\"url\":\"https://13-studio-tattoo.vercel.app\"},{\"@type\":\"WebSite\",\"name\":\"13 Studio Tattoo\",\"url\":\"https://13-studio-tattoo.vercel.app\"}]}"}}],["$","$L4",null,{"children":["$","$L5",null,{"parallelRouterKey":"children","error":"$7","errorStyles":[],"errorScripts":[["$","script","script-0",{"src":"/_next/static/chunks/30zxlnlqufroc.js","async":true,"nonce":"$undefined"}]],"template":["$","$L8",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[["$","main",null,{"className":"ui-page flex items-center","children":["$","section",null,{"className":"ui-surface mx-auto max-w-3xl p-8 text-center sm:p-12","children":[["$","p",null,{"className":"ui-eyebrow","children":"404"}],["$","h1",null,{"className":"ui-title","children":"Página no encontrada"}],["$","p",null,{"className":"ui-copy mx-auto","children":"La página que buscás no existe o fue movida."}],["$","$L9",null,{"className":"ui-button-primary mt-8","href":"/","children":"Volver a la tienda"}]]}]}],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]]}]}]]}],"p":false,"v":null},"c":"$Qa"},"h":{"r":["$","$1","h",{"children":[null,["$","$L16",null,{"children":"$L17"}],["$","$L19",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$13",null,{"name":"Next.Metadata","children":"$L1a"}]}],null]}],null]}],"p":false,"v":null}},"m":"$undefined","G":["$1c",[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/2p4-y04-4pfpw.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"abxteIk9XO4loNKvYCg01"}
+b:C
+10:{}
+11:"$c:0:1:d:r:props:children:0:props:serverProvidedParams:params"
+17:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+1d:I[27201,["$2","$3"],"IconMark"]
+14:null
+1a:[["$","title","0",{"children":"13 Studio Tattoo | Buenos Aires"}],["$","meta","1",{"name":"description","content":"13 Studio Tattoo. Tatuajes personalizados, artistas y turnos en Buenos Aires."}],["$","link","2",{"rel":"manifest","href":"/manifest.webmanifest","crossOrigin":"$undefined"}],["$","meta","3",{"name":"robots","content":"index, follow"}],["$","link","4",{"rel":"canonical","href":"https://13-studio-tattoo.vercel.app"}],["$","meta","5",{"property":"og:title","content":"13 Studio Tattoo | Buenos Aires"}],["$","meta","6",{"property":"og:description","content":"Tatuajes personalizados y turnos online."}],["$","meta","7",{"property":"og:url","content":"https://13-studio-tattoo.vercel.app"}],["$","meta","8",{"property":"og:locale","content":"es_AR"}],["$","meta","9",{"property":"og:image","content":"https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&w=1200&h=630&q=85"}],["$","meta","10",{"property":"og:image:width","content":"1200"}],["$","meta","11",{"property":"og:image:height","content":"630"}],["$","meta","12",{"property":"og:image:alt","content":"Referencia de tatuaje blackwork"}],["$","meta","13",{"property":"og:type","content":"website"}],["$","meta","14",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","15",{"name":"twitter:title","content":"13 Studio Tattoo"}],["$","meta","16",{"name":"twitter:description","content":"Tatuajes personalizados y turnos online."}],["$","meta","17",{"name":"twitter:image","content":"https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&w=1200&h=630&q=85"}],["$","link","18",{"rel":"icon","href":"/favicon.ico?favicon.2vob68tjqpejf.ico","sizes":"256x256","type":"image/x-icon"}],["$","link","19",{"rel":"icon","href":"/icon.svg?icon.17hg7bhenpdqs.svg","sizes":"any","type":"image/svg+xml"}],["$","$L1d","20",{}]]

@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "13-studio-booking",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "13-studio-booking",
+      "database_id": "REPLACE_WITH_STUDIO_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

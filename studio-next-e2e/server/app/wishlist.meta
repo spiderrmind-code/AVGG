@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/wishlist/layout,_N_T_/wishlist/page,_N_T_/wishlist"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/wishlist/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/d057e3265aa486a18ff348c8a8b4a820da40a8b25407f2b7c72144ebc15447a7/$/wishlist",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/wishlist/page"
+    },
+    "isFallback": false
+  }
+}

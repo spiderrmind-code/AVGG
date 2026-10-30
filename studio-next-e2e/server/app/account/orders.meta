@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/account/layout,_N_T_/account/orders/layout,_N_T_/account/orders/page,_N_T_/account/orders"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/account/orders/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 160,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/1a58461694b80dca3475ceca6d9be5d19d9c7abb5f7d688050c04db6ebc1d569/$/account/orders",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/account/orders/page"
+    },
+    "isFallback": false
+  }
+}

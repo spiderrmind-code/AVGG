@@ -1,0 +1,14 @@
+User-Agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /account/
+Disallow: /mi-cuenta/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /wishlist/
+Disallow: /search
+Disallow: /login
+Disallow: /register
+
+Sitemap: https://13-studio-tattoo.vercel.app/sitemap.xml

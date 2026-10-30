@@ -50,6 +50,32 @@ export async function checkRateLimitDistributed(identifier: string, limit = 10, 
   }
 }
 
+export async function checkStudioRateLimit(identifier: string, limit = 10, windowMs = 10 * 60 * 1000): Promise<RateLimitResult> {
+  const url = process.env.STUDIO_RATE_LIMIT_REDIS_URL?.trim();
+  const token = process.env.STUDIO_RATE_LIMIT_REDIS_TOKEN?.trim();
+  if (!url?.startsWith("https://") || !token) {
+    return checkRateLimit(`studio:${identifier}`, limit, windowMs);
+  }
+
+  const seconds = Math.max(1, Math.ceil(windowMs / 1000));
+  try {
+    const response = await fetch(`${url.replace(/\/$/, "")}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify([["INCR", `studio:rate:${identifier}`], ["EXPIRE", `studio:rate:${identifier}`, seconds, "NX"], ["TTL", `studio:rate:${identifier}`]]),
+    });
+    const reply: unknown = await response.json();
+    if (!response.ok || !Array.isArray(reply)) return checkRateLimit(`studio:${identifier}`, limit, windowMs);
+    const pipeline = reply as RedisPipelineReply;
+    const count = typeof pipeline[0]?.result === "number" ? pipeline[0].result : NaN;
+    const ttl = typeof pipeline[2]?.result === "number" ? pipeline[2].result : seconds;
+    if (!Number.isFinite(count)) return checkRateLimit(`studio:${identifier}`, limit, windowMs);
+    return { allowed: count <= limit, retryAfter: Math.max(1, ttl) };
+  } catch {
+    return checkRateLimit(`studio:${identifier}`, limit, windowMs);
+  }
+}
+
 export function requestIdentifier(request: Request): string {
   const direct = request.headers.get("x-vercel-forwarded-for") || request.headers.get("x-real-ip");
   const forwarded = request.headers.get("x-forwarded-for")?.split(",").map((value) => value.trim()).filter(Boolean).pop();

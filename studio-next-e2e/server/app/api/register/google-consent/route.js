@@ -1,0 +1,11 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/register/google-consent/route.js")
+R.c("server/chunks/lib_1bj7idq5l42gg._.js")
+R.c("server/chunks/[root-of-the-server]__1q4yhdqakbt9r._.js")
+R.c("server/chunks/[root-of-the-server]__05jyhjdm895zr._.js")
+R.c("server/chunks/node_modules_next_1zdbrneapig6o._.js")
+R.c("server/chunks/[root-of-the-server]__0ld-3rbaj1m8-._.js")
+R.c("server/chunks/_0j1etrphku-r5._.js")
+R.c("server/chunks/lib_0_v7q8t4fjkfw._.js")
+R.c("server/chunks/1oeh_server_app_api_register_google-consent_route_actions_0xcg73dgx8osf.js")
+R.m(56850)
+module.exports=R.m(56850).exports

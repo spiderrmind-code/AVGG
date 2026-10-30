@@ -1,0 +1,3 @@
+module.exports=[39043,a=>{"use strict";var b=a.i(88196);function c(a){return{_id:a._id,name:a.name,price:a.price,image:a.image,inStock:a.inStock,...a.slug?{slug:a.slug}:{},...void 0!==a.stockQuantity?{stockQuantity:a.stockQuantity}:{},...void 0!==a.comparePrice?{comparePrice:a.comparePrice}:{}}}a.s(["t",0,"avgconnects_wishlist","C",0,function(a){if(!a)return[];try{let d=JSON.parse(a);if(!Array.isArray(d))return[];return d.map(a=>(0,b.p)({...a,quantity:1})).filter(a=>null!==a).map(c)}catch{return[]}}])}];
+
+//# sourceMappingURL=lib_wishlist_ts_1dq070zpzmxcy._.js.map

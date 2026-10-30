@@ -1,6 +1,8 @@
 import { createHash } from "crypto";
 import type { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { checkAppointmentRateLimit, isDuplicateKeyError, isValidAppointmentDate, isValidAppointmentPhone, isValidAppointmentStyle, isValidAppointmentTime, studioPrivacyNoticeVersion } from "@/lib/appointments";
 import { requireAuthSecret } from "@/lib/auth-secret";
 import { logServerError } from "@/lib/logger";
@@ -8,12 +10,14 @@ import { getStudioDb, isStudioMongoConfigured } from "@/lib/studio-mongo";
 import { requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { recordStudioEvent } from "@/lib/studio-analytics";
-import { resolveStudioDeployment } from "@/lib/studio-routes";
+import { isStudioAppointmentCollectionEnabled, resolveStudioDeployment } from "@/lib/studio-routes";
+import { getStudioAvailableStartTimes, getStudioRetentionExpiry, validateStudioAvailability, type StudioAvailabilitySettings } from "@/lib/studio-availability";
 function field(value: unknown, max: number) { return typeof value === "string" && value.trim().length > 0 && value.trim().length <= max ? value.trim() : null; }
 export async function POST(request: Request) {
   const deployment = resolveStudioDeployment();
   if (!deployment.enabled) return NextResponse.json({ message: "No encontrado" }, { status: 404 });
   if (!deployment.consistent) return NextResponse.json({ message: "La agenda en línea no está disponible por configuración." }, { status: 503 });
+  if (!isStudioAppointmentCollectionEnabled()) return NextResponse.json({ message: "La recepción de solicitudes está pausada mientras se finalizan las verificaciones de privacidad." }, { status: 503 });
   if (!hasTrustedOrigin(request)) return NextResponse.json({ message: "Origen no permitido" }, { status: 403 });
   if (!hasJsonContentType(request)) return NextResponse.json({ message: "Content-Type inválido" }, { status: 415 });
   if (!isStudioMongoConfigured()) return NextResponse.json({ message: "La agenda en línea no está disponible. Escribinos por WhatsApp para consultar." }, { status: 503 });
@@ -42,6 +46,20 @@ export async function POST(request: Request) {
     }
 
     const normalizedEmail = email.toLowerCase();
+    const storedAvailability = await db.collection<StudioAvailabilitySettings & { _id: string }>("studio_settings").findOne({ _id: "availability" });
+    const availability = storedAvailability ? validateStudioAvailability(storedAvailability) : null;
+    if (!availability?.valid || availability.settings.durationMinutes === null) {
+      return NextResponse.json({ message: "El estudio todavía no configuró su agenda." }, { status: 503 });
+    }
+    const confirmedAppointments = await db.collection<{ preferredDate: string; preferredTime: string; durationMinutes?: number }>("appointments")
+      .find({ preferredDate, status: "confirmed" }, { projection: { _id: 0, preferredDate: 1, preferredTime: 1, durationMinutes: 1 } })
+      .toArray();
+    const availableTimes = getStudioAvailableStartTimes(preferredDate, availability.settings, confirmedAppointments);
+    if (!availableTimes.includes(preferredTime)) return NextResponse.json({ message: "Ese horario ya no está disponible. Elegí otra opción." }, { status: 409 });
+    const session = await getServerSession(authOptions);
+    const customerId = session?.user?.role === "customer" && session.user.email?.toLowerCase() === normalizedEmail
+      ? session.user.id
+      : undefined;
     const fingerprint = createHash("sha256").update(JSON.stringify({ normalizedEmail, preferredDate, preferredTime, idea })).digest("hex");
     const appointments = db.collection("appointments");
     const activeStatuses = ["requested", "confirmed"];
@@ -69,7 +87,8 @@ export async function POST(request: Request) {
 
     let insertedId;
     try {
-      const result = await appointments.insertOne({ name, email: normalizedEmail, phone, style, idea, preferredDate, preferredTime, fingerprint, privacyNoticeVersion: studioPrivacyNoticeVersion, privacyAcceptedAt: lockDate, status: "requested", createdAt: lockDate, updatedAt: lockDate });
+      const expiresAt = getStudioRetentionExpiry(availability.settings.retention.unconfirmedDays, lockDate);
+      const result = await appointments.insertOne({ name, email: normalizedEmail, phone, style, idea, preferredDate, preferredTime, fingerprint, ...(customerId ? { userId: customerId } : {}), privacyNoticeVersion: studioPrivacyNoticeVersion, privacyAcceptedAt: lockDate, status: "requested", createdAt: lockDate, updatedAt: lockDate, lastInteractionAt: lockDate, ...(expiresAt ? { expiresAt } : {}) });
       insertedId = result.insertedId;
     } catch (error) {
       await submissionLocks.deleteOne({ _id: fingerprint, createdAt: lockDate });

@@ -1,0 +1,3 @@
+module.exports=[26331,a=>{"use strict";a.s(["f",0,function(a){let b=Number(a.costPrice??0),c=Number(a.shippingCost??0),d=Number(a.paymentCommissionFixed??0),e=Number(a.otherCosts??0),f=Number(a.desiredMargin??0),g=b+c+d+e,h=g/(1-f/100);return{totalCosts:g,recommendedPrice:Number.isFinite(h)?Number(h.toFixed(2)):0,marginPercentage:f}},"L",0,function(a){let b=Number(a.salePrice??0),c=Number(a.costPrice??0)+Number(a.shippingCost??0)+Number(a.paymentCommissionFixed??0)+Number(a.otherCosts??0),d=b-c,e=b>0?d/b*100:0;return{totalCosts:c,profit:Number(d.toFixed(2)),marginPercentage:Number(e.toFixed(2))}}])}];
+
+//# sourceMappingURL=lib_pricing_ts_1gzrkmyc-txo_._.js.map

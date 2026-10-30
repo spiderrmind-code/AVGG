@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/checkout/layout,_N_T_/checkout/failure/layout,_N_T_/checkout/failure/page,_N_T_/checkout/failure"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/checkout/failure/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 160,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/4a0b09b2274a6569e261c3bac606a94f0828bdbd364cecd0bed00f103cda02a5/$/checkout/failure",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/checkout/failure/page"
+    },
+    "isFallback": false
+  }
+}

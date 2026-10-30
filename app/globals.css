@@ -1636,3 +1636,20 @@ html.dark .avg-site-footer a {
 @media (max-width:700px) {
   .studio-gallery-grid { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:15rem; }
 }
+.studio-availability-form { max-width:76rem; margin:2rem auto 0; display:grid; gap:2rem; }
+.studio-availability-form section { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; padding:1.5rem; border:1px solid var(--studio-graphite); background:var(--studio-carbon); }
+.studio-availability-form section h2,.studio-availability-form section > p { grid-column:1/-1; margin:0; }
+.studio-availability-form section h2 { font-size:1.2rem; }
+.studio-availability-form section > p { color:var(--studio-muted); font-size:.8rem; }
+.studio-availability-form label { display:grid; gap:.4rem; color:var(--studio-muted); font-size:.75rem; }
+.studio-availability-form input,.studio-availability-form textarea { width:100%; min-height:2.7rem; border:1px solid var(--studio-graphite); border-radius:0; padding:.65rem; background:var(--studio-black); color:var(--studio-white); color-scheme:dark; }
+.studio-availability-form input:focus-visible,.studio-availability-form textarea:focus-visible { outline:2px solid var(--studio-pink); outline-offset:1px; }
+.studio-availability-days { grid-column:1/-1; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr)); gap:.75rem; }
+.studio-availability-days fieldset { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; min-width:0; padding:1rem; border:1px solid var(--studio-graphite); }
+.studio-availability-days fieldset > p { grid-column:1/-1; margin:0; color:var(--studio-muted); font-size:.8rem; }
+.studio-availability-days .studio-availability-toggle { grid-column:1/-1; display:flex; grid-template-columns:none; align-items:center; gap:.6rem; color:var(--studio-white); font-weight:800; }
+.studio-availability-days .studio-availability-toggle input { width:1rem; min-height:1rem; accent-color:var(--studio-pink); }
+@media (max-width:700px) {
+  .studio-availability-form section { grid-template-columns:minmax(0,1fr); padding:1rem; }
+  .studio-availability-form section h2,.studio-availability-form section > p,.studio-availability-days { grid-column:1; }
+}

@@ -58,3 +58,21 @@ export function validateRegisterInput(input: RegisterInput): ValidationResult {
 
   return { valid: errors.length === 0, errors };
 }
+
+export function validateStudioRegisterInput(input: RegisterInput): ValidationResult {
+  const result = validateRegisterInput(input);
+  const errors = [...result.errors];
+
+  if (input.name?.trim() && input.name.trim().length > 80) errors.push("El nombre es demasiado largo");
+  if (input.lastName?.trim() && input.lastName.trim().length > 80) errors.push("El apellido es demasiado largo");
+  if (input.password && input.password.length < 12) errors.push("La contraseña debe tener al menos 12 caracteres");
+  if (input.password && !input.confirmPassword) errors.push("La confirmación de contraseña es obligatoria");
+
+  const phone = input.phone?.trim() ?? "";
+  const digitCount = phone.replace(/\D/g, "").length;
+  if (phone && (phone.length > 40 || !/^\+?[\d\s().-]+$/.test(phone) || digitCount < 7 || digitCount > 15)) {
+    errors.push("El teléfono no tiene un formato válido");
+  }
+
+  return { valid: errors.length === 0, errors };
+}

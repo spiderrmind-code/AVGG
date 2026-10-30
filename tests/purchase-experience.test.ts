@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { escapeRegex, normalizePublicProduct } from "../lib/catalog";
 import { normalizeCartItem, normalizeQuantity } from "../lib/cart";
+import { isStudioRouteAllowed } from "../lib/studio-routes";
 
 const root = process.cwd();
 const source = (relative: string) => readFileSync(path.join(root, relative), "utf8");
@@ -49,14 +50,13 @@ test("category and search reuse ProductCard while filtering public active produc
   assert.match(search, /<ProductCard key=\{product\._id\} product=\{product\}/);
 });
 
-test("product route validates identifiers and offer links target the actual offers section", () => {
+test("product route validates identifiers while Studio isolates ecommerce product and offers navigation", () => {
   const product = source("app/product/[id]/page.tsx");
   const header = source("app/components/Header.tsx");
-  const promotions = source("app/components/PromotionsSection.tsx");
   assert.match(product, /id\.length > 120/);
   assert.match(product, /active: \{ \$ne: false \}/);
   assert.match(product, /comparePrice > product\.price/);
-  assert.match(header, /href="\/#ofertas"/);
-  assert.match(promotions, /id="ofertas"/);
-  assert.match(promotions, /href="#ofertas"/);
+  assert.match(header, /\/#galeria/);
+  assert.equal(isStudioRouteAllowed("/product/test"), false);
+  assert.equal(isStudioRouteAllowed("/api/products"), false);
 });

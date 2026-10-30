@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/turnos/layout,_N_T_/admin/turnos/page,_N_T_/admin/turnos"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/turnos/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 160,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/92cbc972bfb79842d81e0f0258c5ceff582ec1fec7f81e3656eac5bb31bb261e/$/admin/turnos",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/admin/turnos/page"
+    },
+    "isFallback": false
+  }
+}

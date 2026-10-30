@@ -1,0 +1,11 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/categories/route.js")
+R.c("server/chunks/lib_public-categories_ts_1l_3k1fv-verq._.js")
+R.c("server/chunks/node_modules_next_1zdbrneapig6o._.js")
+R.c("server/chunks/lib_mongo_ts_0p7efzwu6o2xd._.js")
+R.c("server/chunks/[root-of-the-server]__0ld-3rbaj1m8-._.js")
+R.c("server/chunks/node_modules_next_1utulzw9q9p3v._.js")
+R.c("server/chunks/_1n4sdix5ojy0k._.js")
+R.c("server/chunks/[root-of-the-server]__07r-7otm1gglx._.js")
+R.c("server/chunks/_next-internal_server_app_api_categories_route_actions_195-y1x0871qx.js")
+R.m(82600)
+module.exports=R.m(82600).exports

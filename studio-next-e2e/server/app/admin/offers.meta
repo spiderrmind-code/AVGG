@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/offers/layout,_N_T_/admin/offers/page,_N_T_/admin/offers"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/offers/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 160,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/ca16f6f6f474795488150eb0cb0b9c6089b71e58ec660d2f4def71d9ee5b9c79/$/admin/offers",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/admin/offers/page"
+    },
+    "isFallback": false
+  }
+}

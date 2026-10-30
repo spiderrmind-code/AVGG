@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
+const requestedDistDir = process.env.STUDIO_NEXT_DIST_DIR?.trim();
+// Used only by local/CI validation when a separate `next dev` process owns `.next`.
+// Restrict it to a child-directory name so Next can never write outside this project.
+const distDir = requestedDistDir && /^(?!\.{1,2}$)[A-Za-z0-9][A-Za-z0-9._-]*$/.test(requestedDistDir)
+  ? requestedDistDir
+  : undefined;
+
 const nextConfig = {
+  allowedDevOrigins: ['127.0.0.1'],
+  ...(distDir ? { distDir } : {}),
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
@@ -10,7 +19,7 @@ const nextConfig = {
       "object-src 'none'",
       "frame-ancestors 'none'",
       "form-action 'self'",
-      "script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://accounts.google.com",
+      `script-src 'self' 'unsafe-inline'${production ? "" : " 'unsafe-eval'"} https://sdk.mercadopago.com https://accounts.google.com`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https://images.unsplash.com https://lh3.googleusercontent.com",
       "font-src 'self' data:",

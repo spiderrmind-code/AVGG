@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/terminos-y-condiciones/layout,_N_T_/terminos-y-condiciones/page,_N_T_/terminos-y-condiciones"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/terminos-y-condiciones/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/8406f79d0e348a6c489afac2e22b1d41765a84e9dcf470c4e215505353651e22/$/terminos-y-condiciones",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/terminos-y-condiciones/page"
+    },
+    "isFallback": false
+  }
+}

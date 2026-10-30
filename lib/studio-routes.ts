@@ -11,9 +11,20 @@ const publicStudioRoutes = new Set([
   "/politica-de-privacidad",
   "/admin",
   "/admin/turnos",
+  "/admin/clientes",
+  "/admin/disponibilidad",
   "/login",
+  "/register",
+  "/mi-cuenta",
   "/api/appointments",
+  "/api/my-appointments",
   "/api/admin/appointments",
+  "/api/admin/clients",
+  "/api/admin/availability",
+  "/api/availability",
+  "/api/account",
+  "/api/register",
+  "/api/register/google-consent",
   "/api/health",
   "/api/readiness",
   "/robots.txt",
@@ -45,6 +56,36 @@ export function resolveStudioDeployment(environment: StudioDeploymentEnvironment
 
 export function isStudioDeployment(environment: StudioDeploymentEnvironment = process.env) {
   return resolveStudioDeployment(environment).enabled;
+}
+
+export function isStudioDataCollectionEnabled(environment: StudioDeploymentEnvironment = process.env) {
+  const deployment = resolveStudioDeployment(environment);
+  return deployment.enabled
+    && deployment.consistent
+    && environment.STUDIO_PRIVACY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_PRIVACY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.STUDIO_RETENTION_POLICY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_RETENTION_POLICY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.STUDIO_DATA_COLLECTION_ENABLED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_DATA_COLLECTION_ENABLED?.trim().toLowerCase() === "true";
+}
+
+export function isStudioAppointmentCollectionEnabled(environment: StudioDeploymentEnvironment = process.env) {
+  return isStudioDataCollectionEnabled(environment)
+    && environment.STUDIO_APPOINTMENT_REQUESTS_ENABLED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_APPOINTMENT_REQUESTS_ENABLED?.trim().toLowerCase() === "true";
+}
+
+export function isStudioAccountRegistrationEnabled(environment: StudioDeploymentEnvironment = process.env) {
+  const deployment = resolveStudioDeployment(environment);
+  return deployment.enabled
+    && deployment.consistent
+    && environment.STUDIO_ACCOUNT_PRIVACY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_ACCOUNT_PRIVACY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.STUDIO_ACCOUNT_RETENTION_POLICY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_ACCOUNT_RETENTION_POLICY_APPROVED?.trim().toLowerCase() === "true"
+    && environment.STUDIO_ACCOUNT_DATA_COLLECTION_ENABLED?.trim().toLowerCase() === "true"
+    && environment.NEXT_PUBLIC_STUDIO_ACCOUNT_DATA_COLLECTION_ENABLED?.trim().toLowerCase() === "true";
 }
 
 export function isAuthorizedStudioAdmin(

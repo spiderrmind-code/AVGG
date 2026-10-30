@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "functions": {
+    "/_middleware": {
+      "runtime": "nodejs",
+      "matchers": [
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico).*))(\\.json|\\.rsc|\\.segments\\/.+\\.segment\\.rsc)?[\\/#\\?]?$",
+          "originalSource": "/((?!_next/static|_next/image|favicon.ico).*)"
+        }
+      ]
+    },
+    "/api/ai/chat": {},
+    "/api/cron/dropsheable-sync": {},
+    "/api/cron/fulfillment": {},
+    "/api/cron/promotions": {},
+    "/api/cron/reconcile-orders": {}
+  }
+}

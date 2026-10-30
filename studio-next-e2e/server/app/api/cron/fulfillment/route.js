@@ -1,0 +1,10 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/cron/fulfillment/route.js")
+R.c("server/chunks/lib_mongo_ts_0p7efzwu6o2xd._.js")
+R.c("server/chunks/lib_fulfillment_engine_ts_0yagx7j54cp6h._.js")
+R.c("server/chunks/[root-of-the-server]__0wdyir_s8rtcf._.js")
+R.c("server/chunks/_1ewrmlhco0evn._.js")
+R.c("server/chunks/[root-of-the-server]__0ld-3rbaj1m8-._.js")
+R.c("server/chunks/node_modules_next_1zdbrneapig6o._.js")
+R.c("server/chunks/_next-internal_server_app_api_cron_fulfillment_route_actions_1g76vj4twx06h.js")
+R.m(16087)
+module.exports=R.m(16087).exports

@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/inventory/layout,_N_T_/admin/inventory/page,_N_T_/admin/inventory"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/inventory/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 160,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/975c45fa6d39c65d67a04cd7132a3d6d327f0b98de0d70508cc4cafa4a533fcd/$/admin/inventory",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/admin/inventory/page"
+    },
+    "isFallback": false
+  }
+}

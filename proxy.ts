@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { checkRateLimitDistributed, requestIdentifier } from "@/lib/request-rate-limit";
+import { checkRateLimitDistributed, checkStudioRateLimit, requestIdentifier } from "@/lib/request-rate-limit";
 import { hasJsonContentType, hasTrustedOrigin } from "@/lib/request-security";
 import { resolveAuthSecret } from "@/lib/auth-secret";
 import { isStudioRouteAllowed, resolveStudioDeployment } from "@/lib/studio-routes";
@@ -29,7 +29,10 @@ export async function proxy(req: NextRequest) {
     const token = await getToken({ req, secret: authSecret });
     if (!token) return NextResponse.json({ success: false, message: "No autenticado" }, { status: 401 });
     if (String(token.role || "").toLowerCase() !== "admin") return NextResponse.json({ success: false, message: "No autorizado" }, { status: 403 });
-    const limit = await checkRateLimitDistributed(`sensitive:${pathname}:${String(token.id ?? token.email ?? "admin")}:${requestIdentifier(req)}`, pathname.startsWith("/api/admin/") ? 60 : 30, 10 * 60 * 1000);
+    const rateLimitKey = `sensitive:${pathname}:${String(token.id ?? token.email ?? "admin")}:${requestIdentifier(req)}`;
+    const limit = studioDeployment
+      ? await checkStudioRateLimit(rateLimitKey, pathname.startsWith("/api/admin/") ? 60 : 30, 10 * 60 * 1000)
+      : await checkRateLimitDistributed(rateLimitKey, pathname.startsWith("/api/admin/") ? 60 : 30, 10 * 60 * 1000);
     if (!limit.allowed) return NextResponse.json({ success: false, message: "Demasiadas solicitudes" }, { status: 429, headers: { "Retry-After": String(limit.retryAfter) } });
     if (isMutation && !hasTrustedOrigin(req)) return NextResponse.json({ success: false, message: "Origen no permitido" }, { status: 403 });
     if (isMutation && !hasJsonContentType(req)) return NextResponse.json({ success: false, message: "Content-Type inválido" }, { status: 415 });

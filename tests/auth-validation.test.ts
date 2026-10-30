@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeEmail, normalizeRole, validateRegisterInput } from "../lib/auth-validation";
+import { normalizeEmail, normalizeRole, validateRegisterInput, validateStudioRegisterInput } from "../lib/auth-validation";
 import { resolveAuthSecret } from "../lib/auth-secret";
 
 test("validateRegisterInput accepts a strong customer registration", () => {
@@ -29,6 +29,45 @@ test("validateRegisterInput rejects mismatched passwords", () => {
 
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((error) => error.includes("coincid")));
+});
+
+test("validateStudioRegisterInput requires a password confirmation", () => {
+  const result = validateStudioRegisterInput({
+    name: "Ana",
+    lastName: "Pérez",
+    email: "ana@example.com",
+    password: "SecurePass123!",
+  });
+
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((error) => error.includes("confirm")));
+});
+
+test("validateStudioRegisterInput enforces Studio field limits and optional phone format", () => {
+  const base = {
+    name: "Ana",
+    lastName: "Pérez",
+    email: "ana@example.com",
+    phone: "+54 221 220 3747",
+    password: "SecurePass123!",
+    confirmPassword: "SecurePass123!",
+  };
+  assert.equal(validateStudioRegisterInput(base).valid, true);
+  assert.equal(validateStudioRegisterInput({ ...base, password: "Short1!", confirmPassword: "Short1!" }).valid, false);
+  assert.equal(validateStudioRegisterInput({ ...base, phone: "not a phone" }).valid, false);
+  assert.equal(validateStudioRegisterInput({ ...base, name: "N".repeat(81) }).valid, false);
+  assert.equal(validateStudioRegisterInput({ ...base, email: `${"a".repeat(245)}@example.com` }).valid, false);
+});
+
+test("legacy registration validation retains its previous optional confirmation behavior", () => {
+  const result = validateRegisterInput({
+    name: "Ana",
+    lastName: "Pérez",
+    email: "ana@example.com",
+    password: "SecurePass123!",
+  });
+
+  assert.equal(result.valid, true);
 });
 
 test("normalize helpers map roles and emails consistently", () => {

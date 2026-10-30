@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/politica-de-cookies/layout,_N_T_/politica-de-cookies/page,_N_T_/politica-de-cookies"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/politica-de-cookies/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/37cf45242fd76f62f2f8d8b13fdab06e0c38c935a0ce884baa8e310df179088b/$/politica-de-cookies",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/politica-de-cookies/page"
+    },
+    "isFallback": false
+  }
+}

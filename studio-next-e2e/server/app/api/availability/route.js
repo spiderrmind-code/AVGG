@@ -1,0 +1,11 @@
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/availability/route.js")
+R.c("server/chunks/lib_request-rate-limit_ts_0ydw33mki4rhu._.js")
+R.c("server/chunks/lib_125hu8nb293xh._.js")
+R.c("server/chunks/[root-of-the-server]__0my7k7s1efgj_._.js")
+R.c("server/chunks/[root-of-the-server]__0ld-3rbaj1m8-._.js")
+R.c("server/chunks/node_modules_next_1zdbrneapig6o._.js")
+R.c("server/chunks/_1uj2_itek1wxs._.js")
+R.c("server/chunks/lib_studio-availability_ts_1ko9rb54vk1cr._.js")
+R.c("server/chunks/_next-internal_server_app_api_availability_route_actions_1qn7lf1pnobwp.js")
+R.m(77324)
+module.exports=R.m(77324).exports

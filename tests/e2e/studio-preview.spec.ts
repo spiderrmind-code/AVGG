@@ -9,8 +9,15 @@ test("Studio preview exposes booking and privacy links but not AVG commerce rout
 
   const booking = await page.goto("/turnos");
   expect(booking?.status()).toBe(200);
-  await expect(page.getByRole("checkbox", { name: /política de privacidad/i })).toBeVisible();
-  await expect(page.locator("a[href='/politica-de-privacidad']")).toHaveCount(2);
+  await expect(page.getByRole("status")).toContainText(/recepción de solicitudes está pausada/i);
+  await expect(page.getByRole("link", { name: /consultar por whatsapp/i })).toHaveAttribute("href", /^https:\/\/wa\.me\/542212203747\?/);
+  await expect(page.locator("input[name='name']")).toHaveCount(0);
+
+  const registration = await page.goto("/register");
+  expect(registration?.status()).toBe(200);
+  await expect(page.getByRole("status")).toContainText(/registro de cuentas está pausado/i);
+  await expect(page.getByRole("link", { name: /política de privacidad/i })).toBeVisible();
+  await expect(page.locator("input[name='email']")).toHaveCount(0);
 
   const contact = await page.goto("/contacto");
   expect(contact?.status()).toBe(200);
@@ -40,4 +47,19 @@ test("Studio health identifies the service and admin APIs reject unauthenticated
   } else {
     expect(appointments.status()).toBe(401);
   }
+
+  const availability = await request.get("/api/admin/availability");
+  expect([401, 503]).toContain(availability.status());
+});
+
+test("Studio booking stays paused and the public layout fits a mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto("/turnos");
+  expect(response?.status()).toBe(200);
+  await expect(page.getByRole("status")).toContainText(/recepción de solicitudes está pausada/i);
+  const dimensions = await page.evaluate(() => ({
+    viewport: document.documentElement.clientWidth,
+    content: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
 });

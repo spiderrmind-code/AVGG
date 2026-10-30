@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 
 type Appointment = {
 	_id: string;
@@ -12,6 +13,7 @@ type Appointment = {
 	preferredDate: string;
 	preferredTime: string;
 	status: string;
+	userId?: string;
 };
 
 const statuses = [["requested", "Solicitado"], ["confirmed", "Confirmado"], ["rejected", "Rechazado"], ["completed", "Realizado"], ["cancelled", "Cancelado"]];
@@ -78,7 +80,7 @@ export default function AdminTurnos() {
 
 	return <main className="studio-admin">
 		<div className="studio-admin-head">
-			<a href="/admin">← Administración</a>
+			<nav className="flex flex-wrap items-center gap-4"><a href="/admin/clientes">Gestionar clientes</a><a href="/admin/disponibilidad">Disponibilidad</a><a href="/admin">Administración</a><button type="button" className="text-sm text-white underline underline-offset-4" onClick={() => void signOut({ callbackUrl: "/login" })}>Cerrar sesión</button></nav>
 			<p className="studio-kicker"><span /> Gestión</p>
 			<h1>TURNOS</h1>
 			<p>Las solicitudes requieren revisión; un cambio de estado a confirmado reserva el horario.</p>
@@ -88,6 +90,7 @@ export default function AdminTurnos() {
 			{loading ? <p role="status">Cargando solicitudes…</p> : items.length ? items.map(item => <article key={item._id} className={`studio-admin-card is-${item.status}`}>
 				<div className="studio-admin-person">
 					<span className="studio-status">{statuses.find(([value]) => value === item.status)?.[1] ?? item.status}</span>
+					<span className="studio-status">{item.userId ? "Cuenta registrada" : "Invitado"}</span>
 					<h2>{item.name}</h2>
 					<p>{item.email}<br />{item.phone}</p>
 				</div>
